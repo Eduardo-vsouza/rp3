@@ -45,6 +45,7 @@ class Database(PipelineStructure):
             db_dir = f'{self.translationFolder}/{file.replace(".fasta", "")}'
             if not os.path.exists(db_dir):
                 os.mkdir(db_dir)
+
             cmd = f'cp {self.externalDatabase} {db_dir}/{file.replace(".fasta", "")}.pep'
             os.system(cmd)
 
