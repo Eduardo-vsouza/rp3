@@ -59,7 +59,8 @@ The test data is composed of single files (to enable fast testing of the softwar
 Additionally, reference annotation files are included in the testing datasets. These are used for nearly every mode of the pipeline:
 Reference GTF, rRNA and tRNA fasta, and genome Fasta files from hg19 assembly from UCSC. Human RefSeq from latest assembly from NCBI. Human reference proteome from Uniprot.
 
-Every file is located inside the `demo_data` directory, located inside the Rp3 directory.
+Every file is located inside the `demo_data` directory, located inside the Rp3 directory. If you want to download the demo_data, get it from (https://salkinstitute.box.com/s/85790x0odmrdcta7oe8yyje742wj7207)
+
 # Quick start
 
 1. ##### I already have an assembled transcriptome
@@ -92,55 +93,6 @@ Run the pipeline on ``ribocov`` mode.
 ##### Notes 
 - Always use the same output directory when running different modes for the same analysis.
 
-# Transcriptome assembly
-
-1. Run the transcriptome assembly mode of the pipeline
-
-	This mode focuses on the generation of a transcriptome assembly from RNA-Seq reads. This will be used during the next step to generate a custom mass spectrometry database containing all the possible (or most likely) smORFs in the assembled transcriptome.
-	
-	**Note**: this step can be skipped if you already have a transcriptome. All you need to provide is the GTF files in the next step. Alternatively, you can use a reference GTF file to identify novel smORFs in already annotated transcripts.
-	
-2. Parameters
-	Run ``$ rp3.py rna -h`` at the terminal to print this message:
-```
-General Parameters:
-  rna
-  --outdir OUTDIR, -o OUTDIR
-                        Inform the output directory (default: foopipe)
-  --threads THREADS, -p THREADS
-                        Number of threads to be used. (default: 1)
-
-rna options:
-  --strandness STRANDNESS
-  --gtf GTF
-  --lib_type LIB_TYPE   Single or Paired. (default: None)
-  --reads_folder READS_FOLDER
-                        Folder containing sequencing reads in fastq format. (default: None)
-  genome_index          The genome index generated for hisat2 with the --ss and --exon
-                        arguments. If not provided, a new index will be generated. This might
-                        take a while.
-
-```
-
-**Note**. The ``--reads_folder`` flag expects that reads are organized by groups, such as:
-	
-```
-reads_folder/
-	├── group_1/
-	│   └── reads_1.fastq
-	├── group_2/
-	│   └── reads_2.fastq
-	└── group_3/
-	    └── reads_3.fastq
- ```
-In case you have a single group and thus only one transcriptome to assemble, put all the reads in the same group folder inside the reads_folder directory, like:
-```
-reads_folder/
-	├── group_1/
-	   └── reads_1.fastq
-	   └── reads_2.fastq
-	   └── reads_3.fastq
-```
 
 # Database
 
@@ -182,7 +134,7 @@ database options:
 	4.2. In case you already have your own database with putative sequences, you can provide it to the pipeline with the ``--external_database`` flag along with the reference proteome. In that case, the pipeline will append the reference proteome to your fasta file along with the decoys and contaminants. It will then tag each sequence for the subsequent steps.
 			
 	2.3. Notes
-		- ``--gtf_folder`` expects a folder with one or more GTF files.
+		- ``--gtf_folder`` expects a folder with one or more GTF files or the path to a GTF file.
 
 5. Output files
 	Database files will be generated inside the output directory in the ``databases`` folder. You can check for database metrics at ``metrics/database_metrics.txt``.
@@ -330,5 +282,5 @@ The output files will be located inside the ``counts`` directory. They will incl
 	
 
   
-  
+
   
