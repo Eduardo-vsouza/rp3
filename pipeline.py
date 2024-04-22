@@ -310,24 +310,24 @@ class Pipeline:
         cov_class.save_exclusive_classification()
         cov_class.save_gtfs_for_each_mapping_group()
 
-        if self.args.simulateMM:
-            mmcutoff = MMCutoff(args=self.args)
-            mmcutoff.sort_bam_files()
-            mmcutoff.intersect_alignments()
-            mmcutoff.index_intersected_bam_files()
-            mmcutoff.get_alignments()
-            # mmcutoff.order_mappings()
-            mmcutoff.get_coverages()
-            mmcutoff.calculate_min_mm_for_coverage()
+        # if self.args.simulateMM:
+        #     mmcutoff = MMCutoff(args=self.args)
+        #     mmcutoff.sort_bam_files()
+        #     mmcutoff.intersect_alignments()
+        #     mmcutoff.index_intersected_bam_files()
+        #     mmcutoff.get_alignments()
+        #     # mmcutoff.order_mappings()
+        #     mmcutoff.get_coverages()
+        #     mmcutoff.calculate_min_mm_for_coverage()
         if self.args.plots:
             counter = ORFCounter(args=self.args)
             counter.count_smorfs_union()
 
-            seqdist = SeqDist(args=self.args)
-            seqdist.get_genome_coverage()
-            seqdist.get_orf_coverage()
-            seqdist.plot_coverage()
-            seqdist.plot_coverage_single_orfs()
+            # seqdist = SeqDist(args=self.args)
+            # seqdist.get_genome_coverage()
+            # seqdist.get_orf_coverage()
+            # seqdist.plot_coverage()
+            # seqdist.plot_coverage_single_orfs()
 
     def assemble_transcriptomes(self):
         assembly = StringTieAssembly(args=self.args)
