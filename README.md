@@ -47,9 +47,9 @@ Typical installation time will vary depending on how many dependencies requireme
 	
 5.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool in its respective column. By default, the pipeline will look for the tools in your $PATH. 
 #### Testing the installation
-We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 6 main modes (*rna, translation, database, search, postms,* and *ribocov*). To check all modes at once, simply run 
+We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 5 main modes (*translation, database, search, postms,* and *ribocov*). To check all modes at once, simply run 
 `$ rp3.py demo --threads 8`
-This will use 8 threads to test all 6 main modes of the RP3 pipeline. Typical run time for this is 20-30 min, but can vary depending on available computational resources. 
+This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical run time for this is 20-30 min, but can vary depending on available computational resources. 
 The output files will be generated at `demo_outdir` inside the pipeline's installation directory.
 ##### Test dataset 
 The test data is composed of single files (to enable fast testing of the software's core functionalities) from studies used in the published manuscript. For each mode:
@@ -67,8 +67,7 @@ Every file is located inside the `demo_data` directory, located inside the Rp3 d
 If you already have a transcriptome, start the pipeline on the ``database`` mode and provide the path to the folder containing your GTF files with the ``--gtf_folder`` parameter (skip to step 3)
 
 2.  ##### I have RNA-Seq reads, but still need to assemble a transcriptome
-Run the RP3 pipeline on ``rna`` mode.
-$ ``rp3.py rna --outdir /path/to/output/directory --threads 8 --strandness rf --gtf /path/to/gtf/file --lib_type single --reads_folder /path/to/folder/containing/ribo-seq/fastq/files``
+You should assemble your transcriptome using a transcriptome assembler such as StringTie or Cufflinks after aligning the reads to the genome with a splice-aware aligner such as STAR or hisat2. Rp3 needs the GTF file produced by these assemblers.
 
 3. ##### Generate a custom proteomics database
 Run RP3 on the ``database`` mode
@@ -131,7 +130,7 @@ database options:
 	
 	**Remember to always specify the same output directory in the other modes, as each step is dependent on the previous one. **
 	
-	4.2. In case you already have your own database with putative sequences, you can provide it to the pipeline with the ``--external_database`` flag along with the reference proteome. In that case, the pipeline will append the reference proteome to your fasta file along with the decoys and contaminants. It will then tag each sequence for the subsequent steps.
+	4.2. In case you already have your own database with putative sequences, you can provide it to the pipeline with the ``--external_database`` flag along with the reference proteome. In that case, the pipeline will append the reference proteome to your fasta file along with the decoys and contaminants. It will then tag each sequence for the subsequent steps. This is useful when not translating a transcriptome assembly to the 3-reading frames, like when searching for mass spectrometry evidence for microproteins identified with Ribo-Seq. 
 			
 	2.3. Notes
 		- ``--gtf_folder`` expects a folder with one or more GTF files or the path to a GTF file.
