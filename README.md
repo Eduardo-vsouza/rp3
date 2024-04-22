@@ -69,6 +69,9 @@ If you already have a transcriptome, start the pipeline on the ``database`` mode
 2.  ##### I have RNA-Seq reads, but still need to assemble a transcriptome
 You should assemble your transcriptome using a transcriptome assembler such as StringTie or Cufflinks after aligning the reads to the genome with a splice-aware aligner such as STAR or hisat2. Rp3 needs the GTF file produced by these assemblers.
 
+##### Using the reference GTF
+Alternatively, you can just use a reference GTF file from Ensembl or NCBI, for instance. The GTF files has to contain 'transcript' and 'exon' features. The limitation when using a reference GTF is that you cannot include novel transcripts for your samples. The pipeline will then perform the 3-frame translation on already annotated transcripts. Annotated ORFs will be removed afterwards.
+
 3. ##### Generate a custom proteomics database
 Run RP3 on the ``database`` mode
 ``$ rp3.py database --outdir <path/to/output/directory> --threads 8 --genome <path/to/genome.fasta> --gtf_folder <path/to/gtf/folder> --proteome <path/to/reference_proteome.fasta``
