@@ -1,11 +1,13 @@
+- [Transcriptome assembly](#transcriptome-assembly)
+
 # rp3
 Ribosome Profiling and Proteogenomics Pipeline (RP3) for the identification of novel microproteins encoded by smORFs
 
-## 1. Introduction
+# Introduction
 RP3 (Ribosome Profiling and Proteogenomics pipeline) was developed to integrate the analyses for three different multi-omics techniques: RNA-Seq, Ribo-Seq and Proteogenomics. Its overarching goal is to identify novel microproteins (shorter than 100/150 aa) encoded by small Open Reading Frames (smORFs). Then, it will check for translational evidence in the Ribo-Seq data for these novel smORFs.
 
   
-#### Ribo-Seq 
+## Ribo-Seq 
 Ribosome Profiling, or Ribo-Seq, is a widely used technique for the identification of novel coding genes, as it provides direct evidence of translation. It consists of the sequencing of fragments of mRNA that are being actively read by the ribosome (RPFs). Pipelines usually map these RPFs to transcripts from a de novo or reference-guided transcriptome assembly to check for the existence of novel transcripts that might carry smORFs (or any gene) actively being translated by the ribosome. Here, the Ribo-Seq reads will be used to check for translational evidence of novel microprotein-encoding smORFs identified by the Proteogenomics part of the pipeline (Fig. 1 steps VI and VII). 
   
 ![image](https://github.com/Eduardo-vsouza/rp3/assets/60533781/8c689efa-e7d4-4501-92ce-f604572e82ac)
@@ -14,7 +16,7 @@ Ribosome Profiling, or Ribo-Seq, is a widely used technique for the identificati
   
 *Disclaimer*: Note that this figure differs from the one in the paper published at *Journal*. In the paper, the workflow in this figure was used to explain the sequence of analyses that were performed. The RP3 pipeline does not cover the usage of RibORF for smORF identification. Instead, it covers the steps necessary to identify microproteins with Proteogenomics. Additionally, it checks for translational evidence for PG smORFs by making use of the Ribo-Seq reads. It does so by mapping the Ribo-Seq reads back to the PG smORFs coordinates in the genome.
 
-## 2. Installation
+# Installation
 Typical installation time will vary depending on how many dependencies requirements are already met. Downloading the release from the GitHub page should not take more than 5 min. at average connection speed, and installing all dependencies should take no more than 20 min.
 
 1. Download the latest version of the pipeline from its GitHub releases page.
@@ -80,7 +82,7 @@ Run the pipeline on ``ribocov`` mode.
 ##### Notes 
 - Always use the same output directory when running different modes for the same analysis.
 
-## 4. Transcriptome assembly
+# Transcriptome assembly
 
 1. Run the transcriptome assembly mode of the pipeline
 
