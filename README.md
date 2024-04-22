@@ -1,10 +1,6 @@
 # rp3
 Ribosome Profiling and Proteogenomics Pipeline (RP3) for the identification of novel microproteins encoded by smORFs
 
-Table of contents
-1. [Introduction[(## 1. Introduction)
-2. [Database generation[](## 5. Database)
-
 ## 1. Introduction
 RP3 (Ribosome Profiling and Proteogenomics pipeline) was developed to integrate the analyses for three different multi-omics techniques: RNA-Seq, Ribo-Seq and Proteogenomics. Its overarching goal is to identify novel microproteins (shorter than 100/150 aa) encoded by small Open Reading Frames (smORFs). Then, it will check for translational evidence in the Ribo-Seq data for these novel smORFs.
 
