@@ -59,7 +59,7 @@ The test data is composed of single files (to enable fast testing of the softwar
 Additionally, reference annotation files are included in the testing datasets. These are used for nearly every mode of the pipeline:
 Reference GTF, rRNA and tRNA fasta, and genome Fasta files from hg19 assembly from UCSC. Human RefSeq from latest assembly from NCBI. Human reference proteome from Uniprot.
 
-Every file is located inside the `demo_data` directory, located inside the Rp3 directory. If you want to download the demo_data, get it from (https://salkinstitute.box.com/s/85790x0odmrdcta7oe8yyje742wj7207)
+Every file is located inside the `demo_data` directory, located inside the Rp3 directory. If you want to download the demo_data, get it from the release page, separately from the source code.
 
 # Quick start
 
