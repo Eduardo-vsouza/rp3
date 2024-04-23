@@ -7,11 +7,12 @@
 - [Peptide Search](#peptide-search)
 - [Post-processing](#post-processing)
 - [Ribocov](#ribocov)
-- [Additional annotation](#annotation) 
+
 
 Rp3
 =============================
-![image](https://github.com/Eduardo-vsouza/rp3/assets/60533781/b7f5dfce-5030-43f2-b957-aa5d9629586f)
+![image](https://github.com/Eduardo-vsouza/rp3/assets/60533781/ee5208ad-5a1a-42a0-830e-13fbfc8cef20)
+
 
 Ribosome Profiling and Proteogenomics Pipeline (RP3) for the identification of novel microproteins encoded by smORFs
 
