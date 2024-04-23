@@ -1,1 +1,0 @@
-from .assembly import StringTieAssembly
