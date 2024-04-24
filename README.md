@@ -82,7 +82,7 @@ Alternatively, you can just use a reference GTF file from Ensembl or NCBI, for i
 Run RP3 on the ``database`` mode
 ``$ rp3.py database --outdir <path/to/output/directory> --threads 8 --genome <path/to/genome.fasta> --gtf_folder <path/to/gtf/folder> --proteome <path/to/reference_proteome.fasta``
 
-- The specified ``--gtf_folder`` should be the folder containing the GTF file with the transcriptome assembly. If you have assembled it with the ``rna`` mode, it is located inside the output directory at ``/transcriptomics/assembly``. If you already have a GTF file, provide the folder containing it and other GTF files to be included in the analysis. **Provide the path to a GTF file.**
+- The specified ``--gtf_folder`` should be the folder containing the GTF file with the transcriptome assembly. If you already have a GTF file, provide the folder containing it and other GTF files to be included in the analysis. **Provide the path to a GTF file.**
 
 4. ##### Perform the peptide search
 Run RP3 on the ``search`` mode.
