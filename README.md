@@ -39,16 +39,20 @@ Typical installation time will vary depending on how many dependencies requireme
 	2. ``$ pip install -r requirements.txt
 4. Install dependencies
 	To avoid incompatibility, make sure to have installed the versions for each tool that was used during the development of RP3. You can install alternative versions at your own risk. Compatibility is not guaranteed.
-	-  Obtain a license and install MSFragger v3.5 (https://msfragger.nesvilab.org/)
-	-  Install Percolator v3.06.1 (percolator.ms)
-	-  Install NCBI Blast v2.12.0 (https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.12.0/ncbi-blast-2.12.0+-src.tar.gz)
-	-  Install STAR v2.7.4a (https://github.com/alexdobin/STAR/archive/2.5.3a.tar.gz)
-	-  Install StringTie v2.2.1
-	-  Install the subread package v1.6.3. It contains the tool featureCounts, used for the ``ribocov`` mode.
-	-  Install samtools
-	-  Install MSBooster (only necessary if using the flag --msBooster to predict retention times.)
+
+| Tool                             | Version          | Purpose   | Link         |
+|----------------------------------|------------------|-----------|--------------|
+| MSFragger                        | 3.5              | Match MS spectra against protein database   | https://msfragger.nesvilab.org/ |
+| Percolator                       | 3.06.1           | Post-process MSFragger results and infer FDR | percolator.ms |
+| NCBI Blast			   | 2.12.0	      | Local alignment of microproteins | https://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.12.0/ncbi-blast-2.12.0+-src.tar.gz |
+| STAR				   | 2.7.4a	      | Alignment of short-reads to the genome in a splice-aware manner | https://github.com/alexdobin/STAR/archive/2.5.3a.tar.gz |
+| StringTie			   | 2.2.1 	      | Reference-guided transcriptome assembly | https://github.com/gpertea/stringtie/releases/tag/v2.2.1 |
+| Subread			   | 1.6.3	      | Contains featureCounts, used to perform read counting for Ribo-Seq data in the ``ribocov`` mode | https://sourceforge.net/projects/subread/files/subread-1.6.3/ |
+| samtools			   | 1.18	      | Performs a variety of data processing for ``.sam`` and ``.bam`` files | https://github.com/samtools/samtools/releases/tag/1.18 |
+| MSBooster			   | 1.2.1	      | Predicts Retention Times and add delta_RT_loess to ``.pin`` files coming from MSFragger | https://github.com/Nesvilab/MSBooster/releases/tag/v1.2.1 |
+
 	
-5.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool in its respective column. By default, the pipeline will look for the tools in your $PATH. 
+6.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool in its respective column. By default, the pipeline will look for the tools in your $PATH. 
 #### Testing the installation
 We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 5 main modes (*translation, database, search, postms,* and *ribocov*). To check all modes at once, simply run 
 `$ rp3.py demo --threads 8`
@@ -56,7 +60,6 @@ This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical ru
 The output files will be generated at `demo_outdir` inside the pipeline's installation directory.
 ##### Test dataset 
 The test data is composed of single files (to enable fast testing of the software's core functionalities) from studies used in the published manuscript. For each mode:
-``rna``: GEO Accession SRR8449601_1.fastq and SRR8449601_2.fastq paired end fastq files from RNA-Seq experiments from GEO Series (GSE198109)
 ``search``: the mzML file 20130328_EXQ1_MiBa_SA_HCC1937.mzML from MassIVE (accession MSV000089022).
 ``ribocov``: SRR8449580.fastq file containing Ribo-Seq reads from GEO Series (GSE198109). 
 Additionally, reference annotation files are included in the testing datasets. These are used for nearly every mode of the pipeline:
@@ -79,7 +82,7 @@ Alternatively, you can just use a reference GTF file from Ensembl or NCBI, for i
 Run RP3 on the ``database`` mode
 ``$ rp3.py database --outdir <path/to/output/directory> --threads 8 --genome <path/to/genome.fasta> --gtf_folder <path/to/gtf/folder> --proteome <path/to/reference_proteome.fasta``
 
-- The specified ``--gtf_folder`` should be the folder containing the GTF file with the transcriptome assembly. If you have assembled it with the ``rna`` mode, it is located inside the output directory at ``/transcriptomics/assembly``. If you already have a GTF file, provide the folder containing it and other GTF files to be included in the analysis. **Do not provide the path directly to the GTF file. The pipeline expects it to be inside a directory, optionally with other GTF files.**
+- The specified ``--gtf_folder`` should be the folder containing the GTF file with the transcriptome assembly. If you have assembled it with the ``rna`` mode, it is located inside the output directory at ``/transcriptomics/assembly``. If you already have a GTF file, provide the folder containing it and other GTF files to be included in the analysis. **Provide the path to a GTF file.**
 
 4. ##### Perform the peptide search
 Run RP3 on the ``search`` mode.
