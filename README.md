@@ -289,6 +289,7 @@ This will use the provided genome indexes for the human hg19 assembly located in
 The output files will be located inside the ``counts`` directory. They will include a heatmap showing the overall Ribo-Seq coverage for the proteogenomics smORFs, as well as a table containing information about the mapping groups. If the ``--plots`` argument was specified, a plot showing the number of Ribo-Seq-covered smORFs in each mapping group will be generated at ``counts/plots``. 
 	
 
-  
+# Contact
+For any questions or suggestions, please contact me at esouza@salk.edu or open an issue on this GitHub page.
 
   
