@@ -1,0 +1,13 @@
+# Specify the paths to the tool executables as a tab-separated table, such as:
+# Tool_name	Path
+# If the tool is in the $PATH, simply write as it is in $PATH. By default,
+# the names of the tools are used as the path.
+STAR	STAR
+MSFragger	MSFragger
+signalP	signalp6
+featureCounts	featureCounts
+percolator	percolator
+blastp	blastp
+tblastn	tblastn
+samtools	samtools
+MSBooster	MSBooster

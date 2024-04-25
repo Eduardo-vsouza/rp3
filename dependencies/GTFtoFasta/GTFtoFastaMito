@@ -1,0 +1,2 @@
+#!/bin/bash
+java -Xmx16G -cp /gpfs/tools/scripts GTF2FastaMito $@

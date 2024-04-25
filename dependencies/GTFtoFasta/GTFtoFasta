@@ -1,0 +1,4 @@
+#!/bin/bash
+SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
+
+java -Xmx16G -cp $SCRIPT_DIR GTFtoFasta $@

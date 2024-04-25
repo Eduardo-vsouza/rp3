@@ -1,0 +1,580 @@
+ 	Name	Short	Mass	Type	Residues	Category	Unimod	PSI-MOD	
+359	Oxidation of M	ox	15.99491461956	0	M	Common Fixed and Variable	UNIMOD:35	MOD:00719	
+56	Carbamidomethylation of C	cmm	57.02146372057	0	C	Common Fixed and Variable	UNIMOD:4	MOD:01060	
+71	Citrullination of R	cit	0.9840155826899988	0	R	Common Biological	UNIMOD:7	MOD:00400	
+322	Methylation of K	meth	14.01565006414	0	K	Common Biological	UNIMOD:34	MOD:00085	
+323	Methylation of R	meth	14.01565006414	0	R	Common Biological	UNIMOD:34	MOD:00414	
+358	Oxidation of K	ox	15.99491461956	0	K	Common Biological	UNIMOD:35	MOD:01047	
+360	Oxidation of N	ox	15.99491461956	0	N	Common Biological	UNIMOD:35	MOD:01688	
+361	Oxidation of P	ox	15.99491461956	0	P	Common Biological	UNIMOD:35	MOD:00039	
+153	Formylation of K	form	27.99491461956	0	K	Common Biological	UNIMOD:122	MOD:00216	
+102	Dimethylation of K	dimeth	28.03130012828	0	K	Common Biological	UNIMOD:36	MOD:00084	
+111	Dimethylation of R	dimeth	28.03130012828	0	R	Common Biological	UNIMOD:36	MOD:00783	
+355	Nitrosylation of C	nitro	28.99016359229	0	C	Common Biological	UNIMOD:275	MOD:00235	
+464	S-nitrosylation	nitrosyl	28.99016359229	0	C	Common Biological	UNIMOD:275	MOD:00235	
+24	Acetylation of K	ace	42.0105646837	0	K	Common Biological	UNIMOD:1	MOD:00723	
+25	Acetylation of peptide N-term	ace	42.0105646837	5		Common Biological	UNIMOD:1	MOD:01458	
+26	Acetylation of protein N-term	ace	42.0105646837	1		Common Biological	UNIMOD:1	MOD:01458	
+516	Trimethylation of K	trimeth	42.04695019242	0	K	Common Biological	UNIMOD:37	MOD:00855	
+64	Carboxylation of D	carb	43.98982923912	0	D	Common Biological	UNIMOD:299	MOD:00309	
+65	Carboxylation of E	carb	43.98982923912	0	E	Common Biological	UNIMOD:299	MOD:00041	
+66	Carboxylation of K	carb	43.98982923912	0	K	Common Biological	UNIMOD:299	MOD:00123	
+356	Nitrosylation of Y	nitro	44.985078211849995	0	Y	Common Biological	UNIMOD:354	MOD:01352	
+74	Crotonylation of K	croto	68.02621474784	0	K	Common Biological	UNIMOD:1363	MOD:01892	
+34	Butyrylation of K	buty	70.04186481197999	0	K	Common Biological	UNIMOD:1289	MOD:01781	
+470	Sulfation of Y	s	79.95681485867999	0	Y	Common Biological	UNIMOD:40	MOD:00181	
+387	Phosphorylation of S	p	79.96633052074999	0	S	Common Biological	UNIMOD:21	MOD:00046	
+388	Phosphorylation of T	p	79.96633052074999	0	T	Common Biological	UNIMOD:21	MOD:00047	
+389	Phosphorylation of Y	p	79.96633052074999	0	Y	Common Biological	UNIMOD:21	MOD:00048	
+318	Malonylation of K	malo	86.00039392282	0	K	Common Biological	UNIMOD:747	MOD:01893	
+467	Succinylation of K	suc	100.01604398696	0	K	Common Biological	UNIMOD:64	MOD:01819	
+179	Glutarylation of K	glur	114.0316940511	0	K	Common Biological	UNIMOD:1848		
+400	Pyridoxal phosphate of K	pyri	229.01400898916	0	K	Common Biological	UNIMOD:46	MOD:00128	
+27	ADP-ribosylation of S	adp	541.06110901175	0	S	Common Biological	UNIMOD:213	MOD:00242	
+403	Pyrolidone from E	pyro	-18.0105646837	6	E	Common Artifact	UNIMOD:27	MOD:00420	
+30	Ammonia loss from N	-nh3	-17.02654910101	0	N	Common Artifact	UNIMOD:385		
+402	Pyrolidone from carbamidomethylated C	pyro	-17.02654910101	6	C	Common Artifact	UNIMOD:385	MOD:01871	
+404	Pyrolidone from Q	pyro	-17.02654910101	6	Q	Common Artifact	UNIMOD:28	MOD:00040	
+94	Deamidation of N	deam	0.9840155826899988	0	N	Common Artifact	UNIMOD:7	MOD:00684	
+96	Deamidation of Q	deam	0.9840155826899988	0	Q	Common Artifact	UNIMOD:7	MOD:00685	
+59	Carbamilation of C	cm	43.00581365643	0	C	Common Artifact	UNIMOD:5	MOD:00337	
+60	Carbamilation of K	cm	43.00581365643	0	K	Common Artifact	UNIMOD:5	MOD:01678	
+61	Carbamilation of M	cm	43.00581365643	0	M	Common Artifact	UNIMOD:5	MOD:00398	
+62	Carbamilation of protein N-term	cm	43.00581365643	1		Common Artifact	UNIMOD:5	MOD:01679	
+63	Carbamilation of R	cm	43.00581365643	0	R	Common Artifact	UNIMOD:5	MOD:00398	
+316	Magnesium on D	mg	21.96939163286	0	D	Metal	UNIMOD:956		
+317	Magnesium on E	mg	21.96939163286	0	E	Metal	UNIMOD:956		
+465	Sodium adduct to D	Na	21.98194424883	0	D	Metal	UNIMOD:30	MOD:01295	
+466	Sodium adduct to E	Na	21.98194424883	0	E	Metal	UNIMOD:30	MOD:01296	
+54	Calcium on D	ca	37.94694080186	0	D	Metal	UNIMOD:951		
+55	Calcium on E	ca	37.94694080186	0	E	Metal	UNIMOD:951		
+390	Potassium on D	pot	37.95588145493	0	D	Metal	UNIMOD:530	MOD:01245	
+391	Potassium on E	pot	37.95588145493	0	E	Metal	UNIMOD:530	MOD:01244	
+245	Iron[III] on D	fe	52.91146120379	0	D	Metal	UNIMOD:1870		
+246	Iron[III] on E	fe	52.91146120379	0	E	Metal	UNIMOD:1870		
+243	Iron[II] on D	fe	53.91928623586	0	D	Metal	UNIMOD:952		
+244	Iron[II] on E	fe	53.91928623586	0	E	Metal	UNIMOD:952		
+578	Zinc on D	zn	61.913492135860004	0	D	Metal	UNIMOD:954		
+579	Zinc on E	zn	61.913492135860004	0	E	Metal	UNIMOD:954		
+72	Copper on D	cu	61.92177246793	0	D	Metal	UNIMOD:531		
+73	Copper on E	cu	61.92177246793	0	E	Metal	UNIMOD:531		
+210	Hexose of K	hex	162.0528234185	0	K	Glycosylation	UNIMOD:41	MOD:01347	
+208	HexNAc of S	glyco	203.07937251951	0	S	Glycosylation	UNIMOD:43		
+209	HexNAc of T	glyco	203.07937251951	0	T	Glycosylation	UNIMOD:43		
+204	Hex(1)NAc(1) of S	glyco	365.13219593801	0	S	Glycosylation	UNIMOD:793		
+205	Hex(1)NAc(1) of T	glyco	365.13219593801	0	T	Glycosylation	UNIMOD:793		
+207	Hex(5) HexNAc(4) NeuAc(2) of N	glyco	2204.77244018348	0	N	Glycosylation			
+206	Hex(5) HexNAc(4) NeuAc(2) Na of N	glyco	2226.75438443231	0	N	Glycosylation	UNIMOD:1408		
+211	Homoserine lactone of peptide C-term M	hsel	-48.00337112828	8	M	Less Common	UNIMOD:11	MOD:00404	
+212	Homoserine of peptide C-term M	hse	-29.992806444580005	8	M	Less Common	UNIMOD:10	MOD:00403	
+97	Dehydration of S	dehyd	-18.0105646837	0	S	Less Common	UNIMOD:23	MOD:00189	
+98	Dehydration of T	dehyd	-18.0105646837	0	T	Less Common	UNIMOD:23	MOD:00190	
+99	Didehydro of T	didehyro	-2.01565006414	0	T	Less Common	UNIMOD:401	MOD:01345	
+100	Didehydro of Y	didehyro	-2.01565006414	0	Y	Less Common	UNIMOD:401	MOD:00706	
+28	Amidation of peptide C-term	am	-0.9840155826899988	7		Less Common	UNIMOD:2	MOD:00883	
+29	Amidation of protein C-term	am	-0.9840155826899988	3		Less Common	UNIMOD:2	MOD:00883	
+362	Oxidation to Kynurenine of W	kynu	3.9949146195599994	0	W	Less Common	UNIMOD:351	MOD:00462	
+319	Methylation of C	meth	14.01565006414	0	C	Less Common	UNIMOD:34	MOD:00660	
+320	Methylation of D	meth	14.01565006414	0	D	Less Common	UNIMOD:34	MOD:00079	
+321	Methylation of E	meth	14.01565006414	0	E	Less Common	UNIMOD:34	MOD:00081	
+324	Methylation of S	meth	14.01565006414	0	S	Less Common	UNIMOD:34	MOD:01782	
+357	Oxidation of C	ox	15.99491461956	0	C	Less Common	UNIMOD:35	MOD:00210	
+154	Formylation of peptide N-term	form	27.99491461956	5		Less Common	UNIMOD:122	MOD:00409	
+155	Formylation of protein N-term	form	27.99491461956	1		Less Common	UNIMOD:122	MOD:00409	
+156	Formylation of S	form	27.99491461956	0	S	Less Common	UNIMOD:122	MOD:01222	
+157	Formylation of T	form	27.99491461956	0	T	Less Common	UNIMOD:122	MOD:01221	
+106	Dimethylation of N	dimeth	28.03130012828	0	N	Less Common	UNIMOD:36	MOD:00316	
+107	Dimethylation of peptide N-term	dimeth	28.03130012828	5		Less Common	UNIMOD:36	MOD:01686	
+424	Quinone of W	quin	29.974179174979998	0	W	Less Common	UNIMOD:392		
+425	Quinone of Y	quin	29.974179174979998	0	Y	Less Common	UNIMOD:392		
+112	Dioxidation of M	diox	31.98982923912	0	M	Less Common	UNIMOD:425	MOD:00428	
+113	Dioxidation of W	diox	31.98982923912	0	W	Less Common	UNIMOD:425	MOD:00428	
+181	Guanidination of K	guan	42.02179807374	0	K	Less Common	UNIMOD:52	MOD:00445	
+182	Guanidination of peptide N-term	guan	42.02179807374	5		Less Common	UNIMOD:52		
+517	Trimethylation of protein N-term A	trimeth	42.04695019242	1	A	Less Common	UNIMOD:37	MOD:01687	
+518	Trimethylation of R	trimeth	42.04695019242	0	R	Less Common	UNIMOD:37	MOD:01669	
+325	Methylthio of C	mmts	45.987721064140004	0	C	Less Common	UNIMOD:39	MOD:00110	
+326	Methylthio of D	mmts	45.987721064140004	0	D	Less Common	UNIMOD:39	MOD:00237	
+327	Methylthio of N	mmts	45.987721064140004	0	N	Less Common	UNIMOD:39	MOD:00325	
+519	Trioxidation of C	triox	47.98474385868	0	C	Less Common	UNIMOD:345	MOD:00460	
+57	Carbamidomethylation of E	cmm	57.02146372057	0	E	Less Common	UNIMOD:4	MOD:01216	
+58	Carbamidomethylation of K	cmm	57.02146372057	0	K	Less Common	UNIMOD:4	MOD:01212	
+67	Carboxymethylation of C	carbox	58.00547930326	0	C	Less Common	UNIMOD:6	MOD:01061	
+68	Carboxymethylation of K	carbox	58.00547930326	0	K	Less Common	UNIMOD:6	MOD:01094	
+69	Carboxymethylation of peptide N-term	carbox	58.00547930326	5		Less Common	UNIMOD:6	MOD:01084	
+70	Carboxymethylation of W	carbox	58.00547930326	0	W	Less Common	UNIMOD:6	MOD:01328	
+393	Propionamide of C	propam	71.03711378471	0	C	Less Common	UNIMOD:24	MOD:00417	
+394	Propionamide of K	propam	71.03711378471	0	K	Less Common	UNIMOD:24		
+395	Propionamide of peptide N-term	propam	71.03711378471	5		Less Common	UNIMOD:24		
+468	Sulfation of S	s	79.95681485867999	0	S	Less Common	UNIMOD:40	MOD:00366	
+469	Sulfation of T	s	79.95681485867999	0	T	Less Common	UNIMOD:40	MOD:00367	
+3	4-Hydroxyproline	hydroxy	83.07349929343	0	P	Less Common			
+491	Thioacyl of peptide N-term	thioacyl	87.99828574784	5		Less Common	UNIMOD:126	MOD:01223	
+354	NIPCAM of C	nipcam	99.06841391299	0	C	Less Common	UNIMOD:17	MOD:00410	
+401	Pyridylethyl of C	pyri	105.05784922929	0	C	Less Common	UNIMOD:31	MOD:00424	
+520	Ubiquitination of K	ub	114.04292744114	0	K	Less Common	UNIMOD:121	MOD:00492	
+353	Nethylmaleimide of C	nem	125.04767846841	0	C	Less Common	UNIMOD:108	MOD:00483	
+158	FormylMet of protein N-term	nmet	159.03539953255	1		Less Common	UNIMOD:107		
+293	Lipoyl of K	lip	188.0329570044	0	K	Less Common	UNIMOD:42	MOD:00127	
+152	Farnesylation of C	far	204.18780076968	0	C	Less Common	UNIMOD:44	MOD:00111	
+33	Biotinylation of K	biot	226.0775986977	0	K	Less Common	UNIMOD:3	MOD:00126	
+382	Palmitoylation of C	palm	238.22966558166	0	C	Less Common	UNIMOD:47	MOD:00440	
+383	Palmitoylation of K	palm	238.22966558166	0	K	Less Common	UNIMOD:47	MOD:00086	
+384	Palmitoylation of protein N-term	palm	238.22966558166	1		Less Common	UNIMOD:47	MOD:01685	
+385	Palmitoylation of S	palm	238.22966558166	0	S	Less Common	UNIMOD:47	MOD:00089	
+386	Palmitoylation of T	palm	238.22966558166	0	T	Less Common	UNIMOD:47	MOD:00088	
+101	Diiodination of Y	diiodo	251.79329593586	0	Y	Less Common	UNIMOD:130	MOD:01140	
+178	Geranyl-geranyl of C	geranyl	272.25040102624	0	C	Less Common	UNIMOD:48	MOD:00113	
+180	Glutathione of C	glut	305.06815621281	0	C	Less Common	UNIMOD:55	MOD:00234	
+471	SUMO-2/3 Q87R	sumo	471.20776092011	0	K	Less Common		MOD:01149	
+202	Heme B of C	heme	616.17729182368	0	C	Less Common	UNIMOD:390		
+203	Heme B of H	heme	616.17729182368	0	H	Less Common	UNIMOD:390		
+1	18O(1) of peptide C-term	18O	2.0042463804400015	7		Labeling	UNIMOD:258	MOD:00581	
+95	Deamidation of N 18O	deam	2.9882619631300003	0	N	Labeling	UNIMOD: 366	MOD:00791	
+2	18O(2) of peptide C-term	18O	4.008492760880003	7		Labeling	UNIMOD: 193	MOD:00546	
+291	Label of K 2H(4)	2H(4)	4.025106982920001	0	K	Labeling	UNIMOD:481	MOD:00942	
+296	Lysine 2H(4)	*	4.025106982920001	0	K	Labeling	UNIMOD:481	MOD:00942	
+392	Proline 13C(5)	*	5.016774189000003	0	P	Labeling	UNIMOD:772	MOD:01297	
+31	Arginine 13C(6)	*	6.020129026799992	0	R	Labeling	UNIMOD:188	MOD:01331	
+294	Lysine 13C(6)	*	6.020129026799992	0	K	Labeling	UNIMOD:188	MOD:01334	
+247	Isoleucine 13C(6) 15N(1)	*	7.017163920200005	0	I	Labeling	UNIMOD:695	MOD:01286	
+292	Leucine 13C(6) 15N(1)	*	7.017163920200005	0	L	Labeling	UNIMOD:695	MOD:01285	
+295	Lysine 13C(6) 15N(2)	*	8.014198813600004	0	K	Labeling	UNIMOD:259	MOD:00582	
+32	Arginine 13C(6) 15N(4)	*	10.008268600400015	0	R	Labeling	UNIMOD:267	MOD:00587	
+511	Trideuterated Methyl Ester of D	methyl(d3)	17.034480301330003	0	D	Labeling	UNIMOD:298	MOD:01241	
+512	Trideuterated Methyl Ester of E	methyl(d3)	17.034480301330003	0	E	Labeling	UNIMOD:298	MOD:01242	
+513	Trideuterated Methyl Ester of K	methyl(d3)	17.034480301330003	0	K	Labeling	UNIMOD:298		
+514	Trideuterated Methyl Ester of peptide C-term	methyl(d3)	17.034480301330003	5		Labeling	UNIMOD:298	MOD:00617	
+515	Trideuterated Methyl Ester of R	methyl(d3)	17.034480301330003	0	R	Labeling	UNIMOD:298		
+103	Dimethylation of K 2H(4)	dimeth4	32.0564071112	0	K	Labeling	UNIMOD:199 	MOD:01254	
+108	Dimethylation of peptide N-term 2H(4)	dimeth4	32.0564071112	5		Labeling	UNIMOD:199 		
+104	Dimethylation of K 2H(6)	dimeth6	34.068960602660006	0	K	Labeling	UNIMOD:1291		
+109	Dimethylation of peptide N-term 2H(6)	dimeth6	34.068960602660006	5		Labeling	UNIMOD: 1291		
+105	Dimethylation of K 2H(6) 13C(2)	dimeth8	36.075670278260006	0	K	Labeling	UNIMOD:330		
+110	Dimethylation of peptide N-term 2H(6) 13C(2)	dimeth8	36.075670278260006	5		Labeling	UNIMOD:330		
+397	Propionyl of K light	prop	56.02621474784	0	K	Labeling	UNIMOD:58	MOD:01232	
+399	Propionyl of peptide N-term light	prop	56.02621474784	5		Labeling	UNIMOD:58	MOD:01895	
+396	Propionyl of K heavy	prop	59.03627926124	0	K	Labeling	UNIMOD:59	MOD:01231	
+398	Propionyl of peptide N-term heavy	prop	59.03627926124	5		Labeling	UNIMOD:59	MOD:00452	
+233	ICPL0 of K	icpl0	105.02146372057	0	K	Labeling	UNIMOD:365	MOD:01230	
+234	ICPL0 of peptide N-term	icpl0	105.02146372057	5		Labeling	UNIMOD:365		
+237	ICPL4 of K	icpl4	109.04657070349	0	K	Labeling	UNIMOD:687	MOD:01359	
+238	ICPL4 of peptide N-term	icpl4	109.04657070349	5		Labeling	UNIMOD:687	MOD:01358	
+239	ICPL6 of K	icpl6	111.04159274737	0	K	Labeling	UNIMOD:364		
+240	ICPL6 of peptide N-term	icpl6	111.04159274737	5		Labeling	UNIMOD:364		
+235	ICPL10 of K	icpl10	115.06669973029	0	K	Labeling	UNIMOD:866	MOD:01287	
+236	ICPL10 of peptide N-term	icpl10	115.06669973029	5		Labeling	UNIMOD:866		
+330	mTRAQ of K light	mTRAQ0	140.094963014	0	K	Labeling	UNIMOD: 888	MOD:01863	
+333	mTRAQ of peptide N-term light	mTRAQ0	140.094963014	5		Labeling	UNIMOD:888	MOD:01863	
+248	iTRAQ 4-plex of K	iTRAQ	144.1020624208	0	K	Labeling	UNIMOD:214	MOD:01518	
+249	iTRAQ 4-plex of peptide N-term	iTRAQ	144.1020624208	5		Labeling	UNIMOD:214	MOD:01518	
+250	iTRAQ 4-plex of Y	iTRAQ	144.1020624208	0	Y	Labeling	UNIMOD:214	MOD:01518	
+329	mTRAQ of K 13C(3) 15N	mTRAQ4	144.1020624208	0	K	Labeling	UNIMOD:889	MOD:01863	
+331	mTRAQ of peptide N-term 13C(3) 15N	mTRAQ4	144.1020624208	5		Labeling	UNIMOD:889	MOD:01863	
+328	mTRAQ of 13C(6) 15N(2)	mTRAQ8	148.1091618276	0	K	Labeling	UNIMOD:1302	MOD:01863	
+332	mTRAQ of peptide N-term 13C(6) 15N(2)	mTRAQ8	148.1091618276	5		Labeling	UNIMOD:1302	MOD:01863	
+502	TMT 2-plex of K	TMT	225.15583272792	0	K	Labeling	UNIMOD:738		
+503	TMT 2-plex of peptide N-term	TMT	225.15583272792	5		Labeling	UNIMOD:738		
+232	ICAT-O	*	227.12699141827	0	C	Labeling	UNIMOD:105	MOD:00480	
+492	TMT 10-plex of K	TMT	229.16293213472	0	K	Labeling	UNIMOD:737		
+496	TMT 10-plex of peptide N-term	TMT	229.16293213472	5		Labeling	UNIMOD:737	MOD:01715	
+497	TMT 11-plex of K	TMT	229.16293213472	0	K	Labeling	UNIMOD:737		
+501	TMT 11-plex of peptide N-term	TMT	229.16293213472	5		Labeling	UNIMOD:737	MOD:01715	
+504	TMT 6-plex of K	TMT	229.16293213472	0	K	Labeling	UNIMOD:737	MOD:01715	
+508	TMT 6-plex of peptide N-term	TMT	229.16293213472	5		Labeling	UNIMOD:737	MOD:01715	
+493	TMT 10-plex of K+4	TMT	233.18803911764	0	K	Labeling			
+498	TMT 11-plex of K+4	TMT	233.18803911764	0	K	Labeling			
+505	TMT 6-plex of K+4	TMT	233.18803911764	0	K	Labeling			
+494	TMT 10-plex of K+6	TMT	235.18306116152	0	K	Labeling			
+499	TMT 11-plex of K+6	TMT	235.18306116152	0	K	Labeling			
+506	TMT 6-plex of K+6	TMT	235.18306116152	0	K	Labeling			
+231	ICAT-9	*	236.15718495847	0	C	Labeling	UNIMOD:106	MOD:00481	
+495	TMT 10-plex of K+8	TMT	237.17713094832	0	K	Labeling			
+500	TMT 11-plex of K+8	TMT	237.17713094832	0	K	Labeling			
+507	TMT 6-plex of K+8	TMT	237.17713094832	0	K	Labeling			
+251	iTRAQ 8-plex of K	iTRAQ	304.19903946116	0	K	Labeling	UNIMOD:730	MOD:01526	
+252	iTRAQ 8-plex of peptide N-term	iTRAQ	304.19903946116	5		Labeling	UNIMOD:730	MOD:01526	
+253	iTRAQ 8-plex of Y	iTRAQ	304.19903946116	0	Y	Labeling	UNIMOD:730	MOD:01526	
+509	TMTpro of K	TMT	304.20714532623	0	K	Labeling	UNIMOD:2016		
+510	TMTpro of peptide N-term	TMT	304.20714532623	5		Labeling	UNIMOD:2016		
+242	iodoTMT zero of C	iodoTMT	324.21614077584	0	C	Labeling	UNIMOD:1341		
+241	iodoTMT 6-plex of C	iodoTMT	329.22659502044	0	C	Labeling	UNIMOD:1342		
+545	W to G	sub	-129.05784922929	0	W	Substitution (1 Nucleotide)	UNIMOD:676		
+431	R to G	sub	-99.07964730303	0	R	Substitution (1 Nucleotide)	UNIMOD:646		
+555	W to S	sub	-99.04728454559	0	W	Substitution (1 Nucleotide)	UNIMOD:673		
+541	W to C	sub	-83.07012816515	0	W	Substitution (1 Nucleotide)	UNIMOD:674		
+574	Y to S	sub	-76.03130012828	0	Y	Substitution (1 Nucleotide)	UNIMOD:679		
+549	W to L	sub	-72.99524897273	0	W	Substitution (1 Nucleotide)			
+118	E to G	sub	-72.0211293674	0	E	Substitution (1 Nucleotide)	UNIMOD:564		
+440	R to S	sub	-69.06908261933	0	R	Substitution (1 Nucleotide)	UNIMOD:636		
+560	Y to C	sub	-60.05414374784	0	Y	Substitution (1 Nucleotide)	UNIMOD:683		
+147	F to S	sub	-60.036385508719995	0	F	Substitution (1 Nucleotide)	UNIMOD:566		
+438	R to P	sub	-59.04834717475	0	R	Substitution (1 Nucleotide)	UNIMOD:639		
+79	D to G	sub	-58.00547930326	0	D	Substitution (1 Nucleotide)	UNIMOD:556		
+114	E to A	sub	-58.00547930326	0	E	Substitution (1 Nucleotide)	UNIMOD:560		
+548	W to K	sub	-57.98434993586	0	W	Substitution (1 Nucleotide)	UNIMOD:1229		
+441	R to T	sub	-55.05343255519001	0	R	Substitution (1 Nucleotide)	UNIMOD:638		
+427	R to C	sub	-53.09192623889	0	R	Substitution (1 Nucleotide)	UNIMOD:644		
+570	Y to N	sub	-49.02040109141	0	Y	Substitution (1 Nucleotide)	UNIMOD:680		
+561	Y to D	sub	-48.036385508719995	0	Y	Substitution (1 Nucleotide)	UNIMOD:682		
+149	F to V	sub	-48.0	0	F	Substitution (1 Nucleotide)	UNIMOD:568		
+39	C to G	sub	-45.987721064140004	0	C	Substitution (1 Nucleotide)	UNIMOD:552		
+134	F to C	sub	-44.059229128279995	0	F	Substitution (1 Nucleotide)	UNIMOD:567		
+75	D to A	sub	-43.98982923912	0	D	Substitution (1 Nucleotide)	UNIMOD:553		
+433	R to I	sub	-43.01704704647	0	R	Substitution (1 Nucleotide)			
+435	R to L	sub	-43.01704704647	0	R	Substitution (1 Nucleotide)			
+526	V to G	sub	-42.04695019242	0	V	Substitution (1 Nucleotide)	UNIMOD:1129		
+194	H to P	sub	-40.0061480096	0	H	Substitution (1 Nucleotide)	UNIMOD:580		
+139	F to I	sub	-33.98434993586	0	F	Substitution (1 Nucleotide)			
+141	F to L	sub	-33.98434993586	0	F	Substitution (1 Nucleotide)			
+313	M to V	sub	-31.972071	0	M	Substitution (1 Nucleotide)	UNIMOD:614		
+417	Q to P	sub	-31.00581365643	0	Q	Substitution (1 Nucleotide)	UNIMOD:630		
+450	S to G	sub	-30.0105646837	0	S	Substitution (1 Nucleotide)	UNIMOD:657		
+472	T to A	sub	-30.0105646837	0	T	Substitution (1 Nucleotide)	UNIMOD:659		
+312	M to T	sub	-29.992806444580005	0	M	Substitution (1 Nucleotide)	UNIMOD:610		
+554	W to R	sub	-29.97820192626	0	W	Substitution (1 Nucleotide)	UNIMOD:675		
+130	E to V	sub	-29.974179174979998	0	E	Substitution (1 Nucleotide)	UNIMOD:1081		
+439	R to Q	sub	-28.04253351832	0	R	Substitution (1 Nucleotide)	UNIMOD:642		
+521	V to A	sub	-28.03130012828	0	V	Substitution (1 Nucleotide)	UNIMOD:1125		
+434	R to K	sub	-28.0061480096	0	R	Substitution (1 Nucleotide)	UNIMOD:640		
+269	K to T	sub	-27.047284545590003	0	K	Substitution (1 Nucleotide)	UNIMOD:594		
+348	N to S	sub	-27.01089903687	0	N	Substitution (1 Nucleotide)	UNIMOD:616		
+226	I to S	sub	-26.05203557286	0	I	Substitution (1 Nucleotide)			
+286	L to S	sub	-26.05203557286	0	L	Substitution (1 Nucleotide)			
+363	P to A	sub	-26.01565006414	0	P	Substitution (1 Nucleotide)	UNIMOD:624		
+565	Y to H	sub	-26.004416674099996	0	Y	Substitution (1 Nucleotide)	UNIMOD:681		
+436	R to M	sub	-25.060626110610002	0	R	Substitution (1 Nucleotide)	UNIMOD:837		
+191	H to L	sub	-23.974847881320002	0	H	Substitution (1 Nucleotide)			
+193	H to N	sub	-23.01598441731	0	H	Substitution (1 Nucleotide)			
+185	H to D	sub	-22.031968834620002	0	H	Substitution (1 Nucleotide)			
+432	R to H	sub	-19.042199165150002	0	R	Substitution (1 Nucleotide)	UNIMOD:641		
+304	M to I	sub	-17.95642093586	0	M	Substitution (1 Nucleotide)			
+306	M to L	sub	-17.95642093586	0	M	Substitution (1 Nucleotide)			
+283	L to P	sub	-16.03130012828	0	L	Substitution (1 Nucleotide)			
+445	S to A	sub	-15.99491461956	0	S	Substitution (1 Nucleotide)	UNIMOD:648		
+563	Y to F	sub	-15.99491461956	0	Y	Substitution (1 Nucleotide)	UNIMOD:678		
+49	C to S	sub	-15.97715638044	0	C	Substitution (1 Nucleotide)	UNIMOD:548		
+91	D to V	sub	-15.958529110839997	0	D	Substitution (1 Nucleotide)	UNIMOD:1069		
+261	K to I	sub	-15.01089903687	0	K	Substitution (1 Nucleotide)			
+414	Q to L	sub	-14.974513528149998	0	Q	Substitution (1 Nucleotide)			
+264	K to N	sub	-14.05203557286	0	K	Substitution (1 Nucleotide)	UNIMOD:595		
+8	A to G	sub	-14.01565006414	0	A	Substitution (1 Nucleotide)	UNIMOD:544		
+116	E to D	sub	-14.01565006414	0	E	Substitution (1 Nucleotide)	UNIMOD:562		
+228	I to V	sub	-14.01565006414	0	I	Substitution (1 Nucleotide)			
+288	L to V	sub	-14.01565006414	0	L	Substitution (1 Nucleotide)			
+487	T to S	sub	-14.01565006414	0	T	Substitution (1 Nucleotide)	UNIMOD:658		
+349	N to T	sub	-12.99524897273	0	N	Substitution (1 Nucleotide)	UNIMOD:617		
+227	I to T	sub	-12.036385508720002	0	I	Substitution (1 Nucleotide)			
+377	P to S	sub	-10.020735444580001	0	P	Substitution (1 Nucleotide)	UNIMOD:623		
+195	H to Q	sub	-9.000334353170004	0	H	Substitution (1 Nucleotide)	UNIMOD:582		
+484	T to P	sub	-3.9949146195599994	0	T	Substitution (1 Nucleotide)	UNIMOD:662		
+305	M to K	sub	-2.945521898990002	0	M	Substitution (1 Nucleotide)	UNIMOD:613		
+85	D to N	sub	-0.9840155826899988	0	D	Substitution (1 Nucleotide)	UNIMOD:555		
+126	E to Q	sub	-0.9840155826899988	0	E	Substitution (1 Nucleotide)	UNIMOD:561		
+341	N to I	sub	-0.9588634640099976	0	N	Substitution (1 Nucleotide)			
+343	N to L	sub	-0.9588634640099976	0	N	Substitution (1 Nucleotide)			
+121	E to K	sub	-0.9476300739699965	0	E	Substitution (1 Nucleotide)	UNIMOD:563		
+266	K to Q	sub	-0.036385508720002235	0	K	Substitution (1 Nucleotide)	UNIMOD:597		
+413	Q to K	sub	0.036385508720002235	0	Q	Substitution (1 Nucleotide)	UNIMOD:631		
+257	K to E	sub	0.9476300739699965	0	K	Substitution (1 Nucleotide)	UNIMOD:596		
+222	I to N	sub	0.9588634640099976	0	I	Substitution (1 Nucleotide)			
+336	N to D	sub	0.9840155826899988	0	N	Substitution (1 Nucleotide)	UNIMOD:621		
+408	Q to E	sub	0.9840155826899988	0	Q	Substitution (1 Nucleotide)	UNIMOD:632		
+263	K to M	sub	2.945521898990002	0	K	Substitution (1 Nucleotide)	UNIMOD:598		
+378	P to T	sub	3.9949146195599994	0	P	Substitution (1 Nucleotide)	UNIMOD:627		
+411	Q to H	sub	9.000334353170004	0	Q	Substitution (1 Nucleotide)	UNIMOD:633		
+457	S to P	sub	10.020735444580001	0	S	Substitution (1 Nucleotide)	UNIMOD:652		
+43	C to L	sub	10.07487919242	0	C	Substitution (1 Nucleotide)			
+479	T to I	sub	12.036385508720002	0	T	Substitution (1 Nucleotide)			
+481	T to L	sub	12.036385508720002	0	T	Substitution (1 Nucleotide)			
+483	T to N	sub	12.99524897273	0	T	Substitution (1 Nucleotide)	UNIMOD:660		
+77	D to E	sub	14.01565006414	0	D	Substitution (1 Nucleotide)	UNIMOD:558		
+159	G to A	sub	14.01565006414	0	G	Substitution (1 Nucleotide)	UNIMOD:571		
+460	S to T	sub	14.01565006414	0	S	Substitution (1 Nucleotide)	UNIMOD:650		
+528	V to I	sub	14.01565006414	0	V	Substitution (1 Nucleotide)			
+530	V to L	sub	14.01565006414	0	V	Substitution (1 Nucleotide)			
+342	N to K	sub	14.05203557286	0	N	Substitution (1 Nucleotide)	UNIMOD:618		
+284	L to Q	sub	14.974513528149998	0	L	Substitution (1 Nucleotide)			
+220	I to K	sub	15.01089903687	0	I	Substitution (1 Nucleotide)			
+523	V to D	sub	15.958529110839997	0	V	Substitution (1 Nucleotide)	UNIMOD:1127		
+446	S to C	sub	15.97715638044	0	S	Substitution (1 Nucleotide)	UNIMOD:654		
+18	A to S	sub	15.99491461956	0	A	Substitution (1 Nucleotide)	UNIMOD:540		
+151	F to Y	sub	15.99491461956	0	F	Substitution (1 Nucleotide)	UNIMOD:569		
+372	P to L	sub	16.03130012828	0	P	Substitution (1 Nucleotide)			
+221	I to M	sub	17.95642093586	0	I	Substitution (1 Nucleotide)			
+281	L to M	sub	17.95642093586	0	L	Substitution (1 Nucleotide)			
+196	H to R	sub	19.042199165150002	0	H	Substitution (1 Nucleotide)	UNIMOD:584		
+80	D to H	sub	22.031968834620002	0	D	Substitution (1 Nucleotide)	UNIMOD:554		
+340	N to H	sub	23.01598441731	0	N	Substitution (1 Nucleotide)	UNIMOD:620		
+279	L to H	sub	23.974847881320002	0	L	Substitution (1 Nucleotide)			
+201	H to Y	sub	26.004416674099996	0	H	Substitution (1 Nucleotide)	UNIMOD:581		
+15	A to P	sub	26.01565006414	0	A	Substitution (1 Nucleotide)	UNIMOD:543		
+452	S to I	sub	26.05203557286	0	S	Substitution (1 Nucleotide)			
+454	S to L	sub	26.05203557286	0	S	Substitution (1 Nucleotide)			
+456	S to N	sub	27.01089903687	0	S	Substitution (1 Nucleotide)	UNIMOD:651		
+480	T to K	sub	27.047284545590003	0	T	Substitution (1 Nucleotide)	UNIMOD:661		
+267	K to R	sub	28.0061480096	0	K	Substitution (1 Nucleotide)	UNIMOD:599		
+20	A to V	sub	28.03130012828	0	A	Substitution (1 Nucleotide)	UNIMOD:1047		
+418	Q to R	sub	28.04253351832	0	Q	Substitution (1 Nucleotide)	UNIMOD:634		
+524	V to E	sub	29.974179174979998	0	V	Substitution (1 Nucleotide)	UNIMOD:1128		
+443	R to W	sub	29.97820192626	0	R	Substitution (1 Nucleotide)	UNIMOD:637		
+482	T to M	sub	29.992806444580005	0	T	Substitution (1 Nucleotide)	UNIMOD:663		
+19	A to T	sub	30.0105646837	0	A	Substitution (1 Nucleotide)	UNIMOD:541		
+173	G to S	sub	30.0105646837	0	G	Substitution (1 Nucleotide)	UNIMOD:572		
+375	P to Q	sub	31.00581365643	0	P	Substitution (1 Nucleotide)	UNIMOD:626		
+531	V to M	sub	31.972071	0	V	Substitution (1 Nucleotide)	UNIMOD:608		
+217	I to F	sub	33.98434993586	0	I	Substitution (1 Nucleotide)			
+277	L to F	sub	33.98434993586	0	L	Substitution (1 Nucleotide)			
+369	P to H	sub	40.0061480096	0	P	Substitution (1 Nucleotide)	UNIMOD:625		
+453	S to K	sub	41.06293460973	0	S	Substitution (1 Nucleotide)	UNIMOD:1199		
+175	G to V	sub	42.04695019242	0	G	Substitution (1 Nucleotide)	UNIMOD:1105		
+225	I to R	sub	43.01704704647	0	I	Substitution (1 Nucleotide)			
+285	L to R	sub	43.01704704647	0	L	Substitution (1 Nucleotide)			
+5	A to D	sub	43.98982923912	0	A	Substitution (1 Nucleotide)	UNIMOD:542		
+38	C to F	sub	44.059229128279995	0	C	Substitution (1 Nucleotide)	UNIMOD:547		
+160	G to C	sub	45.987721064140004	0	G	Substitution (1 Nucleotide)	UNIMOD:577		
+525	V to F	sub	48.0	0	V	Substitution (1 Nucleotide)	UNIMOD:602		
+93	D to Y	sub	48.036385508719995	0	D	Substitution (1 Nucleotide)	UNIMOD:557		
+352	N to Y	sub	49.02040109141	0	N	Substitution (1 Nucleotide)	UNIMOD:619		
+48	C to R	sub	53.09192623889	0	C	Substitution (1 Nucleotide)	UNIMOD:551		
+486	T to R	sub	55.05343255519001	0	T	Substitution (1 Nucleotide)	UNIMOD:665		
+167	G to L	sub	56.06260025656	0	G	Substitution (1 Nucleotide)			
+6	A to E	sub	58.00547930326	0	A	Substitution (1 Nucleotide)	UNIMOD:545		
+161	G to D	sub	58.00547930326	0	G	Substitution (1 Nucleotide)	UNIMOD:576		
+376	P to R	sub	59.04834717475	0	P	Substitution (1 Nucleotide)	UNIMOD:628		
+449	S to F	sub	60.036385508719995	0	S	Substitution (1 Nucleotide)	UNIMOD:647		
+53	C to Y	sub	60.05414374784	0	C	Substitution (1 Nucleotide)	UNIMOD:550		
+459	S to R	sub	69.06908261933	0	S	Substitution (1 Nucleotide)	UNIMOD:655		
+166	G to K	sub	71.07349929343	0	G	Substitution (1 Nucleotide)	UNIMOD:1106		
+162	G to E	sub	72.0211293674	0	G	Substitution (1 Nucleotide)	UNIMOD:574		
+289	L to W	sub	72.99524897273	0	L	Substitution (1 Nucleotide)			
+463	S to Y	sub	76.03130012828	0	S	Substitution (1 Nucleotide)	UNIMOD:653		
+52	C to W	sub	83.07012816515	0	C	Substitution (1 Nucleotide)	UNIMOD:549		
+462	S to W	sub	99.04728454559	0	S	Substitution (1 Nucleotide)	UNIMOD:649		
+172	G to R	sub	99.07964730303	0	G	Substitution (1 Nucleotide)	UNIMOD:578		
+176	G to W	sub	129.05784922929	0	G	Substitution (1 Nucleotide)	UNIMOD:573		
+540	W to A	sub	-115.04219916515	0	W	Substitution (2+ Nucleotides)	UNIMOD:1224		
+564	Y to G	sub	-106.04186481197999	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1239		
+559	Y to A	sub	-92.02621474784	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1237		
+137	F to G	sub	-90.04695019242	0	F	Substitution (2+ Nucleotides)	UNIMOD:1093		
+552	W to P	sub	-89.02654910101	0	W	Substitution (2+ Nucleotides)	UNIMOD:1232		
+557	W to V	sub	-87.01089903687	0	W	Substitution (2+ Nucleotides)	UNIMOD:677		
+426	R to A	sub	-85.06399723889	0	R	Substitution (2+ Nucleotides)	UNIMOD:1189		
+556	W to T	sub	-85.03163448145	0	W	Substitution (2+ Nucleotides)	UNIMOD:1234		
+188	H to G	sub	-80.03744813788	0	H	Substitution (2+ Nucleotides)	UNIMOD:1117		
+133	F to A	sub	-76.03130012828	0	F	Substitution (2+ Nucleotides)	UNIMOD:1090		
+302	M to G	sub	-74.01902119242	0	M	Substitution (2+ Nucleotides)	UNIMOD:1147		
+547	W to I	sub	-72.99524897273	0	W	Substitution (2+ Nucleotides)			
+551	W to N	sub	-72.03638550872	0	W	Substitution (2+ Nucleotides)	UNIMOD:1231		
+259	K to G	sub	-71.07349929343	0	K	Substitution (2+ Nucleotides)	UNIMOD:1135		
+542	W to D	sub	-71.05236992603	0	W	Substitution (2+ Nucleotides)	UNIMOD:1225		
+410	Q to G	sub	-71.03711378471	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1181		
+183	H to A	sub	-66.02179807374	0	H	Substitution (2+ Nucleotides)	UNIMOD:1113		
+571	Y to P	sub	-66.0105646837	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1242		
+576	Y to V	sub	-63.99491461956	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1248		
+575	Y to T	sub	-62.01565006414	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1245		
+297	M to A	sub	-60.00337112828	0	M	Substitution (2+ Nucleotides)	UNIMOD:1142		
+553	W to Q	sub	-58.020735444580005	0	W	Substitution (2+ Nucleotides)	UNIMOD:1233		
+254	K to A	sub	-57.05784922929	0	K	Substitution (2+ Nucleotides)	UNIMOD:1131		
+543	W to E	sub	-57.036719861890006	0	W	Substitution (2+ Nucleotides)	UNIMOD:1226		
+442	R to V	sub	-57.03269711061	0	R	Substitution (2+ Nucleotides)	UNIMOD:645		
+339	N to G	sub	-57.02146372057	0	N	Substitution (2+ Nucleotides)	UNIMOD:1159		
+405	Q to A	sub	-57.02146372057	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1177		
+218	I to G	sub	-56.06260025656	0	I	Substitution (2+ Nucleotides)			
+278	L to G	sub	-56.06260025656	0	L	Substitution (2+ Nucleotides)			
+550	W to M	sub	-55.03882803687	0	W	Substitution (2+ Nucleotides)	UNIMOD:1230		
+197	H to S	sub	-50.02688345418	0	H	Substitution (2+ Nucleotides)	UNIMOD:1121		
+144	F to P	sub	-50.01565006414	0	F	Substitution (2+ Nucleotides)	UNIMOD:1098		
+566	Y to I	sub	-49.97926455542	0	Y	Substitution (2+ Nucleotides)			
+568	Y to L	sub	-49.97926455542	0	Y	Substitution (2+ Nucleotides)			
+546	W to H	sub	-49.02040109141	0	W	Substitution (2+ Nucleotides)	UNIMOD:1228		
+148	F to T	sub	-46.02073544458	0	F	Substitution (2+ Nucleotides)	UNIMOD:1101		
+477	T to G	sub	-44.02621474784	0	T	Substitution (2+ Nucleotides)	UNIMOD:1207		
+311	M to S	sub	-44.00845650872	0	M	Substitution (2+ Nucleotides)	UNIMOD:1152		
+334	N to A	sub	-43.00581365643	0	N	Substitution (2+ Nucleotides)	UNIMOD:1155		
+437	R to N	sub	-42.05818358246	0	R	Substitution (2+ Nucleotides)	UNIMOD:1192		
+213	I to A	sub	-42.04695019242	0	I	Substitution (2+ Nucleotides)			
+273	L to A	sub	-42.04695019242	0	L	Substitution (2+ Nucleotides)			
+128	E to S	sub	-42.0105646837	0	E	Substitution (2+ Nucleotides)	UNIMOD:1086		
+428	R to D	sub	-41.07416799977	0	R	Substitution (2+ Nucleotides)	UNIMOD:1190		
+268	K to S	sub	-41.06293460973	0	K	Substitution (2+ Nucleotides)	UNIMOD:1138		
+419	Q to S	sub	-41.02654910101	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1184		
+368	P to G	sub	-40.03130012828	0	P	Substitution (2+ Nucleotides)	UNIMOD:1170		
+544	W to F	sub	-39.01089903687	0	W	Substitution (2+ Nucleotides)	UNIMOD:1227		
+199	H to V	sub	-37.99049794546	0	H	Substitution (2+ Nucleotides)	UNIMOD:585		
+198	H to T	sub	-36.01123339004	0	H	Substitution (2+ Nucleotides)	UNIMOD:1122		
+572	Y to Q	sub	-35.004751027270004	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1243		
+567	Y to K	sub	-34.968365518549994	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1240		
+184	H to C	sub	-34.04972707374	0	H	Substitution (2+ Nucleotides)	UNIMOD:1114		
+562	Y to E	sub	-34.02073544458	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1238		
+308	M to P	sub	-33.98772106413999	0	M	Substitution (2+ Nucleotides)	UNIMOD:1150		
+143	F to N	sub	-33.02548647185	0	F	Substitution (2+ Nucleotides)	UNIMOD:1097		
+135	F to D	sub	-32.041470889159996	0	F	Substitution (2+ Nucleotides)	UNIMOD:1091		
+569	Y to M	sub	-32.02284361956	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1241		
+125	E to P	sub	-31.98982923912	0	E	Substitution (2+ Nucleotides)	UNIMOD:1084		
+35	C to A	sub	-31.972071	0	C	Substitution (2+ Nucleotides)	UNIMOD:939		
+265	K to P	sub	-31.042199165150002	0	K	Substitution (2+ Nucleotides)	UNIMOD:1137		
+270	K to V	sub	-29.026549101009998	0	K	Substitution (2+ Nucleotides)	UNIMOD:600		
+421	Q to V	sub	-28.99016359229	0	Q	Substitution (2+ Nucleotides)	UNIMOD:635		
+298	M to C	sub	-28.03130012828	0	M	Substitution (2+ Nucleotides)	UNIMOD:1143		
+89	D to S	sub	-27.99491461956	0	D	Substitution (2+ Nucleotides)	UNIMOD:1075		
+129	E to T	sub	-27.99491461956	0	E	Substitution (2+ Nucleotides)	UNIMOD:1087		
+429	R to E	sub	-27.05851793563	0	R	Substitution (2+ Nucleotides)	UNIMOD:1191		
+420	Q to T	sub	-27.01089903687	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1185		
+115	E to C	sub	-26.033408303260003	0	E	Substitution (2+ Nucleotides)	UNIMOD:1078		
+255	K to C	sub	-25.08577822929	0	K	Substitution (2+ Nucleotides)	UNIMOD:1132		
+406	Q to C	sub	-25.049392720569998	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1178		
+189	H to I	sub	-23.974847881320002	0	H	Substitution (2+ Nucleotides)			
+558	W to Y	sub	-23.01598441731	0	W	Substitution (2+ Nucleotides)	UNIMOD:1236		
+145	F to Q	sub	-19.009836407710004	0	F	Substitution (2+ Nucleotides)	UNIMOD:1099		
+140	F to K	sub	-18.973450898989995	0	F	Substitution (2+ Nucleotides)	UNIMOD:1095		
+136	F to E	sub	-18.02582082502	0	F	Substitution (2+ Nucleotides)	UNIMOD:1092		
+86	D to P	sub	-17.974179174979998	0	D	Substitution (2+ Nucleotides)	UNIMOD:1072		
+307	M to N	sub	-16.99755747185	0	M	Substitution (2+ Nucleotides)	UNIMOD:1149		
+345	N to P	sub	-16.990163592289996	0	N	Substitution (2+ Nucleotides)	UNIMOD:1161		
+223	I to P	sub	-16.03130012828	0	I	Substitution (2+ Nucleotides)			
+142	F to M	sub	-16.027929	0	F	Substitution (2+ Nucleotides)	UNIMOD:1096		
+299	M to D	sub	-16.013541889160003	0	M	Substitution (2+ Nucleotides)	UNIMOD:1144		
+120	E to I	sub	-15.958529110839997	0	E	Substitution (2+ Nucleotides)			
+122	E to L	sub	-15.958529110839997	0	E	Substitution (2+ Nucleotides)			
+262	K to L	sub	-15.01089903687	0	K	Substitution (2+ Nucleotides)			
+124	E to N	sub	-14.999665646830001	0	E	Substitution (2+ Nucleotides)	UNIMOD:1083		
+350	N to V	sub	-14.974513528149998	0	N	Substitution (2+ Nucleotides)	UNIMOD:622		
+412	Q to I	sub	-14.974513528149998	0	Q	Substitution (2+ Nucleotides)			
+416	Q to N	sub	-14.01565006414	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1183		
+90	D to T	sub	-13.979264555419999	0	D	Substitution (2+ Nucleotides)	UNIMOD:1076		
+256	K to D	sub	-13.06801999017	0	K	Substitution (2+ Nucleotides)	UNIMOD:1133		
+407	Q to D	sub	-13.031634481449998	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1179		
+287	L to T	sub	-12.036385508720002	0	L	Substitution (2+ Nucleotides)	UNIMOD:905		
+536	V to S	sub	-12.036385508720002	0	V	Substitution (2+ Nucleotides)	UNIMOD:601		
+76	D to C	sub	-12.017758239119999	0	D	Substitution (2+ Nucleotides)	UNIMOD:1067		
+335	N to C	sub	-11.03374265643	0	N	Substitution (2+ Nucleotides)	UNIMOD:1156		
+214	I to C	sub	-10.07487919242	0	I	Substitution (2+ Nucleotides)			
+274	L to C	sub	-10.07487919242	0	L	Substitution (2+ Nucleotides)			
+138	F to H	sub	-10.009502054539997	0	F	Substitution (2+ Nucleotides)	UNIMOD:1094		
+430	R to F	sub	-9.032697110610002	0	R	Substitution (2+ Nucleotides)	UNIMOD:1195		
+190	H to K	sub	-8.96394884445	0	H	Substitution (2+ Nucleotides)	UNIMOD:1119		
+186	H to E	sub	-8.016318770479998	0	H	Substitution (2+ Nucleotides)	UNIMOD:1115		
+573	Y to R	sub	-6.962217508949998	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1244		
+192	H to M	sub	-6.018426945460007	0	H	Substitution (2+ Nucleotides)	UNIMOD:1120		
+46	C to P	sub	-5.956420935859999	0	C	Substitution (2+ Nucleotides)	UNIMOD:1063		
+51	C to V	sub	-3.940770871719998	0	C	Substitution (2+ Nucleotides)	UNIMOD:1059		
+309	M to Q	sub	-2.981907407710004	0	M	Substitution (2+ Nucleotides)	UNIMOD:1151		
+533	V to P	sub	-2.01565006414	0	V	Substitution (2+ Nucleotides)	UNIMOD:604		
+300	M to E	sub	-1.997891825019991	0	M	Substitution (2+ Nucleotides)	UNIMOD:1145		
+488	T to V	sub	-1.9792645554199986	0	T	Substitution (2+ Nucleotides)	UNIMOD:664		
+50	C to T	sub	-1.9615063162999995	0	C	Substitution (2+ Nucleotides)	UNIMOD:1065		
+81	D to I	sub	-1.9428790467	0	D	Substitution (2+ Nucleotides)			
+83	D to L	sub	-1.9428790467	0	D	Substitution (2+ Nucleotides)			
+282	L to N	sub	0.9588634640099976	0	L	Substitution (2+ Nucleotides)			
+215	I to D	sub	1.9428790467	0	I	Substitution (2+ Nucleotides)			
+275	L to D	sub	1.9428790467	0	L	Substitution (2+ Nucleotides)			
+473	T to C	sub	1.9615063162999995	0	T	Substitution (2+ Nucleotides)	UNIMOD:1203		
+537	V to T	sub	1.9792645554199986	0	V	Substitution (2+ Nucleotides)	UNIMOD:588		
+123	E to M	sub	1.997891825019991	0	E	Substitution (2+ Nucleotides)	UNIMOD:1082		
+379	P to V	sub	2.01565006414	0	P	Substitution (2+ Nucleotides)	UNIMOD:629		
+415	Q to M	sub	2.981907407710004	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1182		
+522	V to C	sub	3.940770871719998	0	V	Substitution (2+ Nucleotides)	UNIMOD:1126		
+364	P to C	sub	5.956420935859999	0	P	Substitution (2+ Nucleotides)	UNIMOD:1166		
+303	M to H	sub	6.018426945460007	0	M	Substitution (2+ Nucleotides)	UNIMOD:899		
+444	R to Y	sub	6.962217508949998	0	R	Substitution (2+ Nucleotides)	UNIMOD:1194		
+119	E to H	sub	8.016318770479998	0	E	Substitution (2+ Nucleotides)	UNIMOD:1080		
+260	K to H	sub	8.96394884445	0	K	Substitution (2+ Nucleotides)	UNIMOD:1136		
+146	F to R	sub	9.032697110610002	0	F	Substitution (2+ Nucleotides)	UNIMOD:1100		
+187	H to F	sub	10.009502054539997	0	H	Substitution (2+ Nucleotides)	UNIMOD:1116		
+41	C to I	sub	10.07487919242	0	C	Substitution (2+ Nucleotides)			
+45	C to N	sub	11.03374265643	0	C	Substitution (2+ Nucleotides)	UNIMOD:1062		
+36	C to D	sub	12.017758239119999	0	C	Substitution (2+ Nucleotides)	UNIMOD:1056		
+461	S to V	sub	12.036385508720002	0	S	Substitution (2+ Nucleotides)	UNIMOD:656		
+87	D to Q	sub	13.031634481449998	0	D	Substitution (2+ Nucleotides)	UNIMOD:1073		
+82	D to K	sub	13.06801999017	0	D	Substitution (2+ Nucleotides)	UNIMOD:1070		
+474	T to D	sub	13.979264555419999	0	T	Substitution (2+ Nucleotides)	UNIMOD:1204		
+346	N to Q	sub	14.01565006414	0	N	Substitution (2+ Nucleotides)	UNIMOD:1162		
+224	I to Q	sub	14.974513528149998	0	I	Substitution (2+ Nucleotides)			
+532	V to N	sub	14.974513528149998	0	V	Substitution (2+ Nucleotides)	UNIMOD:589		
+337	N to E	sub	14.999665646830001	0	N	Substitution (2+ Nucleotides)	UNIMOD:1157		
+280	L to K	sub	15.01089903687	0	L	Substitution (2+ Nucleotides)			
+216	I to E	sub	15.958529110839997	0	I	Substitution (2+ Nucleotides)			
+276	L to E	sub	15.958529110839997	0	L	Substitution (2+ Nucleotides)			
+84	D to M	sub	16.013541889160003	0	D	Substitution (2+ Nucleotides)	UNIMOD:1071		
+301	M to F	sub	16.027929	0	M	Substitution (2+ Nucleotides)	UNIMOD:1146		
+370	P to I	sub	16.03130012828	0	P	Substitution (2+ Nucleotides)			
+374	P to N	sub	16.990163592289996	0	P	Substitution (2+ Nucleotides)	UNIMOD:1173		
+344	N to M	sub	16.99755747185	0	N	Substitution (2+ Nucleotides)	UNIMOD:1160		
+365	P to D	sub	17.974179174979998	0	P	Substitution (2+ Nucleotides)	UNIMOD:1922		
+117	E to F	sub	18.02582082502	0	E	Substitution (2+ Nucleotides)	UNIMOD:1079		
+258	K to F	sub	18.973450898989995	0	K	Substitution (2+ Nucleotides)	UNIMOD:1134		
+409	Q to F	sub	19.009836407710004	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1180		
+577	Y to W	sub	23.01598441731	0	Y	Substitution (2+ Nucleotides)	UNIMOD:1247		
+219	I to H	sub	23.974847881320002	0	I	Substitution (2+ Nucleotides)			
+47	C to Q	sub	25.049392720569998	0	C	Substitution (2+ Nucleotides)	UNIMOD:1064		
+310	M to R	sub	25.060626110610002	0	M	Substitution (2+ Nucleotides)	UNIMOD:611		
+42	C to K	sub	25.08577822929	0	C	Substitution (2+ Nucleotides)	UNIMOD:1060		
+37	C to E	sub	26.033408303260003	0	C	Substitution (2+ Nucleotides)	UNIMOD:1057		
+485	T to Q	sub	27.01089903687	0	T	Substitution (2+ Nucleotides)	UNIMOD:1209		
+127	E to R	sub	27.05851793563	0	E	Substitution (2+ Nucleotides)	UNIMOD:1085		
+447	S to D	sub	27.99491461956	0	S	Substitution (2+ Nucleotides)	UNIMOD:1196		
+475	T to E	sub	27.99491461956	0	T	Substitution (2+ Nucleotides)	UNIMOD:1205		
+44	C to M	sub	28.03130012828	0	C	Substitution (2+ Nucleotides)	UNIMOD:1033		
+534	V to Q	sub	28.99016359229	0	V	Substitution (2+ Nucleotides)	UNIMOD:607		
+529	V to K	sub	29.026549101009998	0	V	Substitution (2+ Nucleotides)	UNIMOD:590		
+371	P to K	sub	31.042199165150002	0	P	Substitution (2+ Nucleotides)	UNIMOD:1171		
+4	A to C	sub	31.972071	0	A	Substitution (2+ Nucleotides)	UNIMOD:1044		
+366	P to E	sub	31.98982923912	0	P	Substitution (2+ Nucleotides)	UNIMOD:1168		
+315	M to Y	sub	32.02284361956	0	M	Substitution (2+ Nucleotides)	UNIMOD:1154		
+78	D to F	sub	32.041470889159996	0	D	Substitution (2+ Nucleotides)	UNIMOD:1068		
+338	N to F	sub	33.02548647185	0	N	Substitution (2+ Nucleotides)	UNIMOD:1158		
+373	P to M	sub	33.98772106413999	0	P	Substitution (2+ Nucleotides)	UNIMOD:1172		
+132	E to Y	sub	34.02073544458	0	E	Substitution (2+ Nucleotides)	UNIMOD:1089		
+40	C to H	sub	34.04972707374	0	C	Substitution (2+ Nucleotides)	UNIMOD:1058		
+272	K to Y	sub	34.968365518549994	0	K	Substitution (2+ Nucleotides)	UNIMOD:1141		
+423	Q to Y	sub	35.004751027270004	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1188		
+478	T to H	sub	36.01123339004	0	T	Substitution (2+ Nucleotides)	UNIMOD:1208		
+527	V to H	sub	37.99049794546	0	V	Substitution (2+ Nucleotides)	UNIMOD:606		
+150	F to W	sub	39.01089903687	0	F	Substitution (2+ Nucleotides)	UNIMOD:1102		
+170	G to P	sub	40.03130012828	0	G	Substitution (2+ Nucleotides)	UNIMOD:1109		
+458	S to Q	sub	41.02654910101	0	S	Substitution (2+ Nucleotides)	UNIMOD:1201		
+88	D to R	sub	41.07416799977	0	D	Substitution (2+ Nucleotides)	UNIMOD:1074		
+448	S to E	sub	42.0105646837	0	S	Substitution (2+ Nucleotides)	UNIMOD:1197		
+10	A to I	sub	42.04695019242	0	A	Substitution (2+ Nucleotides)			
+12	A to L	sub	42.04695019242	0	A	Substitution (2+ Nucleotides)			
+347	N to R	sub	42.05818358246	0	N	Substitution (2+ Nucleotides)	UNIMOD:1163		
+14	A to N	sub	43.00581365643	0	A	Substitution (2+ Nucleotides)	UNIMOD:1050		
+455	S to M	sub	44.00845650872	0	S	Substitution (2+ Nucleotides)	UNIMOD:1200		
+174	G to T	sub	44.02621474784	0	G	Substitution (2+ Nucleotides)	UNIMOD:1111		
+476	T to F	sub	46.02073544458	0	T	Substitution (2+ Nucleotides)	UNIMOD:1206		
+200	H to W	sub	49.02040109141	0	H	Substitution (2+ Nucleotides)	UNIMOD:1124		
+230	I to Y	sub	49.97926455542	0	I	Substitution (2+ Nucleotides)			
+290	L to Y	sub	49.97926455542	0	L	Substitution (2+ Nucleotides)			
+367	P to F	sub	50.01565006414	0	P	Substitution (2+ Nucleotides)	UNIMOD:1169		
+451	S to H	sub	50.02688345418	0	S	Substitution (2+ Nucleotides)	UNIMOD:1198		
+314	M to W	sub	55.03882803687	0	M	Substitution (2+ Nucleotides)	UNIMOD:1153		
+165	G to I	sub	56.06260025656	0	G	Substitution (2+ Nucleotides)			
+16	A to Q	sub	57.02146372057	0	A	Substitution (2+ Nucleotides)	UNIMOD:1051		
+169	G to N	sub	57.02146372057	0	G	Substitution (2+ Nucleotides)	UNIMOD:1108		
+535	V to R	sub	57.03269711061	0	V	Substitution (2+ Nucleotides)	UNIMOD:609		
+131	E to W	sub	57.036719861890006	0	E	Substitution (2+ Nucleotides)	UNIMOD:1088		
+11	A to K	sub	57.05784922929	0	A	Substitution (2+ Nucleotides)	UNIMOD:1048		
+271	K to W	sub	57.98434993586	0	K	Substitution (2+ Nucleotides)	UNIMOD:1140		
+422	Q to W	sub	58.020735444580005	0	Q	Substitution (2+ Nucleotides)	UNIMOD:1187		
+13	A to M	sub	60.00337112828	0	A	Substitution (2+ Nucleotides)	UNIMOD:1049		
+490	T to Y	sub	62.01565006414	0	T	Substitution (2+ Nucleotides)	UNIMOD:1212		
+539	V to Y	sub	63.99491461956	0	V	Substitution (2+ Nucleotides)	UNIMOD:1130		
+381	P to Y	sub	66.0105646837	0	P	Substitution (2+ Nucleotides)	UNIMOD:1176		
+9	A to H	sub	66.02179807374	0	A	Substitution (2+ Nucleotides)	UNIMOD:1046		
+171	G to Q	sub	71.03711378471	0	G	Substitution (2+ Nucleotides)	UNIMOD:1110		
+92	D to W	sub	71.05236992603	0	D	Substitution (2+ Nucleotides)	UNIMOD:1077		
+351	N to W	sub	72.03638550872	0	N	Substitution (2+ Nucleotides)	UNIMOD:1165		
+229	I to W	sub	72.99524897273	0	I	Substitution (2+ Nucleotides)			
+168	G to M	sub	74.01902119242	0	G	Substitution (2+ Nucleotides)	UNIMOD:1107		
+7	A to F	sub	76.03130012828	0	A	Substitution (2+ Nucleotides)	UNIMOD:1045		
+164	G to H	sub	80.03744813788	0	G	Substitution (2+ Nucleotides)	UNIMOD:1104		
+489	T to W	sub	85.03163448145	0	T	Substitution (2+ Nucleotides)	UNIMOD:1211		
+17	A to R	sub	85.06399723889	0	A	Substitution (2+ Nucleotides)	UNIMOD:1052		
+538	V to W	sub	87.01089903687	0	V	Substitution (2+ Nucleotides)	UNIMOD:603		
+380	P to W	sub	89.02654910101	0	P	Substitution (2+ Nucleotides)	UNIMOD:1175		
+163	G to F	sub	90.04695019242	0	G	Substitution (2+ Nucleotides)	UNIMOD:1103		
+22	A to Y	sub	92.02621474784	0	A	Substitution (2+ Nucleotides)	UNIMOD:1054		
+177	G to Y	sub	106.04186481197999	0	G	Substitution (2+ Nucleotides)	UNIMOD:1112		
+21	A to W	sub	115.04219916515	0	A	Substitution (2+ Nucleotides)	UNIMOD:1053		
+23	Acetaldehyde +26	ace	26.01565006414	5		Other	UNIMOD:254	MOD:00577	
