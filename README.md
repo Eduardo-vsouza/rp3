@@ -55,9 +55,9 @@ Typical installation time will vary depending on how many dependencies requireme
 6.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool in its respective column. By default, the pipeline will look for the tools in your $PATH. 
 #### Testing the installation
 We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 5 main modes (*translation, database, search, postms,* and *ribocov*). To check all modes at once, simply run 
-`$ rp3.py demo --threads 8`
+`$ rp3.py demo --threads 8 --outdir demo_outdir`
 This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical run time for this is 20-30 min, but can vary depending on available computational resources. 
-The output files will be generated at `demo_outdir` inside the pipeline's installation directory.
+The output files will be generated at `demo_outdir`, or another specified directory.
 ##### Test dataset 
 The test data is composed of single files (to enable fast testing of the software's core functionalities) from studies used in the published manuscript. For each mode:
 ``search``: the mzML file 20130328_EXQ1_MiBa_SA_HCC1937.mzML from MassIVE (accession MSV000089022).
