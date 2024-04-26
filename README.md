@@ -58,7 +58,8 @@ We provide a *demo* mode with reduced datasets so the user can check if the inst
 `$ rp3.py demo --threads 8 --outdir demo_outdir`
 This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical run time for this is 20-30 min, but can vary depending on available computational resources. 
 The output files will be generated at `demo_outdir`, or another specified directory.
-If testing also the Ribocov mode, you will need to provide indexes for the hg19 genome. These are very large files and we make them available for download in this box folder: https://salkinstitute.app.box.com/folder/229415605650. Alternatively, you can use your own indexes. For demo mode, make sure to put these indexes inside the sofware directory under the folder ``STAR_indexes``.
+
+- If testing also the Ribocov mode, you will need to provide STAR indexes for the hg19 genome. These are very large files and we make them available for download in this box folder: https://salkinstitute.app.box.com/folder/229415605650. Alternatively, you can use your own indexes. For demo mode, make sure to put these indexes inside the sofware directory under the folder ``STAR_indexes``.
 ##### Test dataset 
 The test data is composed of single files (to enable fast testing of the software's core functionalities) from studies used in the published manuscript. For each mode:
 ``search``: the mzML file 20130328_EXQ1_MiBa_SA_HCC1937.mzML from MassIVE (accession MSV000089022).
