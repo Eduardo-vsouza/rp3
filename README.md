@@ -25,9 +25,11 @@ Ribosome Profiling, or Ribo-Seq, is a widely used technique for the identificati
   
 ![image](https://github.com/Eduardo-vsouza/rp3/assets/60533781/8c689efa-e7d4-4501-92ce-f604572e82ac)
 
-
-  
+ 
 *Disclaimer*: Note that this figure differs from the one in the paper published at *Journal*. In the paper, the workflow in this figure was used to explain the sequence of analyses that were performed. The RP3 pipeline does not cover the usage of RibORF for smORF identification. Instead, it covers the steps necessary to identify microproteins with Proteogenomics. Additionally, it checks for translational evidence for PG smORFs by making use of the Ribo-Seq reads. It does so by mapping the Ribo-Seq reads back to the PG smORFs coordinates in the genome.
+
+# System requirements
+The pipeline was tested on Ubuntu 22.04 LTS. 
 
 # Installation
 Typical installation time will vary depending on how many dependencies requirements are already met. Downloading the release from the GitHub page should not take more than 5 min. at average connection speed, and installing all dependencies should take no more than 20 min.
@@ -35,9 +37,10 @@ Typical installation time will vary depending on how many dependencies requireme
 1. Download the latest version of the pipeline from its GitHub releases page.
 2. ``cd`` to the directory containing the .tar.gz file and run ``tar -xzvf`` on the terminal.
 3. Install required Python packages
-	1. ``$ cd`` to the RP3 folder
-	2. ``$ pip install -r requirements.txt
-4. Install dependencies
+  	1. Install Python3.10. Although some backward compatibility is expected, other versions of Python haven't been tested.
+	2. ``$ cd`` to the RP3 folder
+	3. ``$ pip install -r requirements.txt
+5. Install dependencies
 	To avoid incompatibility, make sure to have installed the versions for each tool that was used during the development of RP3. You can install alternative versions at your own risk. Compatibility is not guaranteed.
 
 | Tool                             | Version          | Purpose   | Link         |
@@ -53,12 +56,12 @@ Typical installation time will vary depending on how many dependencies requireme
 
 	
 6.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool in its respective column. By default, the pipeline will look for the tools in your $PATH. 
-#### Testing the installation
+## Testing the installation
 We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 5 main modes (*translation, database, search, postms,* and *ribocov*). 
 - First, you need to download the demo_data from the releases page and put it in the same directory as the Rp3.py script.
 - Then, to check all modes at once, simply run 
 `$ rp3.py demo --threads 8 --outdir demo_outdir`
-This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical run time for this is 20-30 min, but can vary depending on available computational resources. 
+This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical run time to test every mode is ~30-50 min, but can vary depending on available computational resources. The whole workflow of the pipeline is time-consuming because it has to deal with multiple types of omics datasets. 
 The output files will be generated at `demo_outdir`, or another specified directory.
 - If you want to skip a mode during testing, pass the argument --skip_database, for instance. All parameters available for the ``demo`` mode can be checked with ``rp3.py demo -h``.
 
