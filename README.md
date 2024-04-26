@@ -54,10 +54,13 @@ Typical installation time will vary depending on how many dependencies requireme
 	
 6.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool in its respective column. By default, the pipeline will look for the tools in your $PATH. 
 #### Testing the installation
-We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 5 main modes (*translation, database, search, postms,* and *ribocov*). To check all modes at once, simply run 
+We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 5 main modes (*translation, database, search, postms,* and *ribocov*). 
+- First, you need to download the demo_data from the releases page and put it in the same directory as the Rp3.py script.
+- Then, to check all modes at once, simply run 
 `$ rp3.py demo --threads 8 --outdir demo_outdir`
 This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical run time for this is 20-30 min, but can vary depending on available computational resources. 
 The output files will be generated at `demo_outdir`, or another specified directory.
+- If you want to skip a mode during testing, pass the argument --skip_database, for instance. All parameters available for the ``demo`` mode can be checked with ``rp3.py demo -h``.
 
 - If testing also the Ribocov mode, you will need to provide STAR indexes for the hg19 genome. These are very large files and we make them available for download in this box folder: https://salkinstitute.app.box.com/folder/229415605650. Alternatively, you can use your own indexes. For demo mode, make sure to put these indexes inside the sofware directory under the folder ``STAR_indexes``.
 ##### Test dataset 
