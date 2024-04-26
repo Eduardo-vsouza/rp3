@@ -18,19 +18,19 @@ class RiboSeqAlign(PipelineStructure):
         if not self.args.skip_trimming:
             files = os.listdir(self.args.fastq)
             for file in files:
-                run = self.verify_checkpoint(outfile=f'{self.riboSeqTrimmedDir}/trimmed_{file}',
-                                             step=f'Ribocov trimming for {file}.')
-                if run:
+                # run = self.verify_checkpoint(outfile=f'{self.riboSeqTrimmedDir}/trimmed_{file}',
+                #                              step=f'Ribocov trimming for {file}.')
+                # if run:
+                os.system(f'gzip -d {self.args.fastq}/{file}')
+                # if file.endswith("fastq.gz")
+                print(f'Performing read trimming for {file}.')
+                full = f'{self.args.fastq}/{file.replace(".gz", "")}'
 
-                    # if file.endswith("fastq.gz")
-                    print(f'Performing read trimming for {file}.')
-                    full = f'{self.args.fastq}/{file}'
-
-                    cmd = (f'{self.args.fastx_clipper_path} -Q33 -l 20 -n -v -c -a {self.adapterSequence} -i {full} | '
-                           f'{self.args.fastx_trimmer_path} -Q33 -f 1 2> {self.riboSeqTrimmedDir}/trim.log > '
-                           f'{self.riboSeqTrimmedDir}/trimmed_{file}')
-                    os.system(cmd)
-                    print(f"Finished trimming {file}.")
+                cmd = (f'{self.args.fastx_clipper_path} -Q33 -l 20 -n -v -c -a {self.adapterSequence} -i {full} | '
+                       f'{self.args.fastx_trimmer_path} -Q33 -f 1 2> {self.riboSeqTrimmedDir}/trim.log > '
+                       f'{self.riboSeqTrimmedDir}/trimmed_{file}')
+                os.system(cmd)
+                print(f"Finished trimming {file}.")
 
     def __check_indexes(self):
         if self.args.aln is None:
@@ -55,7 +55,7 @@ class RiboSeqAlign(PipelineStructure):
             files = os.listdir(self.args.fastq)
             self.riboSeqTrimmedDir = self.args.fastq
         for file in files:
-            if file.endswith(".fastq"):
+            if file.endswith(".fastq") or file.endswith("fastq.gz"):
                 out = f'{self.riboSeqContaminantAlnDir}/no_contaminant_{file}Unmapped.out.mate1'
                 run = self.verify_checkpoint(outfile=out, step=f"removal of contaminants for {file}.")
                 if run:

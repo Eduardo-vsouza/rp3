@@ -231,6 +231,7 @@ class MSFragger(PipelineStructure):
                 outfile = splat[1]
                 run = self.verify_checkpoint(outfile=outfile, step="matching of MS spectra against 3-FT database")
                 # print(search_files[db])
+                run = True
                 if run:
                     if self.args.hlaPeptidomics:
                         self.__search_hla_peptidomics(db=db, search_files=search_files)

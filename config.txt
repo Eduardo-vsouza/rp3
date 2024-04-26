@@ -2,12 +2,16 @@
 # Tool_name	Path
 # If the tool is in the $PATH, simply write as it is in $PATH. By default,
 # the names of the tools are used as the path.
-STAR	STAR
-MSFragger	MSFragger
+STAR	/home/microway/programs/STAR-2.7.4a/bin/Linux_x86_64/STAR
+MSFragger	/home/microway/programs/msfragger_3.5/MSFragger-3.5/MSFragger-3.5.jar
+MSBooster	/home/microway/programs/MSBooster/MSBooster-1.2.1/MSBooster-1.2.1.jar
 signalP	signalp6
-featureCounts	featureCounts
+featureCounts	/home/microway/programs/subread/subread-1.6.3-Linux-x86_64/bin/featureCounts
 percolator	percolator
 blastp	blastp
 tblastn	tblastn
+hisat2	hisat2
+hisat2-build	hisat2-build
+hisat2_extract_exons	hisat2_extract_exons.py
+hisat2_extract_splice_sites	hisat2_extract_splice_sites.py
 samtools	samtools
-MSBooster	MSBooster
