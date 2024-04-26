@@ -30,6 +30,8 @@ Ribosome Profiling, or Ribo-Seq, is a widely used technique for the identificati
 
 # System requirements
 The pipeline was tested on Ubuntu 22.04 LTS. 
+A typical desktop with 8 cores and 16 GB RAM should be enough to run most of the analyses, although if running the workflow with these specs, it might take a long time to perform every step.
+
 
 # Installation
 Typical installation time will vary depending on how many dependencies requirements are already met. Downloading the release from the GitHub page should not take more than 5 min. at average connection speed, and installing all dependencies should take no more than 20 min.
@@ -55,7 +57,8 @@ Typical installation time will vary depending on how many dependencies requireme
 | MSBooster			   | 1.2.1	      | Predicts Retention Times and add delta_RT_loess to ``.pin`` files coming from MSFragger | https://github.com/Nesvilab/MSBooster/releases/tag/v1.2.1 |
 
 	
-6.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool in its respective column. By default, the pipeline will look for the tools in your $PATH. 
+6.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool **executable** in its respective column. By default, the pipeline will look for the tools in your $PATH.
+
 ## Testing the installation
 We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 5 main modes (*translation, database, search, postms,* and *ribocov*). 
 - First, you need to download the demo_data from the releases page and put it in the same directory as the Rp3.py script.
@@ -65,7 +68,7 @@ This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical ru
 The output files will be generated at `demo_outdir`, or another specified directory.
 - If you want to skip a mode during testing, pass the argument --skip_database, for instance. All parameters available for the ``demo`` mode can be checked with ``rp3.py demo -h``.
 
-- If testing also the Ribocov mode, you will need to provide STAR indexes for the hg19 genome. These are very large files and we make them available for download in this box folder: https://salkinstitute.app.box.com/folder/229415605650. Alternatively, you can use your own indexes. For demo mode, make sure to put these indexes inside the sofware directory under the folder ``STAR_indexes``.
+- If testing also the Ribocov mode, you will need to provide STAR indexes for the hg19 genome. These are very large files and we make them available for download in this box folder: https://salkinstitute.box.com/s/5uyf0tdfm7w1zgx3kqr1u367zlg9ocoy. Alternatively, you can use your own indexes. For demo mode, make sure to put these indexes inside the sofware directory under the folder ``STAR_indexes``.
 ##### Test dataset 
 The test data is composed of single files (to enable fast testing of the software's core functionalities) from studies used in the published manuscript. For each mode:
 ``search``: the mzML file 20130328_EXQ1_MiBa_SA_HCC1937.mzML from MassIVE (accession MSV000089022).
@@ -107,7 +110,7 @@ Run the pipeline on ``ribocov`` mode.
 ``$ rp3.py ribocov --outdir /path/to/output/directory --threads 8 --fastq /path/to/fastq/folder --gtf /path/to/gtf/file --genome_index /path/to/genome/index --cont_index /path/to/contaminants/index --plots``
 
 ##### Notes 
-- Always use the same output directory when running different modes for the same analysis.
+- Always use the **same output directory** when running different modes for the same analysis. 
 
 
 # Database
