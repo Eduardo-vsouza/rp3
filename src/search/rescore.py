@@ -15,7 +15,7 @@ class PeptideReScoring(PipelineStructure):
         super().__init__(args=args)
         self.MSFraggerPath = self.toolPaths["MSFragger"]
         self.params = []
-
+        self.args.rescored = True
 
         self.check_dirs([self.rescoreDir, self.rescoreDatabaseDir, self.rescoreSearchDir, self.rescorePostProcessDir,
                          self.rescoreSummarizedResultsDir])
@@ -39,7 +39,10 @@ class PeptideReScoring(PipelineStructure):
                 fasta.append(f'>{str(record.description).replace(" ", "_")}\n{str(record.seq)}\n')
         reference = SeqIO.parse(self.args.proteome, 'fasta')
         for record in reference:
-            fasta.append(f'>{str(record.description).replace(" ", "_")}_ANNO\n{str(record.seq)}\n')
+            if self.args.keepAnnotated:
+                fasta.append(f'>{str(record.description).replace(" ", "_").replace(",", "_")}\n{str(record.seq)}\n')
+            else:
+                fasta.append(f'>{str(record.description).replace(" ", "_")}_ANNO\n{str(record.seq)}\n')
         with open(f'{self.rescoreDatabaseDir}/rescore_target_database.fasta', 'w') as outfile:
             outfile.writelines(fasta)
 
@@ -59,17 +62,20 @@ class PeptideReScoring(PipelineStructure):
             for file in files:
                 if file.endswith(pattern):
                     group_files += f' {group_dir}/{file}'
+            phospho = ''
+            if self.args.phosphorylation:
+                phospho = ' --variable_mod_03 79.9663_STY_3'
             if self.args.hlaPeptidomics:
                 cmd = f'java -Xmx256g -jar {self.MSFraggerPath} --output_format pin ' \
                       f'--database_name {self.rescoreDatabase} --decoy_prefix rev --search_enzyme_name nonspecific ' \
-                      f'--num_threads {self.args.threads} --fragment_mass_tolerance 20 --num_enzyme_termini 0 ' \
+                      f'--num_threads {self.args.threads}{phospho} --fragment_mass_tolerance 20 --num_enzyme_termini 0 ' \
                       f'--precursor_true_tolerance 6 --digest_mass_range 500.0_1500.0 ' \
                       f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
                       f'--digest_min_length 8 --digest_max_length 25{group_files}'
             else:
-                cmd = f'java -Xmx32g -jar {self.MSFraggerPath} --output_format pin ' \
+                cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
                       f'--database_name {self.rescoreDatabase} --decoy_prefix rev ' \
-                      f'--num_threads {self.args.threads} --digest_min_length {min_pep_len} ' \
+                      f'--num_threads {self.args.threads}{phospho} --digest_min_length {min_pep_len} ' \
                       f'--digest_max_length {max_pep_len}{group_files}'
             os.system(cmd)
             out_group_dir = f'{self.rescoreSearchDir}/{group}'
@@ -228,7 +234,7 @@ class PeptideReScoring(PipelineStructure):
         for group in groups:
             records = SeqIO.parse(f'{self.rescorePostProcessDir}/{group}/filtered_rescored_smorfs.fasta', 'fasta')
             for record in records:
-                if len(str(record.seq)) <= 150:
+                if len(str(record.seq)) <= self.args.maxLength:
                     fasta.append(f'>{str(record.description)}\n{str(record.seq)}\n')
         with open(self.rescoredMicroproteinsFasta, 'w') as outfile:
             outfile.writelines(fasta)

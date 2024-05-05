@@ -15,8 +15,8 @@ class MicroproteinCombiner(PipelineStructure):
 
     def gather_microprotein_info(self):
         self.show_progress(step=1)
-
-        records = SeqIO.parse(f'{self.rescoredMicroproteinsFasta}', 'fasta')
+        fasta = self.select_fasta()
+        records = SeqIO.parse(f'{fasta}', 'fasta')
         for record in records:
             self.microproteins[str(record.description)] = {'sequence': str(record.seq)}
         # self.__add_signalp()
@@ -65,6 +65,9 @@ class MicroproteinCombiner(PipelineStructure):
             smorfs, groups = df["smorf"].tolist(), df["group"].tolist()
             for smorf, group in zip(smorfs, groups):
                 self.microproteins[smorf]['Ribo-seq mapping group'] = group
+        for smorf in self.microproteins:
+            if 'Ribo-seq mapping group' not in self.microproteins[smorf]:
+                self.microproteins[smorf]['Ribo-seq mapping group'] = 'No coverage'
 
             # rpkms = pd.read_csv(self.mappingGroupsRPKMs, sep='\t')
             # print(self.microproteins)
@@ -93,14 +96,19 @@ class MicroproteinCombiner(PipelineStructure):
             groupdir = f'{folder}/{group}/{group}_target_decoy_database.fasta'
             # groupdir = dbdir
             groupdir = f'{folder}/{group}'
-            col = f'{db} spec counts'
-            utp_col = f'{db} UTPs'
+            if folder != self.rescorePostProcessDir:
+                groupdir = f'{folder}/{group}/db'
+            col = f'MS Spectral counts'
+            utp_col = f'true UTPs'
+            tp_col = 'MS peptides'
             for mp in self.microproteins:
                 if 'total spec count' not in self.microproteins[mp]:
                      self.microproteins[mp]['total spec count'] = 0
                 if col not in self.microproteins[mp]:
                     self.microproteins[mp][col] = 0
                     self.microproteins[mp][utp_col] = []
+                    self.microproteins[mp][tp_col] = []
+                    self.microproteins[mp]["num true_UTPs"] = []
                     # self.microproteins[mp][group] = False
 
             df = pd.read_csv(f'{groupdir}/peptides_fixed.txt', sep='\t')
@@ -114,29 +122,32 @@ class MicroproteinCombiner(PipelineStructure):
                         # self.microproteins[smorf][group] = True
                         self.microproteins[smorf][col] += 1
                         self.microproteins[smorf]['total spec count'] += 1
-                        if pep not in self.microproteins[smorf][utp_col]:
+                        if pep not in self.microproteins[smorf][tp_col]:
+                            self.microproteins[smorf][tp_col].append(pep)
+                        if pep not in self.microproteins[smorf][utp_col] and ',' not in prot:
                             self.microproteins[smorf][utp_col].append(pep)
             for mp in self.microproteins:
-                self.microproteins[mp][f"{group} num_UTPs"] = len(self.microproteins[mp][utp_col])
+                self.microproteins[mp][f"num true_UTPs"] = len(self.microproteins[mp][utp_col])
         for mp in self.microproteins:
             for col in self.microproteins[mp]:
                 if ' UTPs' in col:
                     self.microproteins[mp][col] = ','.join(self.microproteins[mp][col])
 
     def __add_smorf_classes(self):
-        df = pd.read_csv(f'{self.orfClassDir}/predicted_nonhomolog_smorfs_annotation', sep='\t',
-                         usecols=[0,1,2], names=['smorf', 'class', 'overlapped_gene'])
-        smorfs, classes, genes = df["smorf"].tolist(), df["class"].tolist(), df["overlapped_gene"].tolist()
-        for i, smorf in enumerate(smorfs):
-            if smorf in self.microproteins:
-                # if 'smorf_class' not in self.microproteins[smorf]:
-                self.microproteins[smorf]['smorf_class'] = classes[i]
-                self.microproteins[smorf]['overlapped_gene'] = genes[i]
-        for smorf in self.microproteins:
+        if os.path.exists(f'{self.orfClassDir}/predicted_nonhomolog_smorfs_annotation'):
+            df = pd.read_csv(f'{self.orfClassDir}/predicted_nonhomolog_smorfs_annotation', sep='\t',
+                             usecols=[0,1,2], names=['smorf', 'class', 'overlapped_gene'])
+            smorfs, classes, genes = df["smorf"].tolist(), df["class"].tolist(), df["overlapped_gene"].tolist()
+            for i, smorf in enumerate(smorfs):
+                if smorf in self.microproteins:
+                    # if 'smorf_class' not in self.microproteins[smorf]:
+                    self.microproteins[smorf]['smorf_class'] = classes[i]
+                    self.microproteins[smorf]['overlapped_gene'] = genes[i]
+            for smorf in self.microproteins:
 
-            if 'smorf_class' not in self.microproteins[smorf]:
-                self.microproteins[smorf]['smorf_class'] = 'Intergenic'
-                self.microproteins[smorf]['overlapped_gene'] = None
+                if 'smorf_class' not in self.microproteins[smorf]:
+                    self.microproteins[smorf]['smorf_class'] = 'Intergenic'
+                    self.microproteins[smorf]['overlapped_gene'] = None
 
 
     def show_progress(self, step):
@@ -169,18 +180,24 @@ class MicroproteinCombiner(PipelineStructure):
         for mp in self.microproteins:
             data['microprotein'].append(mp)
             for col in self.microproteins[mp]:
+                # print(self.microproteins[mp][col])
+                # print(len(self.microproteins[mp][col]))
                 if col not in data:
                     data[col] = []
                 data[col].append(self.microproteins[mp][col])
                 # print(len(self.microproteins[mp][col]))
                 # print(col)
                 # data[col].append(self.microproteins[mp][col])
+        # for i in data:
+        #     print(i, len(data[i]))
         # for col in data:
         #     print(len(data[col]))
         #     print(col, '\n')
         df = pd.DataFrame(data=data)
         df.to_csv(f'{self.mergedResults}/microproteins_summary.txt', sep='\t', index=False)
         df.to_csv(f'{self.mergedResults}/microproteins_summary.xls', sep='\t', index=False)
+        df.to_csv(f'{self.mergedResults}/microproteins_summary.xlsx', sep='\t', index=False)
+
 
 
 

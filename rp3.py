@@ -198,6 +198,8 @@ class RP3:
                                                                                             "to have been generated "
                                                                                             "with --uniprotAnnotation.")
         self.modeArguments.add_argument("--memory", help="RAM available for MSFragger.", default=64)
+        self.modeArguments.add_argument("--keepAnnotated", action="store_true")
+        self.modeArguments.add_argument("--phosphorylation", action="store_true")
 
     def __set_quant_mode(self):
         self.modeArguments.add_argument("--moff_path", default="/home/eduardo/programs/moFF/moFF-2.0.3/moff_all.py")
@@ -360,6 +362,10 @@ class RP3:
         self.modeArguments.add_argument("--smorfUTPs", action="store_true")
         self.modeArguments.add_argument("--qvalue", default=0.01)
         self.modeArguments.add_argument("--postms_mode", help="cat, sep")
+        self.modeArguments.add_argument("--keepAnnotated", action="store_true")
+        self.modeArguments.add_argument("--phosphorylation", action="store_true")
+        self.modeArguments.add_argument("--memory", default=32)
+        self.modeArguments.add_argument("--maxLength", default=150)
 
     def __set_rna_mode(self):
         self.modeArguments.add_argument("--strandness", help="Inform the strandness of the experiment."
@@ -384,8 +390,6 @@ class RP3:
         self.modeArguments.add_argument("--blastN", action="store_true")
         self.modeArguments.add_argument("--tBlastN", action="store_true")
         # self.modeArguments.add_argument("--minRawCounts", type=int, default=10)
-
-
 
     def execute(self):
         if not self.mode == 'demo':
