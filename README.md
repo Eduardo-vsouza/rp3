@@ -11,9 +11,7 @@
 Rp3
 =============================
 <img src="https://github.com/Eduardo-vsouza/rp3/assets/60533781/ee5208ad-5a1a-42a0-830e-13fbfc8cef20" width="200" height="140" />
-
-
-Ribosome Profiling and Proteogenomics Pipeline (RP3) for the identification of novel microproteins encoded by smORFs
+Ribosome Profiling and Proteogenomics Pipeline (RP3) for the identification of novel microproteins encoded by smORFs.
 
 # Introduction
 
@@ -156,7 +154,10 @@ database options:
 
 5. Output files
 	Database files will be generated inside the output directory in the ``databases`` folder. You can check for database metrics at ``metrics/database_metrics.txt``.
-	
+## Notes
+Unless specified in the next modes, databases will have annotated proteins excluded based on the ``-proteome`` provided. This behavior is intended to remove, by default, any already annotated microprotein and peptides that match to them. If you are interested in annotated proteins as well, there are two ways to prevent this from happening:
+- Specify the parameter ``--uniprotAnnotation`` during the ``database`` mode. This will use a data frame obtainable from Uniprot containing the annotation level for each protein in the ``--proteome``. Rp3 will then tag differently each protein in the provided proteome based on their annotation level. As proteins in Uniprot vary in their annotation, it might be wise to include those with very low annotation levels when identifying unannotated proteins, as they are poorly characterized. The annotation level ranges from 1 to 5. To control which should be kept, provide the argument ``--annotationLevel`` followed by a number from 1 to 5. ``--annotationLevel 4`` will keep only those proteins with an annotation level equal to or lower than 4. This is the default behavior if ``--uniprotAnnotation`` is provided. **Requires ``--includeLowAnnotation`` to be specified during the ``search`` mode.**
+- Specify ``--keepAnnotated`` in ``search`` mode, the next step. This will treat every protein, annotated or unannotated, the same.
 			
 # Peptide search
 
@@ -222,7 +223,7 @@ mass_spec_folder/
 In that case, specify the ''mass_spec_folder'' for the ``--mzml``  parameter, and **not** the group folder.
 
 
-###### Notes
+## Notes
 - The ``--groups`` parameter allows you to specify which GTF files should be used for each mzML group. This is useful in case you have a transcriptome for condition X, Y and mass spec groups for the conditions X and Y. In that case, you need to specify, for each mass spec file, the GTF group that should be used with it. Note that it should be the same name as the groups provided in the ``-gtf_folder`` parameter for the ``database`` and/or ``translation`` modes. **In case the ``--groups`` file is not provided, all databases generated from the provided GTF files will be used to search each mzML file.**
 	The groups.txt file should be organized as a tab-separated table, like:
 	files    groups
@@ -299,6 +300,19 @@ To run the RP3 pipeline on ribocov mode, run:
 ``rp3.py --outdir path/to/output/directory --threads 8 --gtf path/to/gtf/file --fastq path/to/fastq/folder``
 This will use the provided genome indexes for the human hg19 assembly located inside the STAR_indexes directory, located inside the rp3 main directory. The user can also generate new indexes if they require to do so. In that case, provide the path to them using the parameters ``--genome_index`` and ``cont_index``. Make sure to change the ``--adapter`` parameter to suit the adapter sequence used for your Ribo-Seq experiment.
 The output files will be located inside the ``counts`` directory. They will include a heatmap showing the overall Ribo-Seq coverage for the proteogenomics smORFs, as well as a table containing information about the mapping groups. If the ``--plots`` argument was specified, a plot showing the number of Ribo-Seq-covered smORFs in each mapping group will be generated at ``counts/plots``. 
+
+# Ways to run Rp3
+ Rp3 allows you the perform proteogenomics analysis in a few different ways. 
+ Every workflow will require:
+ - Mass Spectrometry data (LC-MS/MS, DDA) in ``.mzML``
+ - Reference proteome in ``.fasta``
+## Identify unannotated microproteins with proteomics and translational evidence 
+This will use the proteogenomics approach to identify any possible microprotein in the provided transcriptome. Then, Rp3 will check for translational evidence for these microproteins using the Ribo-Seq reads.
+### Additional requirements: 
+- Ribo-Seq reads in ``.fastq`` 
+- GTF file (either a *de novo* assembled or a reference transcriptome) OR - Fasta file containing a database of interest
+### Workflow
+
 
 # Pipeline output
 ```
