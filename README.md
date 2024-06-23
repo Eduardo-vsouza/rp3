@@ -304,14 +304,28 @@ The output files will be located inside the ``counts`` directory. They will incl
  Every workflow will require:
  - Mass Spectrometry data (LC-MS/MS, DDA) in ``.mzML``
  - Reference proteome in ``.fasta``
-## Identify unannotated microproteins with proteomics and translational evidence 
+ - Output directory ``--outdir``. This has to be the same for every mode for a given analysis.
+## Identify unannotated microproteins with proteomics and translational evidence from a transcriptome
 This will use the proteogenomics approach to identify any possible microprotein in the provided transcriptome. Then, Rp3 will check for translational evidence for these microproteins using the Ribo-Seq reads.
 ### Additional requirements: 
 - Ribo-Seq reads in ``.fastq`` 
 - GTF file (either a *de novo* assembled or a reference transcriptome) OR - Fasta file containing a database of interest
+- Genome ``.fasta`` file. Must be the same genome assembly as the GTF file, as the three-frame translation of the GTF will be based on this ``.fasta``.
 ### Workflow
+- Run the ``database`` mode providing a ``--gtf_folder``, ``--proteome``, ``--genome``, and ``--cat``.
+- Run ``search`` mode providing ``--mzml``, ``--postms_mode cat``.
+	- Additionally, you may provide ``-refseq`` with a ``.fasta`` file containing additional protein sequences you want to exclude from the results.
+ 	- You may also rescore the proteogenomics results either by providing the argument ``--rescore`` or by running the pipeline on ``rescore`` mode after finishing the ``search``. This is **highly recommended** for proteogenomics searches starting from the three-frame translation of the transcriptome, as the search databases become highly bloated in those cases. The ``--rescore`` argument also requires ``--proteome`` to be specified, and it should be the same proteome in ``.fasta`` format provided in the ``database`` mode.
+- Run the ``ribocov`` mode providing ``--fastq``, ``--gtf``, ``--genome_index``, ``--cont_index``, ``--adapter adapter_sequence``, ``--rescored``
 
-
+# Controlling the FDR
+Rp3 provides a few ways to control the way we infer the FDR. 
+- You can rescore your proteogenomics results providing the ``--rescore``. This will append the positive results from the first peptide search to the reference proteome and perform a second round of searches with a smaller database, to better control the FDR and reduce false positives.
+- If you want to assess the FDR at the protein level, specify ``--proteinFDR`` during the ``search`` mode. By default, the pipeline will assess the FDR at the peptide level.
+- Rp3 can also assess the FDR for unannotated microproteins and annotated proteins separately by providing the ``--groupedFDR`` flag. This will likely increase the number of identifications in each group, but will also increase false positives. This flag can be provided during the ``search`` and ``rescore`` mode. If provided in ``search``, it also requires the ``--rescore`` flag.
+- MSBooster may also be run after the peptide search and before the post-processing with Percolator by specifying the flag ``--MSBooster``. This will include predicted retention times to the ``.pin`` file from the search with MSFragger used as input for Percolator. This can either increase or reduce identifications, heavily dependant on the dataset. It should make the analysis more robust and we recommend it, however. Requires ``--rescore``. 
+- If you have already run the ``search`` or ``postms`` mode, and wish to recalculate the FDR by providing a different set of arguments, you can run either mode by providing ``--recalculateFDR`` along with any desired arguments.
+  
 # Pipeline output
 ```
 outdir
