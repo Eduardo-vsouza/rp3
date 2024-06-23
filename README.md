@@ -10,8 +10,11 @@
 
 Rp3
 =============================
-<img src="https://github.com/Eduardo-vsouza/rp3/assets/60533781/ee5208ad-5a1a-42a0-830e-13fbfc8cef20" width="200" height="140" />
-<p style="font-size:4px">Design by Manami Nishikawa</p>
+<img src="https://github.com/Eduardo-vsouza/rp3/assets/60533781/ee5208ad-5a1a-42a0-830e-13fbfc8cef20" width="230" height="150" /> \
+``Design by Manami Nishikawa``
+
+
+
 
 
 
