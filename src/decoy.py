@@ -41,7 +41,7 @@ class Decoy(object):
         seqs = []
         records = SeqIO.parse(f'{self.path}/data/contaminants.txt', 'fasta')
         for record in records:
-            seqs.append(f">{record.description}\n{record.seq}\n")
+            seqs.append(f'>{record.description.replace(",", "_").replace(" ", "_")}\n{record.seq}\n')
         return seqs
 
     def to_fasta(self, output, pattern='rev', merge=True):

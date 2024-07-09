@@ -10,6 +10,15 @@ from src.metrics import DatabaseMetrics
 from src.demo import Demo
 # from src.pipeline_config import Configure
 
+class StoreMultipleFiles(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+
+
+class StoreMultipleGroups(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+
 
 class RP3:
     def __init__(self):
@@ -103,6 +112,12 @@ class RP3:
         elif self.mode == 'homology':
             self.__set_homology_mode()
 
+        elif self.mode == 'compare':
+            self.__set_compare_mode()
+
+        elif self.mode == 'pgc':
+            self.__set_pgc_mode()
+
         # def check_mode(self):
         #     if self.mode == 'first_mode':
         #         self.__set_align_mode()
@@ -184,6 +199,10 @@ class RP3:
                                                                                  "retention times before running "
                                                                                  "Percolator.")
         self.modeArguments.add_argument("--recalculateFDR", action="store_true")
+        self.modeArguments.add_argument("--groupedFDR", action="store_true", help="Assess the "
+                                                                                  "FDR for predicted microproteins "
+                                                                                  "and canonical proteins "
+                                                                                  "separately.")
         self.modeArguments.add_argument("--postms_mode", help="cat or single.")
         self.modeArguments.add_argument("--smorfUTPs", action="store_true")
         self.modeArguments.add_argument("--proteome", help="required if rescoring")
@@ -200,6 +219,7 @@ class RP3:
         self.modeArguments.add_argument("--memory", help="RAM available for MSFragger.", default=64)
         self.modeArguments.add_argument("--keepAnnotated", action="store_true")
         self.modeArguments.add_argument("--phosphorylation", action="store_true")
+        self.modeArguments.add_argument("--maxORFLength", type=int, default=150)
 
     def __set_quant_mode(self):
         self.modeArguments.add_argument("--moff_path", default="/home/eduardo/programs/moFF/moFF-2.0.3/moff_all.py")
@@ -218,10 +238,11 @@ class RP3:
         self.modeArguments.add_argument("--no_orfs", action='store_true')
         self.modeArguments.add_argument("--groups", help="If not specified, the group names will appear as the "
                                                          "database names. Provide a comma sep list.")
+        self.modeArguments.add_argument("--noRibocov", action='store_true')
 
     def __set_assembly_mode(self):
         self.modeArguments.add_argument("--gtf", help="reference gtf file")
-        self.modeArguments.add_argument("--strandness")
+        # self.modeArguments.add_argument("--strandness")
         self.modeArguments.add_argument("--step")
 
     def __set_spectra_mode(self):
@@ -284,6 +305,7 @@ class RP3:
         self.modeArguments.add_argument("--rescored", action="store_true")
         self.modeArguments.add_argument("--proteinFDR", action="store_true")
         self.modeArguments.add_argument("--qvalue", default=0.01, type=float)
+        self.modeArguments.add_argument("--manualPlot", action="store_true")
         # self.modeArguments.add_argument("--simulateMM", action="store_true")
         # self.mmSimulationArguments = self.parser.add_argument_group("MM simulation parameters")
         # self.mmSimulationArguments.add_argument("--maxMismatches", default=2)
@@ -345,6 +367,10 @@ class RP3:
 
     def __set_rescore_mode(self):
         self.modeArguments.add_argument("--proteinFDR", action='store_true')
+        self.modeArguments.add_argument("--groupedFDR", action="store_true", help="Assess the "
+                                                                                  "FDR for predicted microproteins "
+                                                                                  "and canonical proteins "
+                                                                                  "separately.")
         self.modeArguments.add_argument("--mzml")
         self.modeArguments.add_argument("--proteome")
         self.modeArguments.add_argument("--msPattern")
@@ -365,19 +391,22 @@ class RP3:
         self.modeArguments.add_argument("--keepAnnotated", action="store_true")
         self.modeArguments.add_argument("--phosphorylation", action="store_true")
         self.modeArguments.add_argument("--memory", default=32)
-        self.modeArguments.add_argument("--maxLength", default=150)
+        self.modeArguments.add_argument("--maxORFLength", default=150)
+
 
     def __set_rna_mode(self):
         self.modeArguments.add_argument("--strandness", help="Inform the strandness of the experiment."
                                                              "--rf: fr-firststrand, \n"
                                                              "--fr: fr-secondstrand")
         self.modeArguments.add_argument("--gtf")
-        self.modeArguments.add_argument("--genome")
-        self.modeArguments.add_argument("--lib_type", help="Single or Paired.")
-        self.modeArguments.add_argument("--reads_folder", help="Folder containing sequencing reads in fastq format.")
-        self.modeArguments.add_argument("genome_index", help="The genome index generated for hisat2 with the --ss "
-                                                             "and --exon arguments. If not provided, a new index will "
-                                                             "be generated. This might take a while.")
+        self.modeArguments.add_argument("--genomeIndex")
+        self.modeArguments.add_argument("--contIndex")
+        self.modeArguments.add_argument("--pairedPattern", default='R')
+        self.modeArguments.add_argument("--libType", help="Single or Paired.")
+        self.modeArguments.add_argument("--fastq", help="Folder containing sequencing reads in fastq format.")
+        # self.modeArguments.add_argument("genome_index", help="The genome index generated for hisat2 with the --ss "
+        #                                                      "and --exon arguments. If not provided, a new index will "
+        #                                                      "be generated. This might take a while.")
 
     def __set_duo__mode(self):
         self.modeArguments.add_argument("--hostPattern")
@@ -390,6 +419,23 @@ class RP3:
         self.modeArguments.add_argument("--blastN", action="store_true")
         self.modeArguments.add_argument("--tBlastN", action="store_true")
         # self.modeArguments.add_argument("--minRawCounts", type=int, default=10)
+
+    def __set_compare_mode(self):
+        self.modeArguments.add_argument("--results", help="accepts multiple Rp3 output directories",
+                                        nargs='+',
+                                        action=StoreMultipleFiles)
+        self.modeArguments.add_argument("--groups", help="accepts multiple Rp3 output group names",
+                                        nargs='+',
+                                        action=StoreMultipleFiles)
+        self.modeArguments.add_argument("--rescored", action="store_true")
+        self.modeArguments.add_argument("--predictedOnly", action="store_true")
+        self.modeArguments.add_argument("--microproteins", action="store_true")
+
+    def __set_pgc_mode(self):
+        self.modeArguments.add_argument("--gtf", help="gtf to intersect the Rp3 smORFs with")
+        self.modeArguments.add_argument("--chromSizes", help="file with chromosome sizes")
+
+        self.modeArguments.add_argument("--neighLength", default=500)
 
     def execute(self):
         if not self.mode == 'demo':
@@ -459,7 +505,7 @@ class RP3:
             pipe.check_riboseq_coverage()
 
         elif self.mode == 'rna':
-            self.__set_rna_mode()
+            # self.__set_rna_mode()
             pipe.assemble_transcriptomes()
 
         elif self.mode == 'demo':
@@ -469,6 +515,12 @@ class RP3:
 
         elif self.mode == 'homology':
             pipe.find_homologs()
+
+        elif self.mode == 'compare':
+            pipe.compare_results()
+
+        elif self.mode == 'pgc':
+            pipe.visualize_context()
 
 
 if __name__ == '__main__':

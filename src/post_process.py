@@ -229,11 +229,15 @@ class PercolatorPostProcessing(PipelineStructure):
             if db.endswith("target_decoy_database.fasta"):
                 outdir = f'{g_outdir}/db'
                 self.check_dirs([g_outdir, outdir])
-        dbss = os.listdir(self.databaseDir)[0]
+        databases = os.listdir(self.databaseDir)
+        for db in databases:
+            if db.endswith("target_database.fasta"):
+                dbss = db
+        # print(dbss)
 
         cmd_percolator = f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ ' \
                          f'--post-processing-tdc --results-psms {outdir}/_psm.txt --results-peptides ' \
-                         f'{outdir}/_peptides.txt --no-terminate --picked-protein {dbss} --results-proteins' \
+                         f'{outdir}/_peptides.txt --no-terminate --picked-protein {self.databaseDir}/{dbss} --results-proteins' \
                          f' {outdir}/proteins.txt --num-threads {self.threads} ' \
                          f'-X {outdir}/pout.xml {pin}'
         os.system(cmd_percolator)
@@ -414,7 +418,8 @@ class PercolatorPostProcessing(PipelineStructure):
     def filter_table(self, file, output, pattern, utps_only=False):
         df = pd.read_csv(file, sep='\t')
         df = df[df["q-value"] < self.args.qvalue]
-        df = df[df["proteinIds"].str.contains(pattern, regex=False) == False]
+        if not self.args.keepAnnotated:
+            df = df[df["proteinIds"].str.contains(pattern, regex=False) == False]
         df = df[df["proteinIds"].str.contains("contaminant_", regex=False) == False]
         df = df[df["proteinIds"].str.contains("rev_") == False]
         if utps_only:
@@ -576,16 +581,16 @@ class PercolatorPostProcessing(PipelineStructure):
                 replicates[peptide] = []
             if rep not in replicates[peptide]:
                 replicates[peptide].append(rep)
-        print("replicates", replicates)
-        print("modified", modified)
+        # print("replicates", replicates)
+        # print("modified", modified)
         selected = []
         for peptide in replicates:
             if len(replicates[peptide]) >= int(r):
                 for mod in modified[peptide]:
                     selected.append(mod)
-        print(selected)
+        # print(selected)
         df = df[df["peptide"].isin(selected)]
-        print(df)
+        # print(df)
         return df
 
     def create_merged_gtf(self):
@@ -629,10 +634,35 @@ class PercolatorPostProcessing(PipelineStructure):
         all_gtf = filter_gtf(entries=all_mps, gtf_list=gtfs,
                              output=f'{self.summarizedResultsDir}/merged/microproteins.gtf')
 
-    def __protein_fdr(self):
-        df = pd.read_csv(f'{self.postProcessDir}/group/db/proteins.txt', sep='\t')
+    def __protein_fdr(self, rescore=False):
+        def count_substring_occurrences(string, substring):
+            count = 0
+            start_index = 0
+
+            # Loop through the string and find occurrences of the substring
+            while True:
+                # Find the index of the next occurrence of the substring
+                index = string.find(substring, start_index)
+
+                # If no further occurrences are found, break out of the loop
+                if index == -1:
+                    break
+
+                # Increment the count of occurrences
+                count += 1
+
+                # Update the start index for the next iteration
+                start_index = index + 1
+
+            return count
+
+        if rescore:
+            df = pd.read_csv(f'{self.rescorePostProcessDir}/group/db/proteins.txt', sep='\t')
+        else:
+            df = pd.read_csv(f'{self.postProcessDir}/group/db/proteins.txt', sep='\t')
         df = df[df["q-value"] != "q-value"]
         df = df[df["q-value"] < 0.01]
+        # if not self.args.keepAnnotated:
         df = df[df["ProteinId"].str.contains("ANNO") == False]
         df = df[df["ProteinId"].str.contains("MOUSE") == False]
         df = df[df["ProteinId"].str.contains("contaminant") == False]
@@ -642,7 +672,15 @@ class PercolatorPostProcessing(PipelineStructure):
         for prot in proteins:
             prot_list = prot.split(",")
             for protein in prot_list:
-                filtered_proteins.append(protein)
+                # if 'ANNO' not in protein:
+                if '_ANNO' not in prot:
+                    filtered_proteins.append(protein)
+                else:
+                    if self.args.keepAnnotated:
+                        matches = count_substring_occurrences(prot, 'ANNO')
+                        if 'ANNO' in protein and matches <= 1:
+                            filtered_proteins.append(protein)
+
         return filtered_proteins
 
     def create_fasta(self, peptides, psms, database, results_dir, smorfs=False, utps=False):
@@ -650,7 +688,7 @@ class PercolatorPostProcessing(PipelineStructure):
         records = SeqIO.parse(database, 'fasta')
         for record in records:
             if smorfs:
-                if len(str(record.seq)) <= 150:
+                if len(str(record.seq)) <= self.args.maxORFLength:
                     proteins[str(record.id)] = str(record.seq)
             else:
                 proteins[str(record.id)] = str(record.seq)
@@ -793,7 +831,7 @@ class PercolatorPostProcessing(PipelineStructure):
                                     group_gtf[assembly].append(line)
 
         for assembly in group_gtf:
-            print(assembly)
+            # print(assembly)
             with open(f'{self.resultsDir}/{assembly}.gtf', 'w') as outfile:
                 outfile.writelines(group_gtf[assembly])
 
@@ -801,13 +839,13 @@ class PercolatorPostProcessing(PipelineStructure):
 
     def merge_fasta(self):
         genn = group_folder_generator(self.resultsDir)
-        print(genn)
+        # print(genn)
         merged = {
             'merged': {'microproteins_150.fasta': [], 'microproteins_utps_150.fasta': [], 'proteins_utp.fasta': []}}
         for content in genn:
             # if content.
-            print(content.file)
-            print(content.dbDir)
+            # print(content.file)
+            # print(content.dbDir)
 
             def add_file(subset, file, folder):
                 if folder not in merged:

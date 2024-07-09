@@ -178,8 +178,7 @@ class RiboSeqCoverage(PipelineStructure):
         #     # ax_top.set_xlim(0, 10)
         #     # ax_bottom.set_xlim(0, 10)
         #     ax_top.set_xticks([])
-        #     sns.despine(ax=ax_bottom)
-        #     sns.despine(ax=ax_top, bottom=True)
+
         #     # ax_top.xticks(False)
         #     ax = ax_top
         #     d = .015  # how big to make the diagonal lines in axes coordinates
@@ -195,10 +194,13 @@ class RiboSeqCoverage(PipelineStructure):
         plt.xlabel(f"log({title})")
         plt.ylabel("smORFs")
         plt.title(self.expCutoffsSuffix)
-        # plt.show()
-        # plt.legend()
-        plt.savefig(f'{self.plotsDir}/{title}_distribution_{self.expCutoffsSuffix}.pdf', dpi=600)
-        plt.savefig(f'{self.plotsDir}/{title}_distribution_{self.expCutoffsSuffix}.png', dpi=600)
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        if self.args.manualPlot:
+            plt.show()
+        else:
+            plt.savefig(f'{self.plotsDir}/{title}_distribution_{self.expCutoffsSuffix}.pdf', dpi=600)
+            plt.savefig(f'{self.plotsDir}/{title}_distribution_{self.expCutoffsSuffix}.png', dpi=600)
 
         # plt.show()
 

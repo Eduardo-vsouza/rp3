@@ -38,12 +38,19 @@ class PipelineStructure:
 
         self.logsDir = f'{self.outdir}/logs'
         # self.check_dirs([self.logsDir])
+
         # rescore directories
         self.rescoreDir = f'{self.outdir}/rescore'
         self.rescoreDatabaseDir = f'{self.rescoreDir}/databases'
         self.rescoreSearchDir = f'{self.rescoreDir}/peptide_search'
         self.rescorePostProcessDir = f'{self.rescoreDir}/post_processing'
         self.rescoreSummarizedResultsDir = f'{self.rescoreDir}/summarized_results'
+        self.rescoreGroupFDRDir = f'{self.rescoreDir}/group_FDR'
+        self.rescoreGroupPostProcessDir = f'{self.rescoreGroupFDRDir}/post_processing'
+        self.rescoreMPGroupdir = f'{self.rescoreGroupPostProcessDir}/mp'
+        self.rescoreAnnoGroupDir = f'{self.rescoreGroupPostProcessDir}/anno'
+        self.mpPinFile = f'{self.rescoreGroupFDRDir}/mp.pin'
+        self.annoPinFile = f'{self.rescoreGroupFDRDir}/anno.pin'
 
         # counts directories
         self.countsDir = f'{self.outdir}/counts'
@@ -80,7 +87,11 @@ class PipelineStructure:
         # transcriptomics
         self.rnaDir = f'{self.outdir}/transcriptomics'
         self.assemblyDir = f'{self.rnaDir}/assembly'
+        self.interAssemblyDir = f'{self.assemblyDir}/intermediate_assemblies'
         self.rnaAlnDir = f'{self.rnaDir}/alignments'
+        self.rnaTrimmedDir = f'{self.rnaDir}/trimmed'
+        self.rnaQCDir = f'{self.rnaDir}/QC'
+        self.rnaNoContDir = f'{self.rnaTrimmedDir}/no_contaminants'
         # self.rnaSortedBamDir = f'{self.rnaAlnDir}/sorted_alignments'
         # if self.mode == 'rna':
         self.genomeIndexDir = f'{self.rnaDir}/index'
@@ -293,6 +304,20 @@ class PipelineStructure:
             fasta = self.uniqueMicroproteins
         return fasta
 
+    def select_peptides_df(self):
+        if os.path.exists(self.rescoredMicroproteinsFasta):
+            pep = f'{self.rescorePostProcessDir}/group/peptides_fixed.txt'
+        else:
+            pep = f'{self.postProcessDir}/'
+        return pep
+
+    def select_gtf(self):
+        if os.path.exists(self.rescoredMicroproteinsGTF):
+            gtf = self.rescoredMicroproteinsGTF
+        else:
+            gtf = self.uniqueMicroproteinsGTF
+        return gtf
+
     def verify_checkpoint(self, outfile, step):
         if os.path.exists(outfile):
             print(f"(!) Found output file {outfile}. Skipping {step}...")
@@ -300,6 +325,12 @@ class PipelineStructure:
         else:
             run = True
         return run
+
+    def print_row(self, n=50, word='', character='='):
+        char_n = (n-(len(word))) / 2
+        first = character * int(char_n)
+        row = f'{first}{word}{first}'
+        print(row)
 
 
 class Content:

@@ -59,13 +59,13 @@ class Isoforms(PipelineStructure):
             if self.args.exclusiveMappingGroups:
                 overlaps['smorf'].append(smorf)
                 overlaps['group'].append(group)
-                overlaps['Overlapping features'].append(int(self.overlaps[smorf])-1)
+                overlaps['Overlapping features'].append(int(self.overlaps[smorf]))
             else:
                 splat = group.split(",")
                 for g in splat:
                     overlaps['smorf'].append(smorf)
                     overlaps['group'].append(g)
-                    overlaps['Overlapping features'].append(int(self.overlaps[smorf])-1)
+                    overlaps['Overlapping features'].append(int(self.overlaps[smorf]))
 
         dictio = {}
         order = []
@@ -77,23 +77,61 @@ class Isoforms(PipelineStructure):
             dictio[group].append(intensity)   # hi buddy
         df = pd.DataFrame(data=overlaps)    # why are you delving so deep into my code
         # sns.set(rc={'font.size': 12})    # do you need a friend
-
-        sns.set(rc={'font.size': 14})
-
-        # Set the style back to the default
-        sns.set_style("white")
-        sns.set_palette(palette=self.customPalette)
+        df.to_csv(f'{self.metricsDir}/overlaps_source_data.csv', sep=',', index=False)
+        # sns.set(rc={'font.size': 14})
+        col = 'Overlapping features'
+        group_stats = df.groupby('group')[col].agg(['median', 'std', 'quantile']).reset_index()
+        group_stats['Q1'] = df.groupby('group')[col].quantile(0.25).values
+        group_stats['Q3'] = df.groupby('group')[col].quantile(0.75).values
+        group_stats['IQR'] = group_stats['Q3'] - group_stats['Q1']
+        data = {'group': [], 'n_microproteins': [], 'Q1': [], 'Q3': [], 'IQR': [], 'median': [], 'std_dev': []}
+        # Annotate the plot with calculated statistics for each group
+        for i, group in enumerate(group_stats['group']):
+            ndf = df[df["group"] == group]
+            vals = len(ndf[col].tolist())
+            median = group_stats.loc[group_stats['group'] == group, 'median'].values[0]
+            std_dev = group_stats.loc[group_stats['group'] == group, 'std'].values[0]
+            q1 = group_stats.loc[group_stats['group'] == group, 'Q1'].values[0]
+            q3 = group_stats.loc[group_stats['group'] == group, 'Q3'].values[0]
+            iqr = group_stats.loc[group_stats['group'] == group, 'IQR'].values[0]
+            data['group'].append(group)
+            data['n_microproteins'].append(vals)
+            data['Q1'].append(q1)
+            data['Q3'].append(q3)
+            data['IQR'].append(iqr)
+            data['median'].append(median)
+            data['std_dev'].append(std_dev)
+        stats_df = pd.DataFrame(data=data)
+        stats_df.to_csv(f'{self.metricsDir}/overlaps.csv', sep='\t', index=False)
+        order = ['Default', 'MM', 'Amb', 'MM_Amb', 'No coverage']
+        # plt.ylim((0, 10))
         sns.set_palette("coolwarm_r")
-        dunn = DunnWithTukey(data_frame=df)
-        dunn.dunn_with_fdr_bh(val_col="Overlapping features", group_col="group")
-        # values = df["homologs"].tolist()
-        # for value in values:
-        #     if value == 0:
-        #         print(value)
-        # dunn.posthoc_tukey()
-        # print(dunn.result_posthoc)
-        dunn.plot_with_pvalues(order=['Default', 'MM', 'Amb', 'MM_Amb', 'No coverage'], ylabel='Overlapping features',
-                               xlabel='Groups')
+
+        ax = sns.stripplot(data=df, x="group", y="Overlapping features", order=order, facecolor=None, color=None,
+                           edgecolor='black', split=False, linewidth=0.7)
+        # for collection in ax.collections:
+        #     collection.set_facecolor('none')
+        ax = sns.boxplot(data=df, x="group", y="Overlapping features", order=order, showfliers=False)
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        plt.ylim((0,14))
+        plt.show()
+
+        #
+        # # Set the style back to the default
+        # sns.set_style("white")
+        # sns.set_palette(palette=self.customPalette)
+        # sns.set_palette("coolwarm_r")
+        # dunn = DunnWithTukey(data_frame=df)
+        # dunn.dunn_with_fdr_bh(val_col="Overlapping features", group_col="group")
+        # # values = df["homologs"].tolist()
+        # # for value in values:
+        # #     if value == 0:
+        # #         print(value)
+        # # dunn.posthoc_tukey()
+        # # print(dunn.result_posthoc)
+        # dunn.plot_with_pvalues(order=['Default', 'MM', 'Amb', 'MM_Amb', 'No coverage'], ylabel='Overlapping features',
+        #                        xlabel='Groups')
         # ax = sns.boxplot(data=df, x='group', y='Overlapping features', hue='group', width=0.8, dodge=False, showfliers=False)
         # stater = Stater(ax=ax, df=df, groups_x=dictio, x='', xlabel='group', ylabel='Overlapping features')
         # stater.test(order, loc='outside')

@@ -62,12 +62,17 @@ class UniprotAnnotation(PipelineStructure):
     #     self.filteredAnnotation = filtered_annotation
 
     def filter_annotations(self):
-
+        from Bio import SeqIO
         import concurrent.futures
-
+        records = SeqIO.parse(self.rescoredMicroproteinsFasta, 'fasta')
+        prots = []
+        for record in records:
+            prots.append(str(record.description))
         df = pd.read_csv(f'{self.rescorePostProcessDir}/group/peptides_fixed.txt', sep='\t')
         df = df[df["q-value"] <= 0.01]
         df = df[df["proteinIds"].str.contains("rev_") == False]
+        pattern = '|'.join(prots)
+        df = df[df["proteinIds"].str.contains(pattern, case=False, regex=True)]
         peptides_unfixed = df["peptide"].tolist()
         peptides = []
         for pep in peptides_unfixed:
@@ -167,18 +172,26 @@ class UniprotAnnotation(PipelineStructure):
 
     def generate_plots(self):
         files = os.listdir(self.annotatedCountsDir)
+        from matplotlib.ticker import FuncFormatter
+
         for file in files:
             plt.clf()
             df = pd.read_csv(f'{self.annotatedCountsDir}/{file}', sep='\t')
-            pal = sns.color_palette("YlOrBr", as_cmap=True)
-
-            ax = sns.barplot(data=df, y="annotation", x="count", estimator=sum, edgecolor="black", orient='h',
-                             color=pal)
+            df["count"] = df["count"].astype(int)
+            # pal = sns.color_palette("YlOrBr", as_cmap=True)
+            sns.set_palette("YlOrBr")
+            ax = sns.barplot(data=df, y="annotation", x="count", estimator=sum, edgecolor="black", orient='h')
             # plt.tight_layout()
             plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
             title = file[:-4].replace("_", " ")
             plt.title(title)
+
+            def x_fmt(x, pos):
+                return f'{int(x)}'
+
+            # Apply the formatter to the x-axis
+            ax.xaxis.set_major_formatter(FuncFormatter(x_fmt))
             plt.savefig(f'{self.annotatedPlotsDir}/{file[:-4]}.png')
-            plt.savefig(f'{self.annotatedPlotsDir}/{file[:-4]}.pdf')
+            plt.savefig(f'{self.annotatedPlotsDir}/{file[:-4]}.svg')
 

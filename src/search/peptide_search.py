@@ -109,14 +109,14 @@ class MSFragger(PipelineStructure):
                             if self.args.comet:
                                 cmd = self.__run_comet(mzml=fullfile, db=f'{self.databaseDir}/{db}')
                             else:
-                                print(file)
+                                # print(file)
                                 cmd = f'java -Xmx32g -jar {self.MSFraggerPath} --output_format pin ' \
                                       f'--database_name {self.databaseDir}/{db} --decoy_prefix rev ' \
                                       f'--num_threads {self.threads} --digest_min_length {min_pep_len} ' \
                                       f'--digest_max_length {max_pep_len} {fullfile}'
                             self.params.append(cmd)
                             if not os.path.exists(f'{self.outdir}/peptide_search/{group}/{db}/{file.replace(f".{pattern}", "_target.pin")}'):
-                                print("\n TARGET \n\n")
+                                # print("\n TARGET \n\n")
                                 os.system(cmd)
                                 cmd_mv_search = f'mv {fullfile.replace(f".{pattern}", ".pin", )} {self.outdir}/peptide_search/{group}/{db}/{file.replace(f".{pattern}", "_target.pin")}'
                                 os.system(cmd_mv_search)
@@ -132,7 +132,7 @@ class MSFragger(PipelineStructure):
                             #     raise FileNotFoundError
                             if not os.path.exists(f'{self.outdir}/peptide_search/{group}/{db}/{file.replace(f".{pattern}", "_decoy.pin")}'):
                                 # if mod is None:
-                                print("\n DECOY \n\n")
+                                # print("\n DECOY \n\n")
                                 decoy_db = f'{self.databaseDir}/{db.replace("_target_", "_decoy_")}'
                                 if self.args.comet:
                                     cmd = self.__run_comet(mzml=fullfile, db=decoy_db)
@@ -189,7 +189,7 @@ class MSFragger(PipelineStructure):
                                     # if group == groups_per_file[file] and ('_'.join(db.split("_")[:2]) == group or '_'.join(db.split("_")[:1]) == group):
                                     # print(groups_per_file[file].split("_")[0])
                                     if groups_per_file[file] == db.split("_")[0]:
-                                        print("should run")
+                                        # print("should run")
                                         run = True
                                     # if group.split == groups_per_file[file]:
                                     #
@@ -229,7 +229,7 @@ class MSFragger(PipelineStructure):
             for db in search_files:
                 splat = search_files[db].split(" ")
                 outfile = splat[1]
-                run = self.verify_checkpoint(outfile=outfile, step="matching of MS spectra against 3-FT database")
+                # run = self.verify_checkpoint(outfile=outfile, step="matching of MS spectra against 3-FT database")
                 # print(search_files[db])
                 run = True
                 if run:
@@ -267,7 +267,7 @@ class MSFragger(PipelineStructure):
               f'--precursor_true_tolerance 6 --digest_mass_range 500.0_1500.0 ' \
               f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
               f'--digest_min_length 8 --digest_max_length 25{search_files[db]}'
-        print(cmd)
+        # print(cmd)
         self.params.append(cmd)
         os.system(cmd)
 
@@ -286,7 +286,7 @@ class MSFragger(PipelineStructure):
             search_files = {}
             files = os.listdir(f'{self.mzMLFolder}/{group}')
             for file in files:
-                print(file)
+                # print(file)
                 fullfile = f'{self.mzMLFolder}/{group}/{file}'
                 if fullfile.endswith("mzML"):
                     pattern = "mzML"
@@ -301,7 +301,7 @@ class MSFragger(PipelineStructure):
                     if self.mod is not None:
                         mod = f' --variable_mod_03 {self.mod}'
                     if db.endswith(".fasta") and 'target_decoy' in db:
-                        print(file)
+                        # print(file)
                         if self.args.groups is not None:
                             if file in groups_per_file:
                                 if group == groups_per_file[file] and '_'.join(db.split("_")[:2]) == group:
@@ -323,7 +323,7 @@ class MSFragger(PipelineStructure):
                       f'--num_threads {self.threads} --digest_min_length {min_pep_len} ' \
                       f'--digest_max_length {max_pep_len}{search_files[db]}'
                 self.params.append(cmd)
-                print("\n TARGET \n\n")
+                # print("\n TARGET \n\n")
                 for file in search_files[db].split(" "):
                     if file.endswith(pattern):
                         mv = f'mv {file.replace(f".{pattern}", ".pin")} ' \

@@ -13,6 +13,7 @@ from .pipeline_config import PipelineStructure
 class Database(PipelineStructure):
     def __init__(self, translation_folder, reference_proteome, outdir, args, external_database=None):
         super().__init__(args=args)
+        self.print_row(word="Database")
         self.translationFolder = translation_folder
         self.proteome = reference_proteome
         self.externalDatabase = external_database
@@ -37,7 +38,9 @@ class Database(PipelineStructure):
             os.mkdir(self.databaseDir)
 
     def prepare_external_database(self):
+
         if self.externalDatabase is not None:
+            print(f"--Preparing external database.")
             if '/' in self.externalDatabase:
                 file = self.externalDatabase.split("/")[-1]
             else:
@@ -45,9 +48,16 @@ class Database(PipelineStructure):
             db_dir = f'{self.translationFolder}/{file.replace(".fasta", "")}'
             if not os.path.exists(db_dir):
                 os.mkdir(db_dir)
-
-            cmd = f'cp {self.externalDatabase} {db_dir}/{file.replace(".fasta", "")}.pep'
-            os.system(cmd)
+            out_fasta = []
+            records = SeqIO.parse(self.externalDatabase, 'fasta')
+            for record in records:
+                seq = str(record.seq)
+                entry = str(record.description).replace(" ", "_").replace(",", "_")
+                out_fasta.append(f'>{entry}\n{seq}\n')
+            with open(f'{db_dir}/{file.replace(".fasta", "")}.pep', 'w') as out:
+                out.writelines(out_fasta)
+            # cmd = f'cp {self.externalDatabase} {db_dir}/{file.replace(".fasta", "")}.pep'
+            # os.system(cmd)
 
     def unzip_assemblies(self):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
@@ -116,6 +126,8 @@ class Database(PipelineStructure):
             else:
                 decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_decoy_"),
                                                    pattern='rev', merge=False)
+        print(f"--Finished generating databases. You can safely ignore the numpy warning.")
+        self.print_row()
 
     def __get_annotation_levels(self):
         annotations = {}

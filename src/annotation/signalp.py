@@ -21,8 +21,9 @@ class SignalP(PipelineStructure):
         # else:
         #     file = self.uniqueMicroproteins
         # print(file)
-        cmd = f'{self.toolPaths["signalP"]} --fastafile {file} --format all ' \
-              f'--organism {self.args.organism} --output_dir {self.signalPDir} --mode slow-sequential'
+        cmd = f'{self.toolPaths["signalP"]} --fastafile {file} --format all --organism eukarya ' \
+              f'--organism {self.args.organism} --output_dir {self.signalPDir} --mode slow-sequential -wp ' \
+              f'{self.args.threads} -tt {self.args.threads}'
         os.system(cmd)
 
     def organize_files(self):

@@ -19,7 +19,7 @@ class MicroproteinCombiner(PipelineStructure):
         records = SeqIO.parse(f'{fasta}', 'fasta')
         for record in records:
             self.microproteins[str(record.description)] = {'sequence': str(record.seq)}
-        # self.__add_signalp()
+        self.__add_signalp()
         self.__add_conservation()
         self.__add_riboseq_coverage()
         self.__add_peptide_data()
@@ -60,14 +60,15 @@ class MicroproteinCombiner(PipelineStructure):
     def __add_riboseq_coverage(self):
         self.show_progress(step=4)
 
-        if os.path.exists(self.mappingGroups):
-            df = pd.read_csv(self.microproteinMappingGroupsForPlotsUnion, sep='\t')
-            smorfs, groups = df["smorf"].tolist(), df["group"].tolist()
-            for smorf, group in zip(smorfs, groups):
-                self.microproteins[smorf]['Ribo-seq mapping group'] = group
-        for smorf in self.microproteins:
-            if 'Ribo-seq mapping group' not in self.microproteins[smorf]:
-                self.microproteins[smorf]['Ribo-seq mapping group'] = 'No coverage'
+        if not self.args.noRibocov:
+            if os.path.exists(self.mappingGroups):
+                df = pd.read_csv(self.microproteinMappingGroupsForPlotsUnion, sep='\t')
+                smorfs, groups = df["smorf"].tolist(), df["group"].tolist()
+                for smorf, group in zip(smorfs, groups):
+                    self.microproteins[smorf]['Ribo-seq mapping group'] = group
+            for smorf in self.microproteins:
+                if 'Ribo-seq mapping group' not in self.microproteins[smorf]:
+                    self.microproteins[smorf]['Ribo-seq mapping group'] = 'No coverage'
 
             # rpkms = pd.read_csv(self.mappingGroupsRPKMs, sep='\t')
             # print(self.microproteins)
@@ -103,7 +104,7 @@ class MicroproteinCombiner(PipelineStructure):
             tp_col = 'MS peptides'
             for mp in self.microproteins:
                 if 'total spec count' not in self.microproteins[mp]:
-                     self.microproteins[mp]['total spec count'] = 0
+                    self.microproteins[mp]['total spec count'] = 0
                 if col not in self.microproteins[mp]:
                     self.microproteins[mp][col] = 0
                     self.microproteins[mp][utp_col] = []
@@ -194,9 +195,13 @@ class MicroproteinCombiner(PipelineStructure):
         #     print(len(data[col]))
         #     print(col, '\n')
         df = pd.DataFrame(data=data)
-        df.to_csv(f'{self.mergedResults}/microproteins_summary.txt', sep='\t', index=False)
-        df.to_csv(f'{self.mergedResults}/microproteins_summary.xls', sep='\t', index=False)
-        df.to_csv(f'{self.mergedResults}/microproteins_summary.xlsx', sep='\t', index=False)
+        df.to_csv(f'{self.mergedResults}/microproteins_summary.txt', encoding='utf-8', sep='\t', index=False)
+        df.to_csv(f'{self.mergedResults}/microproteins_summary.tsv', sep='\t', index=False, encoding='utf-8')
+        df.to_csv(f'{self.mergedResults}/microproteins_summary.csv', sep='\t', index=False, encoding='utf-8')
+
+
+        df.to_csv(f'{self.mergedResults}/microproteins_summary.xls', sep='\t', index=False, encoding='utf-8')
+        df.to_csv(f'{self.mergedResults}/microproteins_summary.xlsx', sep='\t', index=False, encoding='utf-8')
 
 
 

@@ -33,8 +33,9 @@ class ORFCounter(PipelineStructure):
         sns.set_palette(palette='coolwarm_r')
 
         df = pd.read_csv(self.mappingGroupsUnion, sep='\t')
+        df["mapping_group"].replace("No coverage", "No\ncoverage", inplace=True)
         ax = sns.barplot(data=df, x=df["mapping_group"].tolist(), y=df["count"].tolist(), edgecolor='black',
-                         order=['Default', 'MM', 'Amb', 'MM_Amb', 'No coverage'])
+                         order=['Default', 'MM', 'Amb', 'MM_Amb', 'No\ncoverage'])
         # ax = sns.barplot(data=df, x=df["mapping_group"].tolist(), y=df["count"].tolist(), edgecolor='black',
         #                  order=['Default', 'MM', 'Amb', 'MM_Amb', 'No coverage'], hue=df["mapping_group"].tolist())
 
@@ -43,17 +44,23 @@ class ORFCounter(PipelineStructure):
 
                 ax.annotate(f'{int(p.get_height())}', (p.get_x() + p.get_width() / 2., p.get_height()),
                             ha='center', va='center', xytext=(0, 5), textcoords='offset points')
-
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
         plt.ylabel("smORFs")
         plt.title(self.expCutoffsSuffix)
+        # plt.xticks(rotation=45)
+
         # fig = plt.figure(figsize=(10, 6))
         # plt.legend()
 
         # fig.legend()
         # plt.legend(title='Mapping Group')
         # plt.show()
-        plt.savefig(f'{self.plotsDir}/smorfs_counts_per_mapping_group_union_{self.expCutoffsSuffix}.pdf', dpi=600)
-        plt.savefig(f'{self.plotsDir}/smorfs_counts_per_mapping_group_union_{self.expCutoffsSuffix}.png', dpi=600)
+        if self.args.manualPlot:
+            plt.show()
+        else:
+            plt.savefig(f'{self.plotsDir}/smorfs_counts_per_mapping_group_union_{self.expCutoffsSuffix}.pdf', dpi=600)
+            plt.savefig(f'{self.plotsDir}/smorfs_counts_per_mapping_group_union_{self.expCutoffsSuffix}.png', dpi=600)
 
     def count_smorfs(self, filter_smorfs=None):
         plt.clf()

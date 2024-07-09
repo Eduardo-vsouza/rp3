@@ -8,14 +8,13 @@ from .metrics import DatabaseMetrics, ORFMetrics, MicroproteinCombiner
 from .utils import Params
 from .extra_filter import ExtraFilter
 from .mods import FormylSummarizer
-from .spectra import SpectrumAnnotator, Booster
 # from .annotation import SignalP, Conservation, ResultsSummary, UniprotAnnotation, ORFClassification, ORFClassVis, MHCDetector, Homologs, Repeater, Isoforms
 from .annotation import *
 from .search import PeptideReScoring
-from .ribocov import FeatureCounts, RiboSeqCoverage, CoverageClassification, ORFCounter, RiboSeqAlign, SeqDist
 from .transcriptomics import StringTieAssembly
 from .dualpg import DuoMetrics
 from .paralogy import HomologyFinder
+from .quant import SpecComparison
 
 
 class Pipeline:
@@ -64,6 +63,7 @@ class Pipeline:
         self.parameters.add_mode_parameters(database, self.args)
         self.parameters.update_params_file()
 
+
     def search_mass_spec(self):
         self.postMSMode = self.args.postms_mode
         self.mzMLFolder = self.args.mzml
@@ -74,12 +74,12 @@ class Pipeline:
         print("searching")
         search = MSFragger(mzml_folder=self.mzMLFolder, outdir=self.outdir,
                            threads=self.threads, mod=self.args.mod, quantify=quantify, args=self.args)
-        if self.postMSMode == 'cat':
-            search.iterate_searches_cat()
-        elif self.postMSMode == 'sep':
-            search.iterate_searches_cat()
-        else:
-            search.iterate_searches_multi()
+        # if self.postMSMode == 'cat':
+        search.iterate_searches_cat()
+        # elif self.postMSMode == 'sep':
+        #     search.iterate_searches_cat()
+        # else:
+        #     search.iterate_searches_multi()
         self.parameters.add_mode_parameters(search, self.args)
         self.parameters.update_params_file()
 
@@ -89,13 +89,13 @@ class Pipeline:
         postms = PercolatorPostProcessing(args=self.args)
 
         if not self.args.recalculateFDR:
-            if self.postMSMode == 'cat':
+            # if self.postMSMode == 'cat':
                 # postms.merge_pin_replicates()
-                postms.merge_all_pins()
-                # postms.percolate_multi()
-                postms.percolate_all_pins()
-            elif self.postMSMode == 'sep':
-                postms.percolate_single()
+            postms.merge_all_pins()
+            # postms.percolate_multi()
+            postms.percolate_all_pins()
+            # elif self.postMSMode == 'sep':
+            #     postms.percolate_single()
 
         postms.fix_multiple_columns()
         postms.remove_annotated()
@@ -166,6 +166,8 @@ class Pipeline:
         summ.save()
 
     def annotate_spectra(self):
+        from .spectra import SpectrumAnnotator, Booster
+
         if self.args.annotateSpectra:
             data = SpectrumAnnotator(args=self.args)
             data.prepare_input_files()
@@ -207,7 +209,7 @@ class Pipeline:
             conserv.blast_microproteins()
             conserv.parse_blast_results()
             conserv.create_evolview_input()
-            conserv.classify_conservation_by_mapping_groups()
+            # conserv.classify_conservation_by_mapping_groups()
         if self.args.uniprotTable:
             anno = UniprotAnnotation(args=self.args)
             anno.filter_annotations()
@@ -261,23 +263,28 @@ class Pipeline:
 
     def rescore(self):
         rescore = PeptideReScoring(args=self.args)
-        rescore.generate_databases()
-        rescore.re_search_peptides()
-        if self.args.msBooster:
-            msb = Booster(args=self.args)
-            msb.prepare_pin_files()
-            msb.configure_parameters()
-            msb.run()
-            msb.merge_pin_files()
-        if self.args.postms_mode == 'sep':
-            rescore.re_percolate()
-        else:
-            rescore.re_percolate_all_pins()
-        rescore.re_assess_fdr()
-        rescore.merge_results()
+        # rescore.generate_databases()
+        # rescore.re_search_peptides()
+        # if self.args.msBooster:
+        #     msb = Booster(args=self.args)
+        #     msb.prepare_pin_files()
+        #     msb.configure_parameters()
+        #     msb.run()
+        #     msb.merge_pin_files()
+        # if self.args.postms_mode == 'sep':
+        #     rescore.re_percolate()
+        # else:
+        # rescore.re_percolate_all_pins()
+        # if self.args.groupedFDR:
+        #     rescore.re_assess_fdr_grouped()
+        # else:
+        #     rescore.re_assess_fdr()
+        # rescore.merge_results()
         rescore.filter_gtf()
 
     def check_riboseq_coverage(self):
+        from .ribocov import FeatureCounts, RiboSeqCoverage, CoverageClassification, ORFCounter, RiboSeqAlign, SeqDist
+
         aln = RiboSeqAlign(args=self.args)
         if self.args.aln is None:
             aln.trim_reads()
@@ -311,14 +318,14 @@ class Pipeline:
         cov_class.save_gtfs_for_each_mapping_group()
 
         # if self.args.simulateMM:
-        #     mmcutoff = MMCutoff(args=self.args)
-        #     mmcutoff.sort_bam_files()
-        #     mmcutoff.intersect_alignments()
-        #     mmcutoff.index_intersected_bam_files()
-        #     mmcutoff.get_alignments()
-        #     # mmcutoff.order_mappings()
-        #     mmcutoff.get_coverages()
-        #     mmcutoff.calculate_min_mm_for_coverage()
+            # mmcutoff = MMCutoff(args=self.args)
+            # mmcutoff.sort_bam_files()
+            # mmcutoff.intersect_alignments()
+            # mmcutoff.index_intersected_bam_files()
+            # mmcutoff.get_alignments()
+            # mmcutoff.order_mappings()
+            # mmcutoff.get_coverages()
+            # mmcutoff.calculate_min_mm_for_coverage()
         if self.args.plots:
             counter = ORFCounter(args=self.args)
             counter.count_smorfs_union()
@@ -331,10 +338,15 @@ class Pipeline:
 
     def assemble_transcriptomes(self):
         assembly = StringTieAssembly(args=self.args)
-        assembly.check_index()
-        assembly.align()
-        assembly.assemble_transcriptomes()
-        assembly.merge_assemblies()
+        assembly.clean_reads()
+        assembly.remove_contaminants()
+        assembly.align_to_genome()
+        assembly.assemble_transcriptome()
+        assembly.merge_transcriptomes()
+        # assembly.check_index()
+        # assembly.align()
+        # assembly.assemble_transcriptomes()
+        # assembly.merge_assemblies()
 
     def find_homologs(self):
         homo = HomologyFinder(args=self.args)
@@ -350,4 +362,23 @@ class Pipeline:
             homo.extract_aligned_sequences(blast='blastn')
             homo.prepare_alignment_files(blast='blastn')
             homo.perform_msa(blast='blastn')
+
+    def compare_results(self):
+        comp = SpecComparison(args=self.args)
+        comp.get_spec_counts()
+        comp.create_data_frame()
+        comp.separate_up_regulated()
+
+    def visualize_context(self):
+        from .pgcontext import PGContext
+        pgc = PGContext(args=self.args)
+        # pgc.expand_genes()
+        # pgc.intersect()
+        pgc.gather_microprotein_sequences()
+        pgc.gather_overlaps()
+        pgc.gather_microproteins_data()
+        pgc.define_smorf_limits()
+        pgc.gather_ms_peptides()
+
+        pgc.analyze_context()
 

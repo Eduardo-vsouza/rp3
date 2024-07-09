@@ -26,11 +26,12 @@ class PeptideReScoring(PipelineStructure):
         print("Generating databases for rescoring")
         checker = []
         fasta = []
+        # fasta_file = self.select_fasta()
         fasta_file = self.microproteinsBlast
         if not os.path.exists(self.microproteinsBlast):
             fasta_file = self.uniqueMicroproteins
-        if self.args.smorfUTPs:
-            fasta_file = self.utpsMicroproteinsBlast
+        # if self.args.smorfUTPs:
+        #     fasta_file = self.utpsMicroproteinsBlast
         records = SeqIO.parse(f'{fasta_file}', 'fasta')  # microproteins identified with the first search
         for record in records:
             seq = str(record.seq)
@@ -108,16 +109,74 @@ class PeptideReScoring(PipelineStructure):
 
     def re_percolate_all_pins(self):
         self.__merge_all_pin_files()
+
         pin = f'{self.rescoreDir}/all_pins.pin'
         if self.args.msBooster:
             pin = self.mergedBoosterPin
-        group_outdir = f'{self.rescorePostProcessDir}/group'
-        self.check_dirs([group_outdir])
-        cmd_percolator = f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ ' \
-                         f'--post-processing-tdc --results-psms {group_outdir}/psm.txt --results-peptides ' \
-                         f'{group_outdir}/peptides.txt --no-terminate --num-threads {self.args.threads} ' \
-                         f'-X {group_outdir}/pout.xml --picked-protein {self.rescoreDatabase} --results-proteins {group_outdir}/proteins.txt {pin}'
-        os.system(cmd_percolator)
+        if self.args.groupedFDR:
+            self.check_dirs([self.rescoreGroupFDRDir, self.rescoreGroupPostProcessDir,
+                             self.rescoreMPGroupdir, self.rescoreAnnoGroupDir])
+            self.__assess_group_fdr(pin)
+        else:
+            group_outdir = f'{self.rescorePostProcessDir}/group'
+            self.check_dirs([group_outdir])
+            cmd_percolator = f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ ' \
+                             f'--post-processing-tdc --results-psms {group_outdir}/psm.txt --results-peptides ' \
+                             f'{group_outdir}/peptides.txt --no-terminate --num-threads {self.args.threads} ' \
+                             f'-X {group_outdir}/pout.xml --picked-protein {self.rescoreDatabase} --results-proteins {group_outdir}/proteins.txt {pin}'
+            os.system(cmd_percolator)
+
+    def __assess_group_fdr(self, pin):
+        """
+        Divides the .pin files into two subsets: one containing canonical proteins, and the other containing predicted
+        microproteins, then calculates the FDR for each and merges the results together
+        """
+
+        self.__generate_group_pin(pin)
+        print(f"--Assessing FDR for microproteins separately")
+        cmd_mp = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
+                  f'--post-processing-tdc --results-psms {self.rescoreMPGroupdir}/psm.txt --results-peptides '
+                  f'{self.rescoreMPGroupdir}/peptides.txt --no-terminate --num-threads {self.args.threads} '
+                  f'-X {self.rescoreMPGroupdir}/pout.xml --picked-protein {self.rescoreDatabase} '
+                  f'--results-proteins {self.rescoreMPGroupdir}/proteins.txt {self.mpPinFile}')
+        os.system(cmd_mp)
+        print(f"--Assessing FDR for canonical proteins separately")
+        cmd_anno = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
+                    f'--post-processing-tdc --results-psms {self.rescoreAnnoGroupDir}/psm.txt --results-peptides '
+                    f'{self.rescoreAnnoGroupDir}/peptides.txt --no-terminate --num-threads {self.args.threads} '
+                    f'-X {self.rescoreAnnoGroupDir}/pout.xml --picked-protein {self.rescoreDatabase} '
+                    f'--results-proteins {self.rescoreAnnoGroupDir}/proteins.txt {self.annoPinFile}')
+        os.system(cmd_anno)
+
+    def __generate_group_pin(self, pin):
+        mp_pin = []
+        anno_pin = []
+        with open(pin, 'r') as handler:
+            lines = handler.readlines()
+            mp_pin.append(lines[0])
+            anno_pin.append(lines[0])
+            proteins_col = len(lines[0].rstrip().split('\t'))-1
+            print(lines[0].split('\t')[proteins_col])
+
+            for line in lines:
+                line = line.rstrip()
+                cols = line.split('\t')
+                anno = False
+                mp = False
+                proteins = cols[proteins_col:]
+                for protein in proteins:
+                    if 'ANNO' in protein:
+                        anno = True
+                    if '_F:' in protein:
+                        mp = True
+                if mp and not anno:
+                    mp_pin.append(f'{line}\n')
+                if anno:
+                    anno_pin.append(f'{line}\n')
+        with open(self.mpPinFile, 'w') as out:
+            out.writelines(mp_pin)
+        with open(self.annoPinFile, 'w') as out:
+            out.writelines(anno_pin)
 
     def __merge_all_pin_files(self):
         groups = os.listdir(self.rescoreSearchDir)
@@ -168,6 +227,55 @@ class PeptideReScoring(PipelineStructure):
             with open(f'{percolator_input}/{group}.pin', 'w') as outfile:
                 outfile.writelines(merged_pin)
 
+    def re_assess_fdr_grouped(self):
+        peptides_cat = f'{self.rescoreGroupFDRDir}/peptides_anno_MP.txt'
+        proteins_cat = f'{self.rescoreGroupFDRDir}/proteins_anno_MP.txt'
+        cat_pep = (f'cat {self.rescoreMPGroupdir}/peptides.txt {self.rescoreAnnoGroupDir}/peptides.txt > '
+                   f'{peptides_cat}')
+        os.system(cat_pep)
+        cat_prot = (f'cat {self.rescoreMPGroupdir}/proteins.txt {self.rescoreAnnoGroupDir}/proteins.txt > '
+                    f'{proteins_cat}')
+        os.system(cat_prot)
+
+        microproteins = {}
+        records = SeqIO.parse(self.rescoreDatabase, 'fasta')
+        for record in records:
+            microproteins[str(record.description).replace(" ", "_")] = str(record.seq)
+        perc = PercolatorPostProcessing(args=self.args)
+        peptides_cat_fixed = f'{self.rescoreGroupFDRDir}/peptides_anno_MP_fixed.txt'
+        perc.fix(file=peptides_cat, output=peptides_cat_fixed)
+
+        df = pd.read_csv(peptides_cat_fixed, sep='\t')
+        df = df[df["q-value"] != "q-value"]
+        df = df[df["q-value"] < 0.01]
+        df = df[df["proteinIds"].str.contains("ANNO") == False]
+        df = df[df["proteinIds"].str.contains("MOUSE") == False]
+        df = df[df["proteinIds"].str.contains("contaminant") == False]
+        df = df[df["proteinIds"].str.contains("rev_") == False]
+        if self.args.smorfUTPs:
+            df = df[df["proteinIds"].str.contains(",") == False]
+        proteins = df["proteinIds"].tolist()
+
+        if self.args.proteinFDR:
+            filtered_proteins = self.__protein_fdr(file=proteins_cat)
+        fasta = []
+        for prot_list in proteins:
+            # print("protlist", prot_list)
+            proteins_splat = prot_list.split(",")
+            for protein in proteins_splat:
+                if self.args.proteinFDR:
+                    if protein in filtered_proteins:
+                        add = True
+                    else:
+                        add = False
+                else:
+                    add = True
+                if add:
+                    fasta.append(f'>{protein}\n{microproteins[protein]}\n')
+        with open(f'{self.rescoreGroupFDRDir}/filtered_rescored_smorfs.fasta', 'w') as handler:
+            handler.writelines(fasta)
+
+
     def re_assess_fdr(self):
         groups = os.listdir(self.rescorePostProcessDir)
         microproteins = {}
@@ -192,9 +300,9 @@ class PeptideReScoring(PipelineStructure):
             if self.args.smorfUTPs:
                 df = df[df["proteinIds"].str.contains(",") == False]
             proteins = df["proteinIds"].tolist()
-
+            file = f'{self.rescorePostProcessDir}/{group}/proteins.txt'
             if self.args.proteinFDR:
-                filtered_proteins = self.__protein_fdr(group=group)
+                filtered_proteins = self.__protein_fdr(file=file)
 
             for prot_list in proteins:
                 # print("protlist", prot_list)
@@ -212,9 +320,33 @@ class PeptideReScoring(PipelineStructure):
             with open(f'{self.rescorePostProcessDir}/{group}/filtered_rescored_smorfs.fasta', 'w') as handler:
                 handler.writelines(fasta)
 
-    def __protein_fdr(self, group):
-        df = pd.read_csv(f'{self.rescorePostProcessDir}/{group}/proteins.txt', sep='\t')
+    def __protein_fdr(self, file):
+        def count_substring_occurrences(string, substring):
+            count = 0
+            start_index = 0
+
+            # Loop through the string and find occurrences of the substring
+            while True:
+                # Find the index of the next occurrence of the substring
+                index = string.find(substring, start_index)
+
+                # If no further occurrences are found, break out of the loop
+                if index == -1:
+                    break
+
+                # Increment the count of occurrences
+                count += 1
+
+                # Update the start index for the next iteration
+                start_index = index + 1
+
+            return count
+
+        df = pd.read_csv(file, sep='\t')
         df = df[df["q-value"] != "q-value"]
+        # df["q-value"].astype(float)
+        df['q-value'] = df['q-value'].astype('float64')
+
         df = df[df["q-value"] < 0.01]
         df = df[df["ProteinId"].str.contains("ANNO") == False]
         df = df[df["ProteinId"].str.contains("MOUSE") == False]
@@ -225,7 +357,13 @@ class PeptideReScoring(PipelineStructure):
         for prot in proteins:
             prot_list = prot.split(",")
             for protein in prot_list:
-                filtered_proteins.append(protein)
+                if '_ANNO' not in prot:
+                    filtered_proteins.append(protein)
+                else:
+                    if self.args.keepAnnotated:
+                        matches = count_substring_occurrences(prot, 'ANNO')
+                        if 'ANNO' in protein and matches <= 1:
+                            filtered_proteins.append(protein)
         return filtered_proteins
 
     def merge_results(self):
@@ -234,12 +372,14 @@ class PeptideReScoring(PipelineStructure):
         for group in groups:
             records = SeqIO.parse(f'{self.rescorePostProcessDir}/{group}/filtered_rescored_smorfs.fasta', 'fasta')
             for record in records:
-                if len(str(record.seq)) <= self.args.maxLength:
+                if len(str(record.seq)) <= int(self.args.maxORFLength):
                     fasta.append(f'>{str(record.description)}\n{str(record.seq)}\n')
         with open(self.rescoredMicroproteinsFasta, 'w') as outfile:
             outfile.writelines(fasta)
 
     def filter_gtf(self, rescored=True):
+        self.print_row()
+        print(f"--Filtering GTF files.")
         gatherer = GTFGatherer(args=self.args)
         gatherer.cat_gtfs()
         fasta = self.select_fasta()
@@ -262,3 +402,8 @@ class PeptideReScoring(PipelineStructure):
         data.get_entries()
         # data.filter_gtf(output=self.rescoredMicroproteinsGTF)
         data.filter_gtf_tmp()
+
+    # def generate_nucleotide_fasta(self):
+    #     records = SeqIO.parse(self.rescoredMicroproteinsFasta, 'fasta')
+    #     for record in records:
+

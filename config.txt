@@ -15,3 +15,6 @@ hisat2-build	hisat2-build
 hisat2_extract_exons	hisat2_extract_exons.py
 hisat2_extract_splice_sites	hisat2_extract_splice_sites.py
 samtools	samtools
+trim_galore	/home/microway/programs/trim_galore/TrimGalore-0.6.10/trim_galore
+stringtie	stringtie
+bedtools	bedtools
