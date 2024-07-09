@@ -2,7 +2,6 @@
 	- [Ribo-Seq](#ribo-seq)
 - [Installation](#installation)
 - [Quick Start](#quick-start)
-- [Transcriptome assembly](#transcriptome-assembly)
 - [Database generation](#database)
 - [Peptide Search](#peptide-search)
 - [Post-processing](#post-processing)
@@ -11,23 +10,23 @@
 
 Rp3
 =============================
-![image](https://github.com/Eduardo-vsouza/rp3/assets/60533781/ee5208ad-5a1a-42a0-830e-13fbfc8cef20)
+<img src="https://github.com/Eduardo-vsouza/rp3/assets/60533781/ee5208ad-5a1a-42a0-830e-13fbfc8cef20" width="230" height="150" /> \
+``Design by Manami Nishikawa``
 
-
-Ribosome Profiling and Proteogenomics Pipeline (RP3) for the identification of novel microproteins encoded by smORFs
-
-# Introduction
-
-RP3 (Ribosome Profiling and Proteogenomics pipeline) was developed to integrate the analyses for three different multi-omics techniques: RNA-Seq, Ribo-Seq and Proteogenomics. Its overarching goal is to identify novel microproteins (shorter than 100/150 aa) encoded by small Open Reading Frames (smORFs). Then, it will check for translational evidence in the Ribo-Seq data for these novel smORFs.
+Rp3 (Ribosome Profiling and Proteogenomics pipeline) was developed to integrate the analyses for three different multi-omics techniques: RNA-Seq, Ribo-Seq and Proteogenomics. Its overarching goal is to identify novel microproteins (shorter than 100/150 aa) encoded by small Open Reading Frames (smORFs). Then, it will check for translational evidence in the Ribo-Seq data for these novel smORFs. 
   
 ## Ribo-Seq 
 Ribosome Profiling, or Ribo-Seq, is a widely used technique for the identification of novel coding genes, as it provides direct evidence of translation. It consists of the sequencing of fragments of mRNA that are being actively read by the ribosome (RPFs). Pipelines usually map these RPFs to transcripts from a de novo or reference-guided transcriptome assembly to check for the existence of novel transcripts that might carry smORFs (or any gene) actively being translated by the ribosome. Here, the Ribo-Seq reads will be used to check for translational evidence of novel microprotein-encoding smORFs identified by the Proteogenomics part of the pipeline (Fig. 1 steps VI and VII). 
   
 ![image](https://github.com/Eduardo-vsouza/rp3/assets/60533781/8c689efa-e7d4-4501-92ce-f604572e82ac)
 
+ 
+*Disclaimer*: Note that this figure differs from the one in the paper published in *Nature Communications*. In the paper, the workflow in this figure was used to explain the sequence of analyses that were performed. The RP3 pipeline does not cover the usage of RibORF for smORF identification. Instead, it covers the steps necessary to identify microproteins with Proteogenomics. Additionally, it checks for translational evidence for PG smORFs by making use of the Ribo-Seq reads. It does so by mapping the Ribo-Seq reads back to the PG smORFs coordinates in the genome.
 
-  
-*Disclaimer*: Note that this figure differs from the one in the paper published at *Journal*. In the paper, the workflow in this figure was used to explain the sequence of analyses that were performed. The RP3 pipeline does not cover the usage of RibORF for smORF identification. Instead, it covers the steps necessary to identify microproteins with Proteogenomics. Additionally, it checks for translational evidence for PG smORFs by making use of the Ribo-Seq reads. It does so by mapping the Ribo-Seq reads back to the PG smORFs coordinates in the genome.
+# System requirements
+The pipeline was tested on Ubuntu 22.04 LTS. 
+A typical desktop with 8 cores and 16 GB RAM should be enough to run most of the analyses, although if running the workflow with these specs, it might take a long time to perform every step.
+
 
 # Installation
 Typical installation time will vary depending on how many dependencies requirements are already met. Downloading the release from the GitHub page should not take more than 5 min. at average connection speed, and installing all dependencies should take no more than 20 min.
@@ -35,9 +34,10 @@ Typical installation time will vary depending on how many dependencies requireme
 1. Download the latest version of the pipeline from its GitHub releases page.
 2. ``cd`` to the directory containing the .tar.gz file and run ``tar -xzvf`` on the terminal.
 3. Install required Python packages
-	1. ``$ cd`` to the RP3 folder
-	2. ``$ pip install -r requirements.txt
-4. Install dependencies
+  	1. Install Python3.10. Although some backward compatibility is expected, other versions of Python haven't been tested.
+	2. ``$ cd`` to the RP3 folder
+	3. ``$ pip install -r requirements.txt
+5. Install dependencies
 	To avoid incompatibility, make sure to have installed the versions for each tool that was used during the development of RP3. You can install alternative versions at your own risk. Compatibility is not guaranteed.
 
 | Tool                             | Version          | Purpose   | Link         |
@@ -52,13 +52,18 @@ Typical installation time will vary depending on how many dependencies requireme
 | MSBooster			   | 1.2.1	      | Predicts Retention Times and add delta_RT_loess to ``.pin`` files coming from MSFragger | https://github.com/Nesvilab/MSBooster/releases/tag/v1.2.1 |
 
 	
-6.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool in its respective column. By default, the pipeline will look for the tools in your $PATH. 
-#### Testing the installation
-We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 5 main modes (*translation, database, search, postms,* and *ribocov*). To check all modes at once, simply run 
+6.  **Important**. Configure the Paths to each of the dependencies in the file config.txt located inside the RP3 folder. Replace the $PATH to each tool **executable** in its respective column. By default, the pipeline will look for the tools in your $PATH.
+
+## Testing the installation
+We provide a *demo* mode with reduced datasets so the user can check if the installation is working properly. This mode will check the 5 main modes (*translation, database, search, postms,* and *ribocov*). 
+- First, you need to download the demo_data from the releases page and put it in the same directory as the Rp3.py script.
+- Then, to check all modes at once, simply run 
 `$ rp3.py demo --threads 8 --outdir demo_outdir`
-This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical run time for this is 20-30 min, but can vary depending on available computational resources. 
+This will use 8 threads to test all 5 main modes of the RP3 pipeline. Typical run time to test every mode is ~30-50 min, but can vary depending on available computational resources. The whole workflow of the pipeline is time-consuming because it has to deal with multiple types of omics datasets. 
 The output files will be generated at `demo_outdir`, or another specified directory.
-If testing also the Ribocov mode, you will need to provide indexes for the hg19 genome. These are very large files and we make them available for download in this box folder: https://salkinstitute.app.box.com/folder/229415605650. Alternatively, you can use your own indexes. For demo mode, make sure to put these indexes inside the sofware directory under the folder ``STAR_indexes``.
+- If you want to skip a mode during testing, pass the argument --skip_database, for instance. All parameters available for the ``demo`` mode can be checked with ``rp3.py demo -h``.
+
+- If testing also the Ribocov mode, you will need to provide STAR indexes for the hg19 genome. These are very large files and we make them available for download in this box folder: https://salkinstitute.box.com/s/5uyf0tdfm7w1zgx3kqr1u367zlg9ocoy. Alternatively, you can use your own indexes. For demo mode, make sure to put these indexes inside the sofware directory under the folder ``STAR_indexes``.
 ##### Test dataset 
 The test data is composed of single files (to enable fast testing of the software's core functionalities) from studies used in the published manuscript. For each mode:
 ``search``: the mzML file 20130328_EXQ1_MiBa_SA_HCC1937.mzML from MassIVE (accession MSV000089022).
@@ -100,7 +105,7 @@ Run the pipeline on ``ribocov`` mode.
 ``$ rp3.py ribocov --outdir /path/to/output/directory --threads 8 --fastq /path/to/fastq/folder --gtf /path/to/gtf/file --genome_index /path/to/genome/index --cont_index /path/to/contaminants/index --plots``
 
 ##### Notes 
-- Always use the same output directory when running different modes for the same analysis.
+- Always use the **same output directory** when running different modes for the same analysis. 
 
 
 # Database
@@ -147,7 +152,10 @@ database options:
 
 5. Output files
 	Database files will be generated inside the output directory in the ``databases`` folder. You can check for database metrics at ``metrics/database_metrics.txt``.
-	
+## Notes
+Unless specified in the next modes, databases will have annotated proteins excluded based on the ``-proteome`` provided. This behavior is intended to remove, by default, any already annotated microprotein and peptides that match to them. If you are interested in annotated proteins as well, there are two ways to prevent this from happening:
+- Specify the parameter ``--uniprotAnnotation`` during the ``database`` mode. This will use a data frame obtainable from Uniprot containing the annotation level for each protein in the ``--proteome``. Rp3 will then tag differently each protein in the provided proteome based on their annotation level. As proteins in Uniprot vary in their annotation, it might be wise to include those with very low annotation levels when identifying unannotated proteins, as they are poorly characterized. The annotation level ranges from 1 to 5. To control which should be kept, provide the argument ``--annotationLevel`` followed by a number from 1 to 5. ``--annotationLevel 4`` will keep only those proteins with an annotation level equal to or lower than 4. This is the default behavior if ``--uniprotAnnotation`` is provided. **Requires ``--includeLowAnnotation`` to be specified during the ``search`` mode.**
+- Specify ``--keepAnnotated`` in ``search`` mode, the next step. This will treat every protein, annotated or unannotated, the same.
 			
 # Peptide search
 
@@ -188,7 +196,7 @@ search options:
 
 ```
 
-Just like in the ``rna`` mode, the ``-mzml`` flag expects the mzml folder to contain groups as well, such as:
+The ``--mzml`` flag expects the mzml folder to contain groups, such as:
 ```
 mass_spec_folder/
 	├── group_1/
@@ -200,7 +208,7 @@ mass_spec_folder/
 	    └── lc_ms-ms_4.mzML
 ```
 
-In case you have a single group/condition, put all the mzML files inside a folder in the ``-mzml`` directory, such as:
+In case you have a single group/condition, put all the mzML files inside a folder in the ``--mzml`` directory, such as:
 ```
 mass_spec_folder/
 	├── group_1/
@@ -213,23 +221,25 @@ mass_spec_folder/
 In that case, specify the ''mass_spec_folder'' for the ``--mzml``  parameter, and **not** the group folder.
 
 
-###### Notes
+## Notes
 - The ``--groups`` parameter allows you to specify which GTF files should be used for each mzML group. This is useful in case you have a transcriptome for condition X, Y and mass spec groups for the conditions X and Y. In that case, you need to specify, for each mass spec file, the GTF group that should be used with it. Note that it should be the same name as the groups provided in the ``-gtf_folder`` parameter for the ``database`` and/or ``translation`` modes. **In case the ``--groups`` file is not provided, all databases generated from the provided GTF files will be used to search each mzML file.**
 	The groups.txt file should be organized as a tab-separated table, like:
 	files    groups
 	file_1.mzML    Y
 	file_2.mzML    X
-- Always specify the same ``--outdir`` previously used for the other modes. 
+- Always specify the same ``--outdir`` previously used for the other modes.
+  #### Extra parameters
 - The ``--refseq`` parameter will accept a fasta file containing a reference annotation, such as the one from NCBI RefSeq. This is used as an extra sanity check to make sure we remove all annotated microproteins, even those that might be missed by the pipeline in case the provided reference proteome (from Uniprot, for instance) is not comprehensive enough. This parameter is optional, but recommended.
-- 
+- You can also include the execution of  ``rescore`` mode following the search and post-processing with Percolator. To do so, specify the flag ``--rescore`` and provide the path to the proteome fasta file with ``--proteome``. The proteome should be the same one used to generate the database in the first step. The proteome is required if rescoring the results, but not for the first round of searches. For details, see [Post-processing](#post-processing)
+- The flag ``--MSBooster`` will generate a spectral library with predicted retention times (RT) and delta RT loess compared to the experimental data. These values will be incorporated in the ``.pin`` file used as input for post-processing with Percolator. This can either increase or reduce the number of identifications depending on the analysis, but should improve confidence.
 
 
 6. Example code
-	``$ rp3.py search --mzml /path/to/mass/spec/folder --outdir path/to/output/directory/ --threads 8 
+	``$ rp3.py search --mzml /path/to/mass/spec/folder --outdir path/to/output/directory/ --threads 8 --MSBooster --rescore --proteome path/to/proteome.fasta``
 
 7. Output files
 	RP3 will produce output files in fasta format for each of the provided groups. Look for them inside the output directory at ``summarized_results/group_name``. Merged files from all the groups are located inside ``summarized_results/merged``.
-
+ 
 # Post-processing
 
 1. The RP3 pipeline contains a re-scoring mode called ``rescore``. This is intended to perform a second round of searches, now using as a proteomics database the results from the first proteogenomics search (the fasta file generated by the ``search`` mode) appended to the reference proteome. This is useful because the FDR assessment from the first search is not very accurate, as the database generated from the three-frame translation of the transcriptome contains millions of predicted sequences. This bloated database results in false positives and false negatives during FDR assessment. To correct for this, we select the hits at an FDR < 0.01 from the first search and look for them again, now with a smaller database to obtain more accurate hits. This mode will reduce the final number of novel microproteins.
@@ -288,10 +298,84 @@ To run the RP3 pipeline on ribocov mode, run:
 ``rp3.py --outdir path/to/output/directory --threads 8 --gtf path/to/gtf/file --fastq path/to/fastq/folder``
 This will use the provided genome indexes for the human hg19 assembly located inside the STAR_indexes directory, located inside the rp3 main directory. The user can also generate new indexes if they require to do so. In that case, provide the path to them using the parameters ``--genome_index`` and ``cont_index``. Make sure to change the ``--adapter`` parameter to suit the adapter sequence used for your Ribo-Seq experiment.
 The output files will be located inside the ``counts`` directory. They will include a heatmap showing the overall Ribo-Seq coverage for the proteogenomics smORFs, as well as a table containing information about the mapping groups. If the ``--plots`` argument was specified, a plot showing the number of Ribo-Seq-covered smORFs in each mapping group will be generated at ``counts/plots``. 
-	
+
+# Ways to run Rp3
+ Rp3 allows you the perform proteogenomics analysis in a few different ways. 
+ Every workflow will require:
+ - Mass Spectrometry data (LC-MS/MS, DDA) in ``.mzML``
+ - Reference proteome in ``.fasta``
+ - Output directory ``--outdir``. This has to be the same for every mode for a given analysis.
+## Identify unannotated microproteins with proteomics and translational evidence from a transcriptome
+This will use the proteogenomics approach to identify any possible microprotein in the provided transcriptome. Then, Rp3 will check for translational evidence for these microproteins using the Ribo-Seq reads.
+### Additional requirements: 
+- Ribo-Seq reads in ``.fastq`` 
+- GTF file (either a *de novo* assembled or a reference transcriptome) OR - Fasta file containing a database of interest
+- Genome ``.fasta`` file. Must be the same genome assembly as the GTF file, as the three-frame translation of the GTF will be based on this ``.fasta``.
+### Workflow
+- Run the ``database`` mode providing a ``--gtf_folder``, ``--proteome``, ``--genome``, and ``--cat``.
+- Run ``search`` mode providing ``--mzml``, ``--postms_mode cat``.
+	- Additionally, you may provide ``-refseq`` with a ``.fasta`` file containing additional protein sequences you want to exclude from the results.
+ 	- You may also rescore the proteogenomics results either by providing the argument ``--rescore`` or by running the pipeline on ``rescore`` mode after finishing the ``search``. This is **highly recommended** for proteogenomics searches starting from the three-frame translation of the transcriptome, as the search databases become highly bloated in those cases. The ``--rescore`` argument also requires ``--proteome`` to be specified, and it should be the same proteome in ``.fasta`` format provided in the ``database`` mode.
+- Run the ``ribocov`` mode providing ``--fastq``, ``--gtf``, ``--genome_index``, ``--cont_index``, ``--adapter adapter_sequence``, ``--rescored``
+
+# Controlling the FDR
+Rp3 provides a few ways to control the way we infer the FDR. 
+- You can rescore your proteogenomics results providing the ``--rescore``. This will append the positive results from the first peptide search to the reference proteome and perform a second round of searches with a smaller database, to better control the FDR and reduce false positives.
+- If you want to assess the FDR at the protein level, specify ``--proteinFDR`` during the ``search`` mode. By default, the pipeline will assess the FDR at the peptide level.
+- Rp3 can also assess the FDR for unannotated microproteins and annotated proteins separately by providing the ``--groupedFDR`` flag. This will likely increase the number of identifications in each group, but will also increase false positives. This flag can be provided during the ``search`` and ``rescore`` mode. If provided in ``search``, it also requires the ``--rescore`` flag.
+- MSBooster may also be run after the peptide search and before the post-processing with Percolator by specifying the flag ``--MSBooster``. This will include predicted retention times to the ``.pin`` file from the search with MSFragger used as input for Percolator. This can either increase or reduce identifications, heavily dependant on the dataset. It should make the analysis more robust and we recommend it, however. Requires ``--rescore``. 
+- If you have already run the ``search`` or ``postms`` mode, and wish to recalculate the FDR by providing a different set of arguments, you can run either mode by providing ``--recalculateFDR`` along with any desired arguments.
+  
+# Pipeline output
+```
+outdir
+├── counts	-- contains visualizations and counts table for ribocov mode
+│   ├── plots	-- bar plots summarizing ribocov results
+│   ├── raw
+│   └── rpkm
+├── databases
+├── homology
+│   ├── fasta_to_align
+│   └── MSA
+├── logs
+├── metrics
+├── multimappers
+├── peptide_search
+│   └── group
+│       ├── gtf_name_target_database.fasta   
+│       └── gtf_name_target_decoy_database.fasta	-- .pin files generated by MSFragger.
+├── phylogenetics	-- results from the annotate mode run with the flag --conservation. Formatted for visualization in Evolview.
+│   └── blast	-- tblastn results for the identified smORFs
+├── post_processing
+│   └── group
+│       └── db
+├── rescore	-- folder containing rescored results
+│   ├── databases	-- rescored databases in .fasta format. These contain the microproteins from the first search + the provided proteome
+│   ├── peptide_search	-- divided into subdirectories for each group. They contain the .pin files from MSFragger for the second round of searches
+│   │   └── group
+│   ├── post-processing		-- results from Percolator, divided into subdirectories for each group
+│   │   └── group
+│   └── summarized_results	-- folder containing the most important results
+├── results
+│   └── group
+│       └── db
+├── ribo-seq	-- folder containing results from the ribocov mode
+│   ├── alignments	-- alignments in .sam format
+│   ├── contaminant_alns	-- reads aligned to rRNAs or tRNAs (unused)
+│   ├── sorted_bam_alignments	-- sorted alignments in .bam format
+│   └── trimmed_reads	-- trimmed ribo-seq reads without adapters
+├── spectra	-- contains annotated spectra for each identified microprotein if the spectrum mode was run
+│   └── annotated_spectra	
+├── summarized_results		-- main results before rescoring
+│   ├── db
+│   └── merged		-- merged results from every database (each gtf file generates a db)
+└── translation		-- contains the 3 frame translation of the provided GTF files
+    └── db
+```
+
 
 # Contact
-For any questions or suggestions, please contact me at esouza@salk.edu or open an issue on this GitHub page.
+The Rp3 pipeline is in continuous development. For any questions or suggestions, please contact me at esouza@salk.edu or open an issue on this GitHub page.
 
   
 
