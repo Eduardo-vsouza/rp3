@@ -15,6 +15,7 @@ from .transcriptomics import StringTieAssembly
 from .dualpg import DuoMetrics
 from .paralogy import HomologyFinder
 from .quant import SpecComparison
+from .spectra import Booster
 
 
 class Pipeline:
@@ -263,23 +264,23 @@ class Pipeline:
 
     def rescore(self):
         rescore = PeptideReScoring(args=self.args)
-        # rescore.generate_databases()
-        # rescore.re_search_peptides()
-        # if self.args.msBooster:
-        #     msb = Booster(args=self.args)
-        #     msb.prepare_pin_files()
-        #     msb.configure_parameters()
-        #     msb.run()
-        #     msb.merge_pin_files()
+        rescore.generate_databases()
+        rescore.re_search_peptides()
+        if self.args.msBooster:
+            msb = Booster(args=self.args)
+            msb.prepare_pin_files()
+            msb.configure_parameters()
+            msb.run()
+            msb.merge_pin_files()
         # if self.args.postms_mode == 'sep':
         #     rescore.re_percolate()
         # else:
-        # rescore.re_percolate_all_pins()
-        # if self.args.groupedFDR:
-        #     rescore.re_assess_fdr_grouped()
-        # else:
-        #     rescore.re_assess_fdr()
-        # rescore.merge_results()
+        rescore.re_percolate_all_pins()
+        if self.args.groupedFDR:
+            rescore.re_assess_fdr_grouped()
+        else:
+            rescore.re_assess_fdr()
+        rescore.merge_results()
         rescore.filter_gtf()
 
     def check_riboseq_coverage(self):
