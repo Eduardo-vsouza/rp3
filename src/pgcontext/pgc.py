@@ -53,6 +53,8 @@ class GTFInfo:
 
                     transcript = a.split(" ")[-1].replace("\"", "")
                     self.transcript = f'{transcript}_transcript'
+                    self.transcript = transcript
+
                 else:
                     self.transcript = a.split(" ")[-1].replace("\"", "")
             if 'gene_name' in a:
@@ -61,12 +63,11 @@ class GTFInfo:
 class PGContext(PipelineStructure):
     def __init__(self, args):
         super().__init__(args=args)
+        self.print_row(word="PGContext")
+
         self.gtf = self.select_gtf()
         self.gtf = self.rescoredMicroproteinsGTF
 
-        self.pgContextDir = f'{self.outdir}/pg_context'
-        self.intermediatePGCFiles = f'{self.pgContextDir}/intermediate_files'
-        self.contextFiguresDir = f'{self.pgContextDir}/context_figures'
         self.check_dirs([self.pgContextDir, self.intermediatePGCFiles, self.contextFiguresDir])
 
         self.transcriptsGTF = f'{self.intermediatePGCFiles}/transcripts_only.gtf'
@@ -93,20 +94,28 @@ class PGContext(PipelineStructure):
         self.currentTranscripts = {}
         self.currentTranscriptLimits = {}
         self.addedName = {}
+        self.numberOfFeatures = 0
+        self.addedCoordinates = []
+
+        self.featureType = {}
 
     def expand_genes(self):
         print(f"--Expanding smORF coordinates")
-        cmd = f"grep '	transcript' {self.gtf} > {self.transcriptsGTF}"
-        os.system(cmd)
-        cmd = (f'bedtools slop -i {self.transcriptsGTF} -g {self.args.chromSizes} -b {self.args.neighLength} -s > '
-               f'{self.expandedGTF}')
-        os.system(cmd)
+        run = self.verify_checkpoint(outfile=self.expandedGTF, step="gene expanding")
+        if run:
+            cmd = f"grep '	transcript' {self.gtf} | grep -v 'PCMN' > {self.transcriptsGTF}"
+            os.system(cmd)
+            cmd = (f'bedtools slop -i {self.transcriptsGTF} -g {self.args.chromSizes} -b {self.args.neighLength} -s > '
+                   f'{self.expandedGTF}')
+            os.system(cmd)
 
     def intersect(self):
         print(f"--Intersecting smORFs with provided GTF file")
-        cmd = (f'{self.toolPaths["bedtools"]} intersect -wao -a {self.expandedGTF} -b {self.args.gtf} > '
-               f'{self.overlappedGTF}')
-        os.system(cmd)
+        run = self.verify_checkpoint(outfile=self.overlappedGTF, step="smORF overlapping")
+        if run:
+            cmd = (f'{self.toolPaths["bedtools"]} intersect -wao -a {self.expandedGTF} -b {self.args.gtf} > '
+                   f'{self.overlappedGTF}')
+            os.system(cmd)
 
     def gather_overlaps(self):
         with open(self.overlappedGTF, 'r') as handler:
@@ -123,7 +132,7 @@ class PGContext(PipelineStructure):
                     if smorf_info.transcript not in self.overlappedSmorfs:
                         self.overlappedSmorfs[smorf_info.transcript] = []
                     self.overlappedSmorfs[smorf_info.transcript].append(main_info)
-        print("smorf", self.overlappedSmorfs)
+        # print("smorf", self.overlappedSmorfs)
 
     def gather_microproteins_data(self):
         with open(self.gtf, 'r') as handler:
@@ -139,7 +148,7 @@ class PGContext(PipelineStructure):
     def gather_ms_peptides(self):
         import re
         peptides = self.select_peptides_df()
-        print(peptides)
+        # print(peptides)
         df = pd.read_csv(peptides, sep='\t')
         df = df[df["q-value"] != 'q-value']
         df = df[df["q-value"] <= 0.01]
@@ -230,9 +239,10 @@ class PGContext(PipelineStructure):
 
 
     def analyze_context(self):
-        print(len(self.overlappedSmorfs))
+        # print(len(self.overlappedSmorfs))
         for smorf in self.overlappedSmorfs:
-            print(smorf)
+            # print(smorf)
+            self.numberOfFeatures = 0
             self.currentLevel = 10
             self.currentIsoform = 1
             self.addedName = {}
@@ -242,25 +252,33 @@ class PGContext(PipelineStructure):
             start, end = self.__define_coordinates(smorf)
             self.fig, self.ax = plt.subplots()
             features = []
+            cds = False
+            canonical_genes = ''
+
             smorf_rf = self.determine_reading_frame(self.smorfInfo[smorf][0].start)
             for main_feature in self.overlappedSmorfs[smorf]:
                 main_orf_name = main_feature.transcript
                 level = self.__define_isoform(transcript=main_feature.transcript)
-
+                if main_feature.transcript not in self.featureType:
+                    self.featureType[main_feature.transcript] = None
                 if main_feature.gene is not None:
                     gene = f'{main_feature.gene}'
+                    if gene not in canonical_genes:
+                        canonical_genes += f'_{gene}'
                 if main_feature.feature == 'exon':
-                    self.__add_feature(feature=main_feature, name=main_orf_name, color="lightgreen", placement=self.currentLevel)
+                    self.featureType[main_feature.transcript] = 'transcript'
+                    self.__add_feature(feature=main_feature, name=main_orf_name, color="lightgreen", placement=self.currentLevel+1.25,
+                                       height=2.5)
                 else:
-                    self.__add_feature(feature=main_feature, name=main_feature.transcript, color=self.mainColor, placement=level)
+                    self.featureType[main_feature.transcript] = 'cds'
+                    self.__add_feature(feature=main_feature, name=main_feature.transcript, color=self.mainColor, placement=self.currentLevel)
 
                 self.__define_isoform_limits(transcript=main_feature.transcript, start=main_feature.start,
                                              end=main_feature.end, strand=main_feature.strand, feature=main_feature.feature)
                 feature = self.currentTranscriptLimits[main_feature.transcript]['feature']
-
             for name in self.addedName:
                 rf = self.determine_reading_frame(self.currentTranscriptLimits[name]["start"])
-                if self.currentTranscriptLimits[name]['feature'] != 'exon':
+                if self.featureType[name] == 'cds':
                     rf_name = f'{name} | {gene} | RF{rf}'
                 else:
                     rf_name = f'{name} | {gene} | Transcript'
@@ -292,28 +310,39 @@ class PGContext(PipelineStructure):
             self.ax.spines['top'].set_visible(False)
             self.ax.spines['right'].set_visible(False)
             self.ax.spines['left'].set_visible(False)
-            self.fig.set_size_inches(18.5, 10.5)
+            self.__define_figsize()
 
             plt.title(f'{smorf}_RF_{smorf_rf}')
-            plt.tight_layout()
-            plt.savefig(f'{self.contextFiguresDir}/{smorf}_context.png')
+            # plt.tight_layout()
+            plt.savefig(f'{self.contextFiguresDir}/{smorf}_context{canonical_genes}.png')
             # plt.show()
 
+    def __define_figsize(self):
+        # print(self.numberOfFeatures)
+        if self.numberOfFeatures > 11:
+            size = (20, 12)
+        else:
+            size = (self.numberOfFeatures * 2, self.numberOfFeatures * 1)
+        self.fig.set_size_inches(size)
 
     def __integrate_peptide_data(self, smorf, start, end):
         plt.plot([start, end], [self.currentLevel+10, self.currentLevel+10], color='black')
-        for i, peptide in enumerate(self.microproteinSequences[smorf]['peptides']):
-            start = self.microproteinSequences[smorf]['pep_coords'][i]
-            seq = peptide
-            if '+chr' in smorf:
-                strand = '+'
-            else:
-                strand = '-'
-            feature = Peptide(start=start, seq=seq, mod_pep=self.microproteinSequences[smorf]['mod_peptides'][i],
-                              strand=strand)
-            self.currentLevel += 10
-            self.__add_feature(feature=feature, name=seq, placement=self.currentLevel, height=2, color=self.smorfColor)
-            self.ax.text(start+(feature.end - feature.start)/2, self.currentLevel - 2.5, feature.modPep, color="black", fontsize=10, ha='center', va='center')
+        if smorf in self.microproteinSequences:
+            for i, peptide in enumerate(self.microproteinSequences[smorf]['peptides']):
+                start = self.microproteinSequences[smorf]['pep_coords'][i]
+                seq = peptide
+                if '+chr' in smorf:
+                    strand = '+'
+                else:
+                    strand = '-'
+                feature = Peptide(start=start, seq=seq, mod_pep=self.microproteinSequences[smorf]['mod_peptides'][i],
+                                  strand=strand)
+                self.currentLevel += 10
+                color = self.smorfColor
+                if not self.microproteinSequences[smorf]['utp'][i]:
+                    color = 'grey'
+                self.__add_feature(feature=feature, name=seq, placement=self.currentLevel, height=2, color=color)
+                self.ax.text(start+(feature.end - feature.start)/2, self.currentLevel - 2.5, feature.modPep, color="black", fontsize=10, ha='center', va='center')
 
     def __define_smorf_limits(self, feature):
         if self.smorf_start is None:
@@ -342,7 +371,10 @@ class PGContext(PipelineStructure):
 
 
         if name not in self.addedName:
+            self.numberOfFeatures += 1
+
             self.addedName[name] = (feature.start, placement)
+            # self.addedCoordinates.append((feature.start, placement))
         else:
             if feature.start < self.addedName[name][0]:
                 self.addedName[name] = (feature.start, placement)
@@ -351,15 +383,18 @@ class PGContext(PipelineStructure):
         # features.append(CustomGraphicFeature(start=main_feature.start, end=main_feature.end,
         #                                strand=main_feature.strand, color=self.mainColor,
         #                                label=main_orf_name, height=0.1))
-        self.ax.add_patch(rectangle)
+        # self.ax.add_patch(rectangle)
 
     def __add_text(self, name, rf_name):
         # x, y = feature.start, placement
-        x, y = self.addedName[name][0], self.addedName[name][1]
-        text_x = x
-        text_y = y
 
-        self.ax.text(text_x, text_y - 2.5, rf_name, color="black", fontsize=10, ha='center', va='center')
+        x, y = self.addedName[name][0], self.addedName[name][1]
+        if (x,y) not in self.addedCoordinates:
+            text_x = x
+            text_y = y
+
+            self.ax.text(text_x, text_y - 2.5, rf_name, color="black", fontsize=10, ha='center', va='center')
+            self.addedCoordinates.append((x,y))
 
     def __add_intron_line(self, rf=None, smorf=False, start=None, end=None, placement=None, strand=None):
         colors = {1: 'blue', 2: 'red', 3: 'green'}
@@ -374,7 +409,8 @@ class PGContext(PipelineStructure):
                 x = [start, end]
                 y = [self.currentTranscripts[transcript]+2.5, self.currentTranscripts[transcript]+2.5]
                 line_style = (0, (1, 1))  # Custom dash pattern: 1 point on, 1 point off
-                if self.currentTranscriptLimits[transcript]['feature'] != 'exon':
+                # if self.currentTranscriptLimits[transcript]['feature'] != 'exon':
+                if self.featureType[transcript] == 'cds':
                     color = colors[rf]
                 else:
                     color = 'black'

@@ -142,6 +142,11 @@ class PipelineStructure:
         self.check_dirs([self.mappingClassDir, self.mappingHomologyDir])
 
 
+        # PGC
+        self.pgContextDir = f'{self.outdir}/pg_context'
+        self.intermediatePGCFiles = f'{self.pgContextDir}/intermediate_files'
+        self.contextFiguresDir = f'{self.pgContextDir}/context_figures'
+
     # def __set__postms_mode(self):
     #     self.percInputSingle = f'{db_path}/percolator_input_single'
 

@@ -436,6 +436,7 @@ class RP3:
         self.modeArguments.add_argument("--chromSizes", help="file with chromosome sizes")
 
         self.modeArguments.add_argument("--neighLength", default=500)
+        self.modeArguments.add_argument("--pgViz", action="store_true")
 
     def execute(self):
         if not self.mode == 'demo':

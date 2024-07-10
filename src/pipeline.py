@@ -331,7 +331,7 @@ class Pipeline:
             counter = ORFCounter(args=self.args)
             counter.count_smorfs_union()
 
-            # seqdist = SeqDist(args=self.args)
+            seqdist = SeqDist(args=self.args)
             # seqdist.get_genome_coverage()
             # seqdist.get_orf_coverage()
             # seqdist.plot_coverage()
@@ -372,14 +372,20 @@ class Pipeline:
 
     def visualize_context(self):
         from .pgcontext import PGContext
-        pgc = PGContext(args=self.args)
-        # pgc.expand_genes()
-        # pgc.intersect()
-        pgc.gather_microprotein_sequences()
-        pgc.gather_overlaps()
-        pgc.gather_microproteins_data()
-        pgc.define_smorf_limits()
-        pgc.gather_ms_peptides()
-
-        pgc.analyze_context()
+        if self.args.pgViz:
+            from .pgcontext import PGViz
+            import tkinter as tk
+            root = tk.Tk()
+            interface = PGViz(root=root, args=self.args)
+            root.mainloop()
+        else:
+            pgc = PGContext(args=self.args)
+            pgc.expand_genes()
+            pgc.intersect()
+            pgc.gather_microprotein_sequences()
+            pgc.gather_overlaps()
+            pgc.gather_microproteins_data()
+            pgc.define_smorf_limits()
+            pgc.gather_ms_peptides()
+            pgc.analyze_context()
 
