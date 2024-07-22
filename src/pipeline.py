@@ -15,7 +15,6 @@ from .transcriptomics import StringTieAssembly
 from .dualpg import DuoMetrics
 from .paralogy import HomologyFinder
 from .quant import SpecComparison
-from .spectra import Booster
 
 
 class Pipeline:
@@ -267,6 +266,8 @@ class Pipeline:
         rescore.generate_databases()
         rescore.re_search_peptides()
         if self.args.msBooster:
+            from .spectra import Booster
+
             msb = Booster(args=self.args)
             msb.prepare_pin_files()
             msb.configure_parameters()
@@ -367,6 +368,7 @@ class Pipeline:
     def compare_results(self):
         comp = SpecComparison(args=self.args)
         comp.get_spec_counts()
+        comp.add_overlaps()
         comp.create_data_frame()
         comp.separate_up_regulated()
 

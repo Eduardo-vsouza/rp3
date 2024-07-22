@@ -58,8 +58,19 @@ class PeptideReScoring(PipelineStructure):
         groups = os.listdir(self.args.mzml)
         for group in groups:
             group_files = ''
-            group_dir = f'{self.args.mzml}/{group}'
-            files = os.listdir(group_dir)
+
+             # = os.listdir(group_dir)
+            if not os.path.isdir(groups[0]):
+                files = os.listdir(self.args.mzml)
+                group = 'group'
+                single_group = True
+                group_dir = f'{self.args.mzml}'
+
+            else:
+                single_group = False
+                files = os.listdir(f'{self.args.mzML}/{group}')
+                group_dir = f'{self.args.mzml}/{group}'
+
             for file in files:
                 if file.endswith(pattern):
                     group_files += f' {group_dir}/{file}'
@@ -88,6 +99,8 @@ class PeptideReScoring(PipelineStructure):
                     mv = f'mv {file.replace(f".{pattern}", ".pin")} ' \
                          f'{out_group_dir}/{file.split("/")[-1].replace(f".{pattern}", "_target.pin")}'
                     os.system(mv)
+            if single_group:
+                break
 
     def re_percolate(self):
         self.__merge_pin_files()

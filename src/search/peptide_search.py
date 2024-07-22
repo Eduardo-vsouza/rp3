@@ -31,9 +31,18 @@ class MSFragger(PipelineStructure):
             os.mkdir(out_search)
         dbs = os.listdir(self.databaseDir)
         groups = os.listdir(self.mzMLFolder)
+        if not os.path.isdir(groups[0]):
+            groups = [self.mzMLFolder]
+            single_group = True
+        else:
+            single_group = False
+            # groups = os.listdir(f'{self.mzMLFolder}/{group}')
         for group in groups:
-            if not os.path.exists(f'{out_search}/{group}'):
-                os.mkdir(f'{out_search}/{group}')
+            if not single_group:
+                if not os.path.exists(f'{out_search}/{group}'):
+                    os.mkdir(f'{out_search}/{group}')
+            else:
+                self.check_dirs([f'{out_search}/group'])
 
             for db in dbs:
                 # if self.args.groups is not None:
@@ -47,6 +56,8 @@ class MSFragger(PipelineStructure):
                 create = True
                 if create:
                     out_db = f'{out_search}/{group}/{db}'
+                    if single_group:
+                        out_db = f'{out_search}/group/{db}'
                     if not os.path.exists(out_db):
                         os.mkdir(out_db)
 
@@ -171,7 +182,13 @@ class MSFragger(PipelineStructure):
         for group in mzml:
             search_files = {}
             database = None
-            files = os.listdir(f'{self.mzMLFolder}/{group}')
+            if not os.path.isdir(mzml[0]):
+                files = os.listdir(self.mzMLFolder)
+                single_group = True
+            else:
+                single_group = False
+                files = os.listdir(f'{self.mzMLFolder}/{group}')
+
             for file in files:
                 if not file.endswith(".pin"):
                     for db in databases:
@@ -180,22 +197,10 @@ class MSFragger(PipelineStructure):
                             mod = f' --variable_mod_03 {self.mod}'
 
                         if db.endswith(".fasta") and 'target_decoy' in db:
-                            # print('db', db)
-                            # print('file', file)
-                            # print('_'.join(db.split("_")[:1]))
-                            # print('group', group)
                             if self.args.groups is not None:
                                 if file in groups_per_file:
-                                    # if group == groups_per_file[file] and ('_'.join(db.split("_")[:2]) == group or '_'.join(db.split("_")[:1]) == group):
-                                    # print(groups_per_file[file].split("_")[0])
                                     if groups_per_file[file] == db.split("_")[0]:
-                                        # print("should run")
                                         run = True
-                                    # if group.split == groups_per_file[file]:
-                                    #
-                                    #     run = True
-                                    # else:
-                                    #     run = False
                                     else:
                                         run = False
                                 else:
@@ -206,7 +211,10 @@ class MSFragger(PipelineStructure):
                                 run = False
 
                             if run:
-                                fullfile = f'{self.mzMLFolder}/{group}/{file}'
+                                if single_group:
+                                    fullfile = f'{self.mzMLFolder}/{file}'
+                                else:
+                                    fullfile = f'{self.mzMLFolder}/{group}/{file}'
                                 if fullfile.endswith("mzML"):
                                     pattern = "mzML"
                                 elif fullfile.endswith("mzXML"):
@@ -215,22 +223,16 @@ class MSFragger(PipelineStructure):
                                     pattern = "d"
                                 else:
                                     pattern = 'mzML'
-                                # print(file)
 
                                 database = db
-                                # decoy = db.replace("_target_", "_decoy_")
                                 if db not in search_files:
                                     search_files[db] = ''
                                     # search_files[decoy] = ''
                                 if fullfile.endswith("mzML"):
                                     search_files[db] += f' {fullfile}'
-                                # search_files[decoy] += f' {fullfile}'
-            # print(search_files)
             for db in search_files:
                 splat = search_files[db].split(" ")
                 outfile = splat[1]
-                # run = self.verify_checkpoint(outfile=outfile, step="matching of MS spectra against 3-FT database")
-                # print(search_files[db])
                 run = True
                 if run:
                     if self.args.hlaPeptidomics:
@@ -253,12 +255,19 @@ class MSFragger(PipelineStructure):
                         # print(pattern)
                         if file.endswith(pattern):
                             # print(file)
-                            mv = f'mv {file.replace(f".{pattern}", ".pin")} ' \
-                                 f'{self.outdir}/peptide_search/{group}/{db}/{file.split("/")[-1].replace(f".{pattern}", "_target.pin")}'
-                            self.exec(mv)
+                            if not single_group:
+                                mv = f'mv {file.replace(f".{pattern}", ".pin")} ' \
+                                     f'{self.outdir}/peptide_search/{group}/{db}/{file.split("/")[-1].replace(f".{pattern}", "_target.pin")}'
+                                self.exec(mv)
+                            else:
+                                mv = f'mv {file.replace(f".{pattern}", ".pin")} ' \
+                                     f'{self.outdir}/peptide_search/group/{db}/{file.split("/")[-1].replace(f".{pattern}", "_target.pin")}'
+                                self.exec(mv)
                             # os.system(mv)
                         else:
                             print(file)
+            if single_group:
+                break
 
     def __search_hla_peptidomics(self, db, search_files):
         cmd = f'java -Xmx256g -jar {self.MSFraggerPath} --output_format pin ' \
