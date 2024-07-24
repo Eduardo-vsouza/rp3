@@ -139,6 +139,26 @@ class PeptideReScoring(PipelineStructure):
                              f'-X {group_outdir}/pout.xml --picked-protein {self.rescoreDatabase} --results-proteins {group_outdir}/proteins.txt {pin}'
             os.system(cmd_percolator)
 
+    def percolate_single(self):
+        group_outdir = f'{self.rescorePostProcessDir}/group'
+        self.check_dirs([group_outdir])
+        pins = os.listdir(f'{self.rescoreSearchDir}/group')
+        for pin in pins:
+            if pin.endswith(".pin"):
+                cmd = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
+                       f'--post-processing-tdc --results-psms {group_outdir}/{pin}_psm.txt --results-peptides '
+                       f'{group_outdir}/{pin}_peptides.txt --no-terminate --num-threads {self.args.threads} '
+                       f'-X {group_outdir}/{pin}_pout.xml --picked-protein {self.rescoreDatabase} '
+                       f'--results-proteins {group_outdir}/{pin}_proteins.txt {self.rescoreSearchDir}/group/{pin}')
+                os.system(cmd)
+        cmd = f'cat {group_outdir}/*_peptides.txt > {group_outdir}/peptides.txt'
+        os.system(cmd)
+        cmd = f'cat {group_outdir}/*_psm.txt > {group_outdir}/psm.txt'
+        os.system(cmd)
+        cmd = f'cat {group_outdir}/*_proteins.txt > {group_outdir}/proteins.txt'
+        os.system(cmd)
+
+
     def __assess_group_fdr(self, pin):
         """
         Divides the .pin files into two subsets: one containing canonical proteins, and the other containing predicted

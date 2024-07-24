@@ -118,6 +118,7 @@ class PGContext(PipelineStructure):
             os.system(cmd)
 
     def gather_overlaps(self):
+        print(f"--Generating proteogenomics context files")
         with open(self.overlappedGTF, 'r') as handler:
             lines = handler.readlines()
             for line in lines:
@@ -175,10 +176,10 @@ class PGContext(PipelineStructure):
 
                     self.microproteinSequences[protein]['mod_peptides'].append(peptide)
         # print(self.microproteinSequences)
-        for protein in self.microproteinSequences:
-            if len(self.microproteinSequences[protein]['peptides']) > 0:
-                for pep in self.microproteinSequences[protein]['peptides']:
-                    print(protein, pep, len(self.microproteinSequences[protein]['peptides']))
+        # for protein in self.microproteinSequences:
+        #     if len(self.microproteinSequences[protein]['peptides']) > 0:
+        #         for pep in self.microproteinSequences[protein]['peptides']:
+        #             print(protein, pep, len(self.microproteinSequences[protein]['peptides']))
 
 
     def gather_microprotein_sequences(self):

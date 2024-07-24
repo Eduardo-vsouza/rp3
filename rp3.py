@@ -531,7 +531,7 @@ if __name__ == '__main__':
           "|  _ <| |_) |__) |\n"
           "|_| \_\ .__/____/\n"
           "      |_|  ")
-    print("RP3 v1.0.0")
+    print("RP3 v1.1.0")
     data = RP3()
     data.execute()
 

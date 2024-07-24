@@ -89,13 +89,12 @@ class Pipeline:
         postms = PercolatorPostProcessing(args=self.args)
 
         if not self.args.recalculateFDR:
-            # if self.postMSMode == 'cat':
-                # postms.merge_pin_replicates()
-            postms.merge_all_pins()
-            # postms.percolate_multi()
-            postms.percolate_all_pins()
-            # elif self.postMSMode == 'sep':
-            #     postms.percolate_single()
+            if self.postMSMode == 'sep':
+                postms.percolate_single()
+                ...
+            else:
+                postms.merge_all_pins()
+                postms.percolate_all_pins()
 
         postms.fix_multiple_columns()
         postms.remove_annotated()
@@ -120,6 +119,10 @@ class Pipeline:
             self.rescore()
         # counter = ORFCounter(args=self.args)
         # counter.count_smorfs()
+        self.args.noRibocov = False
+        summ = MicroproteinCombiner(args=self.args)
+        summ.gather_microprotein_info()
+        summ.save()
 
     # def quantify(self):
         # quant = MOFF(args=self.args)
@@ -263,8 +266,8 @@ class Pipeline:
 
     def rescore(self):
         rescore = PeptideReScoring(args=self.args)
-        rescore.generate_databases()
-        rescore.re_search_peptides()
+        # rescore.generate_databases()
+        # rescore.re_search_peptides()
         if self.args.msBooster:
             from .spectra import Booster
 
@@ -273,10 +276,10 @@ class Pipeline:
             msb.configure_parameters()
             msb.run()
             msb.merge_pin_files()
-        # if self.args.postms_mode == 'sep':
-        #     rescore.re_percolate()
-        # else:
-        rescore.re_percolate_all_pins()
+        if self.args.postms_mode == 'sep':
+            rescore.percolate_single()
+        else:
+            rescore.re_percolate_all_pins()
         if self.args.groupedFDR:
             rescore.re_assess_fdr_grouped()
         else:

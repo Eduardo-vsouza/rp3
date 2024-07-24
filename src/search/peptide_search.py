@@ -174,9 +174,9 @@ class MSFragger(PipelineStructure):
             groups_per_file = self.read_groups(groups_df=self.args.groups)
         # print("groups per file \n\n")
         # print(groups_per_file)
+
         if self.args.tmt_mod is not None:
             tmt_mod = f'--variable_mod_03 {self.args.tmt_mod}_K_3 --variable_mod_04 {self.args.tmt_mod}_n*_3 '
-
         else:
             tmt_mod = ''
         for group in mzml:
