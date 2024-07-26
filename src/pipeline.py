@@ -266,8 +266,8 @@ class Pipeline:
 
     def rescore(self):
         rescore = PeptideReScoring(args=self.args)
-        # rescore.generate_databases()
-        # rescore.re_search_peptides()
+        rescore.generate_databases()
+        rescore.re_search_peptides()
         if self.args.msBooster:
             from .spectra import Booster
 

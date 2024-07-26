@@ -180,7 +180,7 @@ class RP3:
                                                                            "databases to be generated using the 'cat' "
                                                                            "flag.")
         self.modeArguments.add_argument("--tmt_mod")
-        self.modeArguments.add_argument("--fragment_mass_tolerance", default=20)
+        self.modeArguments.add_argument("--fragment_mass_tolerance", default=600)
         self.modeArguments.add_argument("--refseq")  # blasts results against refseq or another database
         self.modeArguments.add_argument("--groups", help="Tab-delimited file associating a database with a raw file. "
                                                          "Should contain two columns: files, groups. Groups should have "

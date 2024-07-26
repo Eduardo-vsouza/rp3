@@ -266,6 +266,8 @@ class PGContext(PipelineStructure):
                     gene = f'{main_feature.gene}'
                     if gene not in canonical_genes:
                         canonical_genes += f'_{gene}'
+                else:
+                    gene = ''
                 if main_feature.feature == 'exon':
                     self.featureType[main_feature.transcript] = 'transcript'
                     self.__add_feature(feature=main_feature, name=main_orf_name, color="lightgreen", placement=self.currentLevel+1.25,
