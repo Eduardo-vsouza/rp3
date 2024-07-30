@@ -17,6 +17,7 @@ class Peptide:
         self.strand = strand
         self.modPep = mod_pep
         self.__define_end()
+
     def __define_end(self):
         if self.strand == '+':
             self.end = self.start + ((len(self.sequence)) * 3)
@@ -304,7 +305,11 @@ class PGContext(PipelineStructure):
                                    strand=feature.strand, rf=smorf_rf)
 
             x_increase = 200
-            self.__integrate_peptide_data(smorf, start-x_increase, end+x_increase)
+            if not self.args.noPep:
+                self.__integrate_peptide_data(smorf, start-x_increase, end+x_increase)
+                suffix = ''
+            else:
+                suffix = '_no_pep'
 
             self.ax.set_xlim(start-x_increase, end+x_increase)
             self.ax.set_ylim(0, self.currentLevel + 10)
@@ -317,7 +322,7 @@ class PGContext(PipelineStructure):
 
             plt.title(f'{smorf}_RF_{smorf_rf}')
             # plt.tight_layout()
-            plt.savefig(f'{self.contextFiguresDir}/{smorf}_context{canonical_genes}.png')
+            plt.savefig(f'{self.contextFiguresDir}/{smorf}_context{canonical_genes}{suffix}.png')
             # plt.show()
 
     def __define_figsize(self):
@@ -345,7 +350,11 @@ class PGContext(PipelineStructure):
                 if not self.microproteinSequences[smorf]['utp'][i]:
                     color = 'grey'
                 self.__add_feature(feature=feature, name=seq, placement=self.currentLevel, height=2, color=color)
-                self.ax.text(start+(feature.end - feature.start)/2, self.currentLevel - 2.5, feature.modPep, color="black", fontsize=10, ha='center', va='center')
+                if self.args.noPepSeq:
+                    seq = None
+                else:
+                    seq = peptide.modPep
+                self.ax.text(start+(feature.end - feature.start)/2, self.currentLevel - 2.5, seq, color="black", fontsize=10, ha='center', va='center')
 
     def __define_smorf_limits(self, feature):
         if self.smorf_start is None:

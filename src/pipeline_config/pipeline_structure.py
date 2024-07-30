@@ -324,7 +324,7 @@ class PipelineStructure:
         return gtf
 
     def verify_checkpoint(self, outfile, step):
-        if os.path.exists(outfile):
+        if os.path.exists(outfile) and not self.args.overwrite:
             print(f"(!) Found output file {outfile}. Skipping {step}...")
             run = False
         else:

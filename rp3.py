@@ -54,6 +54,7 @@ class RP3:
         self.general_args.add_argument("--outdir", "-o", help="Inform the output directory")
         self.general_args.add_argument("--threads", "-p", help="Number of threads to be used.", default=1,
                                        type=int)
+        self.general_args.add_argument("--overwrite", action="store_true")
 
         self.modeArguments = self.parser.add_argument_group(f"{self.mode} options")
 
@@ -437,6 +438,8 @@ class RP3:
 
         self.modeArguments.add_argument("--neighLength", default=500)
         self.modeArguments.add_argument("--pgViz", action="store_true")
+        self.modeArguments.add_argument("--noPep", action="store_true")
+        self.modeArguments.add_argument("--noPepSeq", action="store_true")
 
     def execute(self):
         if not self.mode == 'demo':
