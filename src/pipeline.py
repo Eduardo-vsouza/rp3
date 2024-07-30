@@ -91,7 +91,6 @@ class Pipeline:
         if not self.args.recalculateFDR:
             if self.postMSMode == 'sep':
                 postms.percolate_single()
-                ...
             else:
                 postms.merge_all_pins()
                 postms.percolate_all_pins()
@@ -175,12 +174,7 @@ class Pipeline:
             data = SpectrumAnnotator(args=self.args)
             data.prepare_input_files()
             data.annotate_spectra_parallel()
-        # if self.args.predictRT:
-        #     rt = RTPred(args=self.args)
-        #     rt.prepare_library()
-        #     rt.predict_rts()
-        #     rt.save_library()
-        #     rt.compare_rts()
+
         if self.args.msBooster:
             msb = Booster(args=self.args)
             msb.prepare_pin_files()

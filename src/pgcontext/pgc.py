@@ -61,6 +61,7 @@ class GTFInfo:
             if 'gene_name' in a:
                 self.gene = a.split(" ")[-1].replace("\"", "")
 
+
 class PGContext(PipelineStructure):
     def __init__(self, args):
         super().__init__(args=args)
@@ -79,8 +80,6 @@ class PGContext(PipelineStructure):
         self.smorfInfo = {}
         self.microproteinSequences = {}
         self.smorfLimits = {}
-
-
 
         self.mainFeaturesToInclude = ['CDS', 'exon']
 

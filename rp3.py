@@ -374,7 +374,7 @@ class RP3:
                                                                                   "separately.")
         self.modeArguments.add_argument("--mzml")
         self.modeArguments.add_argument("--proteome")
-        self.modeArguments.add_argument("--msPattern")
+        self.modeArguments.add_argument("--msPattern", default='mzML')
         self.modeArguments.add_argument("--msBooster", action="store_true", help="Run MSBooster on "
                                                                                  "MSFragger pin files to predict "
                                                                                  "retention times before running "

@@ -690,6 +690,7 @@ class PercolatorPostProcessing(PipelineStructure):
         else:
             df = pd.read_csv(f'{self.postProcessDir}/group/db/proteins.txt', sep='\t')
         df = df[df["q-value"] != "q-value"]
+        df["q-value"] = df["q-value"].astype(float)
         df = df[df["q-value"] < 0.01]
         # if not self.args.keepAnnotated:
         df = df[df["ProteinId"].str.contains("ANNO") == False]
