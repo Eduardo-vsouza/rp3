@@ -107,7 +107,7 @@ class StringTieAssembly(PipelineStructure):
                            f' --runThreadN {self.args.threads} --readFilesIn {filepath} {self.rnaNoContDir}/{pairs[file]} --outFileNamePrefix '
                            f'{self.rnaAlnDir}/aligned_to_genome_{file} --outSAMtype BAM SortedByCoordinate'
                            f' --outSAMattributes All{gz}')
-                    # os.system(cmd)
+                    os.system(cmd)
                     print(f'Finished aligning {file}.')
 
     def assemble_transcriptome(self):
