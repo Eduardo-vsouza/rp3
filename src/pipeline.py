@@ -8,13 +8,13 @@ from .metrics import DatabaseMetrics, ORFMetrics, MicroproteinCombiner
 from .utils import Params
 from .extra_filter import ExtraFilter
 from .mods import FormylSummarizer
-# from .annotation import SignalP, Conservation, ResultsSummary, UniprotAnnotation, ORFClassification, ORFClassVis, MHCDetector, Homologs, Repeater, Isoforms
 from .annotation import *
 from .search import PeptideReScoring
 from .transcriptomics import StringTieAssembly
 from .dualpg import DuoMetrics
 from .paralogy import HomologyFinder
 from .quant import SpecComparison
+from .quantification import MOFF
 
 
 class Pipeline:
@@ -85,53 +85,53 @@ class Pipeline:
 
     def post_process_searches(self):
         self.postMSMode = self.args.postms_mode
+        if not self.args.quantifyOnly:
+            postms = PercolatorPostProcessing(args=self.args)
 
-        postms = PercolatorPostProcessing(args=self.args)
+            if not self.args.recalculateFDR:
+                if self.postMSMode == 'sep':
+                    postms.percolate_single()
+                else:
+                    postms.merge_all_pins()
+                    postms.percolate_all_pins()
 
-        if not self.args.recalculateFDR:
-            if self.postMSMode == 'sep':
-                postms.percolate_single()
-            else:
-                postms.merge_all_pins()
-                postms.percolate_all_pins()
+            postms.fix_multiple_columns()
+            postms.remove_annotated()
 
-        postms.fix_multiple_columns()
-        postms.remove_annotated()
+            """
+            # postms.filter_microproteins()
+            """
+            postms.merge_fasta()
+            if self.args.refseq is not None:
+                self.extra_filters()
 
-        """
-        # postms.filter_microproteins()
-        """
-        postms.merge_fasta()
-        if self.args.refseq is not None:
-            self.extra_filters()
+            if not self.args.std_proteomics:
+                # postms.merge_gtf_results()
+                # postms.create_merged_gtf()
+                # postms.create_cds_gtf()
+                # postms.get_utps()
+                ...
 
-        if not self.args.std_proteomics:
-            # postms.merge_gtf_results()
-            # postms.create_merged_gtf()
-            # postms.create_cds_gtf()
-            # postms.get_utps()
-            ...
+            if self.args.rescore:
+                self.args.msPattern = 'mzML'
 
-        if self.args.rescore:
-            self.args.msPattern = 'mzML'
+                self.rescore()
+            # counter = ORFCounter(args=self.args)
+            # counter.count_smorfs()
+            self.args.noRibocov = False
+            summ = MicroproteinCombiner(args=self.args)
+            summ.gather_microprotein_info()
+            summ.save()
 
-            self.rescore()
-        # counter = ORFCounter(args=self.args)
-        # counter.count_smorfs()
-        self.args.noRibocov = False
-        summ = MicroproteinCombiner(args=self.args)
-        summ.gather_microprotein_info()
-        summ.save()
-
-    # def quantify(self):
-        # quant = MOFF(args=self.args)
-        # if self.args.spec_counts:
-        #     quant.count_spectra()
-            # quant.count_spectra_annotated()
-    #     else:
-    #         quant.get_fdr_peptides()
-    #         quant.generate_flash_lfq_input()
-    #         quant.run_flashlfq()
+    def quantify(self):
+        quant = MOFF(args=self.args)
+        if self.args.spec_counts:
+            quant.count_spectra()
+            quant.count_spectra_annotated()
+        else:
+            quant.get_fdr_peptides()
+            quant.generate_flash_lfq_input()
+            quant.run_flashlfq()
     #     self.parameters.add_mode_parameters(quant, self.args)
     #     self.parameters.update_params_file()
 
@@ -260,9 +260,10 @@ class Pipeline:
 
     def rescore(self):
         rescore = PeptideReScoring(args=self.args)
-        rescore.generate_databases()
+        if not self.args.quantifyOnly:
+            rescore.generate_databases()
         rescore.re_search_peptides()
-        if self.args.msBooster:
+        if self.args.msBooster and not self.args.quantifyOnly:
             from .spectra import Booster
 
             msb = Booster(args=self.args)
@@ -270,16 +271,20 @@ class Pipeline:
             msb.configure_parameters()
             msb.run()
             msb.merge_pin_files()
-        if self.args.postms_mode == 'sep':
+        if self.args.postms_mode == 'sep' and not self.args.quantifyOnly:
             rescore.percolate_single()
         else:
-            rescore.re_percolate_all_pins()
+            if not self.args.quantifyOnly:
+                rescore.re_percolate_all_pins()
         if self.args.groupedFDR:
-            rescore.re_assess_fdr_grouped()
+            if not self.args.quantifyOnly:
+                rescore.re_assess_fdr_grouped()
         else:
-            rescore.re_assess_fdr()
-        rescore.merge_results()
-        rescore.filter_gtf()
+            if not self.args.quantifyOnly:
+                rescore.re_assess_fdr()
+        if not self.args.quantifyOnly:
+            rescore.merge_results()
+            rescore.filter_gtf()
 
     def check_riboseq_coverage(self):
         from .ribocov import FeatureCounts, RiboSeqCoverage, CoverageClassification, ORFCounter, RiboSeqAlign, SeqDist

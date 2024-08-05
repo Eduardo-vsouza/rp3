@@ -174,6 +174,10 @@ class RP3:
         self.modeArguments.add_argument("--digest_min_length", default=50)
         self.modeArguments.add_argument("--std_proteomics", action='store_true')
         self.modeArguments.add_argument("--quantify", action="store_true")
+        self.modeArguments.add_argument("--quantifyOnly", action="store_true",
+                                        help="Do not generate pin files for percolator. This is only relevant when "
+                                             "running quantification later on after finishing all the analysis, and "
+                                             "generating pin files for proteogenomics searches is not needed.")
         self.modeArguments.add_argument("--mod")
         self.modeArguments.add_argument("--create_gtf", action="store_true")
         self.modeArguments.add_argument("--cat", action="store_true", help="Perform the search using a concatenated "
@@ -393,6 +397,8 @@ class RP3:
         self.modeArguments.add_argument("--phosphorylation", action="store_true")
         self.modeArguments.add_argument("--memory", default=32)
         self.modeArguments.add_argument("--maxORFLength", default=150)
+        self.modeArguments.add_argument("--quantify", action="store_true")
+        self.modeArguments.add_argument("--quantifyOnly", action="store_true")
 
 
     def __set_rna_mode(self):

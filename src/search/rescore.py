@@ -85,20 +85,42 @@ class PeptideReScoring(PipelineStructure):
                       f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
                       f'--digest_min_length 8 --digest_max_length 25{group_files}'
             else:
-                cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
-                      f'--database_name {self.rescoreDatabase} --decoy_prefix rev ' \
-                      f'--num_threads {self.args.threads}{phospho} --digest_min_length {min_pep_len} ' \
-                      f'--digest_max_length {max_pep_len}{group_files}'
-            os.system(cmd)
+                if self.args.quantifyOnly or self.args.quantify:
+                    cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format tsv ' \
+                          f'--database_name {self.rescoreDatabase} --decoy_prefix rev ' \
+                          f'--num_threads {self.args.threads}{phospho} --digest_min_length {min_pep_len} ' \
+                          f'--digest_max_length {max_pep_len}{group_files}'
+                    os.system(cmd)
+
+                if not self.args.quantifyOnly:
+                    cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
+                          f'--database_name {self.rescoreDatabase} --decoy_prefix rev ' \
+                          f'--num_threads {self.args.threads}{phospho} --digest_min_length {min_pep_len} ' \
+                          f'--digest_max_length {max_pep_len}{group_files}'
+                    os.system(cmd)
+
             out_group_dir = f'{self.rescoreSearchDir}/{group}'
             self.check_dirs([out_group_dir])
             self.params.append(cmd)
             # print("\n TARGET \n\n")
             for file in group_files.split(" "):
                 if file.endswith(pattern):
-                    mv = f'mv {file.replace(f".{pattern}", ".pin")} ' \
-                         f'{out_group_dir}/{file.split("/")[-1].replace(f".{pattern}", "_target.pin")}'
-                    os.system(mv)
+                    if self.args.quantifyOnly:
+                        suffix = 'tsv'
+                        mv = f'mv {file.replace(f".{pattern}", f".{suffix}")} ' \
+                             f'{out_group_dir}/{file.split("/")[-1].replace(f".{pattern}", f"_target.{suffix}")}'
+                        os.system(mv)
+
+                    else:
+                        suffix = 'pin'
+                        mv = f'mv {file.replace(f".{pattern}", f".{suffix}")} ' \
+                             f'{out_group_dir}/{file.split("/")[-1].replace(f".{pattern}", f"_target.{suffix}")}'
+                        os.system(mv)
+                        if self.args.quantify:
+                            suffix = 'tsv'
+                            mv = f'mv {file.replace(f".{pattern}", f".{suffix}")} ' \
+                                 f'{out_group_dir}/{file.split("/")[-1].replace(f".{pattern}", f"_target.{suffix}")}'
+                            os.system(mv)
             if single_group:
                 break
 

@@ -238,14 +238,21 @@ class MSFragger(PipelineStructure):
                     if self.args.hlaPeptidomics:
                         self.__search_hla_peptidomics(db=db, search_files=search_files)
                     else:
+                        if self.quantify: # --output_format tsv
+                            cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format tsv ' \
+                              f'--database_name {self.databaseDir}/{db} --decoy_prefix rev ' \
+                              f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
+                              f'--digest_min_length {min_pep_len} {tmt_mod} --digest_max_length {max_pep_len}{search_files[db]}'
+                            os.system(cmd)
                         cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
                               f'--database_name {self.databaseDir}/{db} --decoy_prefix rev ' \
                               f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
                               f'--digest_min_length {min_pep_len} {tmt_mod} --digest_max_length {max_pep_len}{search_files[db]}'
                         self.params.append(cmd)
-                        # self.exec(cmd)
+                        if not self.args.quantifyOnly:
+                            self.exec(cmd)
                         # print(cmd)
-                        os.system(cmd)
+                        # os.system(cmd)
                     # print("\n TARGET \n\n")
                     # print(db)
                     # print(search_files)
@@ -256,9 +263,16 @@ class MSFragger(PipelineStructure):
                         if file.endswith(pattern):
                             # print(file)
                             if not single_group:
-                                mv = f'mv {file.replace(f".{pattern}", ".pin")} ' \
-                                     f'{self.outdir}/peptide_search/{group}/{db}/{file.split("/")[-1].replace(f".{pattern}", "_target.pin")}'
-                                self.exec(mv)
+                                if not self.args.quantifyOnly:
+                                    mv = f'mv {file.replace(f".{pattern}", ".pin")} ' \
+                                         f'{self.outdir}/peptide_search/{group}/{db}/{file.split("/")[-1].replace(f".{pattern}", "_target.pin")}'
+                                    self.exec(mv)
+                                if self.quantify:
+                                    cmd_mv = (f'mv {file.replace(f".{pattern}", ".tsv")} '
+                                              f'{self.outdir}/peptide_search/{group}/{db}/{file.split("/")[-1].replace(f".{pattern}", "_target.tsv")}')
+                                    # os.system(cmd_mv)
+                                    self.exec(cmd_mv)
+
                             else:
                                 mv = f'mv {file.replace(f".{pattern}", ".pin")} ' \
                                      f'{self.outdir}/peptide_search/group/{db}/{file.split("/")[-1].replace(f".{pattern}", "_target.pin")}'
