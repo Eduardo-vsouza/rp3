@@ -7,14 +7,16 @@ import pandas as pd
 from Bio import SeqIO
 
 from .utils import group_folder_generator, check_multiple_dirs
+from .pipeline_config import PipelineStructure
 
 
-class MOFF:
-    def __init__(self, args):
+class MOFF(PipelineStructure):
+    def __init__(self, args, outdir):
+        super().__init__(args=args)
         self.args = args
 
         # directories
-        self.outdir = args.outdir
+        self.outdir = outdir  # this is redefined so we can re-use the class on the compare mode
         self.searchDir = f'{self.outdir}/peptide_search'
         self.quantificationDir = f'{self.outdir}/quantification'
         self.moffOutdir = f'{self.outdir}/moFF'
@@ -24,13 +26,14 @@ class MOFF:
 
         # for running moFF
         self.databases = {}
-        self.flashLFQPath = self.args.flash_lfq_path
+        # self.flashLFQPath = self.args.flash_lfq_path
 
         self.__check_dirs()
 
         # params
         self.mode = 'quant'
         self.params = []
+        # print(self.outdir)
 
     def __check_dirs(self):
         folders = [self.quantificationDir, self.moffOutdir]
@@ -46,35 +49,34 @@ class MOFF:
             os.mkdir(folder)
 
     def get_fdr_peptides(self):
+        print(f"--Gathering peptides")
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
-        gen = group_folder_generator(self.postProcessDir)
+        # gen = group_folder_generator(self.postProcessDir)
         proteins_by_file = {}
-        for content in gen:
-            entries = []
-            if self.args.not_blasted:
-                fasta = f'{self.summarizedDir}/merged/microproteins_150.fasta'
-            else:
-                fasta = f'{self.summarizedDir}/merged/microproteins_150.fasta_blast_filt.fasta'
-            records = SeqIO.parse(fasta, 'fasta')
-            for record in records:
-                entries.append(str(record.description))
-            peptides = f'{content.dbDir}/peptides_fixed.txt'
-            df = pd.read_csv(peptides, sep='\t')
-            df = df[df["q-value"] <= 0.01]
-            df = df[(df["proteinIds"].str.contains("rev_") == False) & (df["proteinIds"].str.contains("contaminant") == False)]
-            if self.args.no_anno:
-                df = df[df["proteinIds"].str.contains("_ANNO") == False]
-                df = df[df["proteinIds"].isin(entries)]
-            proteins = df["proteinIds"].tolist()
-            group_db = f'{content.group}/{content.db}'
-            if group_db not in proteins_by_file:
-                proteins_by_file[group_db] = []
+        peptides = self.select_peptides_df()
+        # for content in gen:
+        entries = []
+        fasta = self.select_fasta()
+        records = SeqIO.parse(fasta, 'fasta')
+        for record in records:
+            entries.append(str(record.description))
+        # peptides = f'{content.dbDir}/peptides_fixed.txt'
+        df = pd.read_csv(peptides, sep='\t')
+        df = df[df["q-value"] <= 0.01]
+        df = df[(df["proteinIds"].str.contains("rev_") == False) & (df["proteinIds"].str.contains("contaminant") == False)]
+        if self.args.no_anno:
+            df = df[df["proteinIds"].str.contains("_ANNO") == False]
+            df = df[df["proteinIds"].isin(entries)]
+        proteins = df["proteinIds"].tolist()
+        group_db = 'group'
+        if group_db not in proteins_by_file:
+            proteins_by_file[group_db] = []
 
-            for prot in proteins:
-                prot_list = prot.split(",")
-                for protein in prot_list:
-                    # if not protein.startswith("")
-                    proteins_by_file[group_db].append(protein)
+        for prot in proteins:
+            prot_list = prot.split(",")
+            for protein in prot_list:
+                # if not protein.startswith("")
+                proteins_by_file[group_db].append(protein)
         with open(f'{self.summarizedDir}/proteins_by_group_db.json', 'w') as outfile:
             json.dump(proteins_by_file, outfile)
 
@@ -106,34 +108,38 @@ class MOFF:
                                 df.to_csv(f'{self.quantificationDir}//{group}/{db}/{file}_moff_input.tsv', sep='\t', index=False)
 
     def generate_flash_lfq_input(self):
+        print(f"--Generating FlashLFQ input")
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
-        groups = os.listdir(self.searchDir)
+        rescored = self.is_rescored()
+        search_dir = self.select_search_dir()
+        groups = os.listdir(search_dir)
+
         with open(f'{self.summarizedDir}/proteins_by_group_db.json') as json_file:
             proteins_by_group = json.load(json_file)
 
-            for group in groups:
-                group_dir = f'{self.searchDir}/{group}'
-                databases = os.listdir(group_dir)
-                for db in databases:
-                    df = pd.DataFrame()
-                    generate = False
-                    if db.endswith("target_decoy_database.fasta") or db.endswith("_target_decoy.fasta"):
-                        generate = True
-                        self.__check_dir(folder=f'{self.quantificationDir}/{group}')
-                        self.__check_dir(folder=f'{self.quantificationDir}/{group}/{db}')
+            # for group in groups:
+            group_dir = f'{search_dir}/group'
 
-                        db_dir = f'{group_dir}/{db}'
-                        files = os.listdir(db_dir)
-                        for file in files:
-                            print(file)
-                            if file.endswith(".tsv"):
-                                ndf = self.convert_tsv_to_flash_lfq(file=f'{db_dir}/{file}')
-                                df = df.append(ndf)
-                                group_db = f'{group}/{db}'
-                                proteins = proteins_by_group[group_db]
-                                df = df[df["Protein Accession"].isin(proteins)]
-                    if generate:
-                        df.to_csv(f'{self.quantificationDir}//{group}/{db}/{group}_{db}_flash_lfq_input.tsv', sep='\t', index=False)
+            databases = os.listdir(group_dir)
+            df = pd.DataFrame()
+            # if db.endswith("target_decoy_database.fasta") or db.endswith("_target_decoy.fasta"):
+            generate = True
+            self.__check_dir(folder=f'{self.quantificationDir}/group')
+            # self.__check_dir(folder=f'{self.quantificationDir}/group/{db}')
+
+            db_dir = f'{group_dir}'
+            files = os.listdir(db_dir)
+            for file in files:
+                # print(file)
+                if file.endswith(".tsv"):
+                    ndf = self.convert_tsv_to_flash_lfq(file=f'{db_dir}/{file}')
+                    df = pd.concat([df, ndf])
+                    # group_db = f'{group}/{db}'
+                    group_db = 'group'
+                    proteins = proteins_by_group[group_db]
+                    df = df[df["Protein Accession"].isin(proteins)]
+            if generate:
+                df.to_csv(f'{self.quantificationDir}/flash_lfq_input.tsv', sep='\t', index=False)
 
     def convert_tsv_to_moff(self, file):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
@@ -157,7 +163,8 @@ class MOFF:
 
     def __add_mzml_files_to_df(self, df, file_name):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
-        mzml = f'{os.path.abspath(self.args.mzml)}/{file_name.replace(".tsv", ".mzML")}'
+        # mzml = f'{os.path.abspath(self.args.mzml)}/{file_name.replace(".tsv", ".mzML").replace("_target", "")}'
+        mzml = f'{file_name.replace(".tsv", ".mzML").replace("_target", "")}'
         mzml_column = []
         length = len(df["peptide"].tolist())
         for i in range(length):
@@ -353,18 +360,21 @@ class MOFF:
             os.system(cmd)
 
     def run_flashlfq(self):
+        print(f"--Running FlashLFQ on protein identifications")
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
-        gen = group_folder_generator(self.quantificationDir)
-        check_multiple_dirs([self.flashLFQDir])
-        for content in gen:
-            group_dir = f'{self.flashLFQDir}/{content.group}'
-            db_dir = f'{group_dir}/{content.db}'
-            check_multiple_dirs([group_dir, db_dir])
-            if content.file.endswith(".tsv"):
-                cmd = f'{self.flashLFQPath} --idt {content.fullFile} --ppm 20 --rep {self.args.mzml}/{content.group} ' \
-                      f'--out {db_dir} --mbr true --thr {self.args.threads}'
-                self.params.append(cmd)
-                os.system(cmd)
+        # gen = group_folder_generator(self.quantificationDir)
+        # check_multiple_dirs([self.flashLFQDir])
+        # for content in gen:
+
+        # group_dir = f'{self.flashLFQDir}/{content.group}'
+        # db_dir = f'{group_dir}/{content.db}'
+        # check_multiple_dirs([group_dir, db_dir])
+        # if content.file.endswith(".tsv"):
+        file = f'{self.quantificationDir}/flash_lfq_input.tsv'
+        cmd = f'{self.flashLFQPath} --idt {file} --ppm 20 --rep {self.args.mzml} ' \
+              f'--out {self.quantificationDir} --mbr true --thr {self.args.threads}'
+        self.params.append(cmd)
+        os.system(cmd)
 
     def count_spectra(self):
         dbs = os.listdir(self.summarizedDir)

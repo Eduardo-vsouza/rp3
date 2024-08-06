@@ -15,6 +15,7 @@ from .dualpg import DuoMetrics
 from .paralogy import HomologyFinder
 from .quant import SpecComparison
 from .quantification import MOFF
+from .quant import FlashLFQ
 
 
 class Pipeline:
@@ -142,27 +143,6 @@ class Pipeline:
         duo.count_orfs()
 
     def calculate_metrics(self):
-        # if self.args.mode == 'metrics':
-        #     if not self.args.no_db:
-        #         db = True
-        #     else:
-        #         db = False
-        #     if not self.args.no_orfs:
-        #         orfs = True
-        #     else:
-        #         orfs = False
-        # else:
-        #     db = True
-        #     orfs = True
-        # if db:
-        #     db = DatabaseMetrics(args=self.args)
-        #     db.get_metrics()
-        #     db.save()
-        # if orfs:
-        #     orf = ORFMetrics(args=self.args)
-        #     orf.get_metrics()
-        #     orf.save()
-        #     orf.plot()
         summ = MicroproteinCombiner(args=self.args)
         summ.gather_microprotein_info()
         summ.save()
@@ -345,8 +325,8 @@ class Pipeline:
         assembly.clean_reads()
         assembly.remove_contaminants()
         assembly.align_to_genome()
-        # assembly.assemble_transcriptome()
-        # assembly.merge_transcriptomes()
+        assembly.assemble_transcriptome()
+        assembly.merge_transcriptomes()
         # assembly.check_index()
         # assembly.align()
         # assembly.assemble_transcriptomes()
@@ -368,11 +348,18 @@ class Pipeline:
             homo.perform_msa(blast='blastn')
 
     def compare_results(self):
-        comp = SpecComparison(args=self.args)
-        comp.get_spec_counts()
-        comp.add_overlaps()
-        comp.create_data_frame()
-        comp.separate_up_regulated()
+        if self.args.specCounts:
+            comp = SpecComparison(args=self.args)
+            comp.get_spec_counts()
+            comp.add_overlaps()
+            comp.create_data_frame()
+            comp.separate_up_regulated()
+        if self.args.flashLFQ:
+            quant = FlashLFQ(args=self.args)
+            quant.iterate_groups()
+            quant.prepare_input()
+            quant.run_flash_lfq()
+
 
     def visualize_context(self):
         from .pgcontext import PGContext

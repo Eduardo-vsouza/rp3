@@ -434,9 +434,25 @@ class RP3:
         self.modeArguments.add_argument("--groups", help="accepts multiple Rp3 output group names",
                                         nargs='+',
                                         action=StoreMultipleFiles)
+
         self.modeArguments.add_argument("--rescored", action="store_true")
         self.modeArguments.add_argument("--predictedOnly", action="store_true")
         self.modeArguments.add_argument("--microproteins", action="store_true")
+        self.modeArguments.add_argument("--flashLFQ", action="store_true", help="Run FlashLFQ "
+                                                                                "to quantify proteins.")
+        self.quantArguments = self.parser.add_argument_group("FlashLFQ arguments")
+        # self.quantArguments.add_argument("--mzml")
+        self.quantArguments.add_argument("--no_anno", action='store_true')
+        self.quantArguments.add_argument("--specCounts", action='store_true', help="Perform the search using spectral "
+                                                                                   "counts only, and not MS1 peak "
+                                                                                   "intensity. Does not require "
+                                                                                   "--mzml.")
+        self.quantArguments.add_argument("--mzmlFolders", help="accepts multiple mzml folder paths. "
+                                                              "Provide them in the same order as --results and "
+                                                              "--groups.",
+                                        nargs='+',
+                                        action=StoreMultipleFiles)
+        self.quantArguments.add_argument("--controlGroup")
 
     def __set_pgc_mode(self):
         self.modeArguments.add_argument("--gtf", help="gtf to intersect the Rp3 smORFs with")

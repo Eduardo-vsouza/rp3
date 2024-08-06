@@ -83,6 +83,10 @@ class PipelineStructure:
         self.rescoredMicroproteinsGTF = f'{self.rescoreSummarizedResultsDir}/filtered_rescored_microproteins_150.gtf'
         self.mergedFullGTF = f'{self.mergedResults}/merged_predicted_microproteins.gtf'
 
+        # quant
+        self.quantificationDir = f'{self.outdir}/quantification'
+
+        self.flashLFQInput = f'{self.quantificationDir}/flash_lfq_input.tsv'
 
         # transcriptomics
         self.rnaDir = f'{self.outdir}/transcriptomics'
@@ -313,8 +317,20 @@ class PipelineStructure:
         if os.path.exists(self.rescoredMicroproteinsFasta):
             pep = f'{self.rescorePostProcessDir}/group/peptides_fixed.txt'
         else:
-            pep = f'{self.postProcessDir}/'
+            pep = f'{self.postProcessDir}/group/peptides_fixed.txt'
         return pep
+
+    def is_rescored(self):
+        if os.path.exists(self.rescoredMicroproteinsFasta):
+            rescored = True
+        else:
+            rescored = False
+        return rescored
+    def select_search_dir(self):
+        if os.path.exists(self.rescoreSearchDir):
+            return self.rescoreSearchDir
+        else:
+            return self.searchDir
 
     def select_gtf(self):
         if os.path.exists(self.rescoredMicroproteinsGTF):
