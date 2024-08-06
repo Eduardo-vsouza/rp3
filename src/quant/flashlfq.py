@@ -47,6 +47,7 @@ class FlashLFQ(PipelineStructure):
             quant.get_fdr_peptides()
             quant.generate_flash_lfq_input()
             self.flashLFQInputs[group] = quant.flashLFQInput
+        self.print_row(word="comparisons", character="-")
 
     def __prepare_mzml(self):
         """
@@ -94,7 +95,6 @@ class FlashLFQ(PipelineStructure):
             dfs.append(df)
         cat_df = pd.concat(dfs)
         cat_df.to_csv(self.catFlashLFQInput, sep='\t', index=False)
-        print(self.mzmlFileByGroup)
         for result, group in zip(self.args.results, self.args.groups):
             if group != self.args.controlGroup:
                 files_to_include = self.mzmlFileByGroup[group] + self.mzmlFileByGroup[self.args.controlGroup]
@@ -105,11 +105,11 @@ class FlashLFQ(PipelineStructure):
     def run_flash_lfq(self):
         print(f"--Running FlashLFQ")
         for group in self.groupCompFolders:
+            self.print_row(word=f"{group} x {self.args.controlGroup}", character="--")
             cmd = (f'{self.toolPaths["FlashLFQ"]} '
                    f'--idt {self.comparisonsInputDir}/{self.args.controlGroup}_{group}_flashLFQ_input.tsv'
-                   f' --ppm 20 --rep {self.mzMLCatDir} '
+                   f' --ppm 20 --rep {self.mzMLCatDir} --nor --ctr {self.args.controlGroup} '
                    f'--out {self.groupCompFolders[group]} --thr {self.args.threads}')
-            print(cmd)
             os.system(cmd)
         print(f"--Done. Results at {self.flashLFQDir}.")
         self.print_row(word="Finished")
