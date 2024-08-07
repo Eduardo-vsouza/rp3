@@ -2,9 +2,11 @@ import os
 import sys
 
 import pandas as pd
+from Bio import SeqIO
 
 from ..pipeline_config import PipelineStructure
 from ..quantification import MOFF
+from ..utils import ProtSplit
 
 
 class FlashLFQ(PipelineStructure):
@@ -47,7 +49,7 @@ class FlashLFQ(PipelineStructure):
             quant.get_fdr_peptides()
             quant.generate_flash_lfq_input()
             self.flashLFQInputs[group] = quant.flashLFQInput
-        self.print_row(word="comparisons", character="-")
+        self.print_row(word="comparisons", character="=")
 
     def __prepare_mzml(self):
         """
@@ -97,19 +99,47 @@ class FlashLFQ(PipelineStructure):
         cat_df.to_csv(self.catFlashLFQInput, sep='\t', index=False)
         for result, group in zip(self.args.results, self.args.groups):
             if group != self.args.controlGroup:
-                files_to_include = self.mzmlFileByGroup[group] + self.mzmlFileByGroup[self.args.controlGroup]
-                df = cat_df[cat_df["File Name"].isin(files_to_include)]
-                df.to_csv(f'{self.comparisonsInputDir}/{self.args.controlGroup}_{group}_flashLFQ_input.tsv',
-                          sep='\t', index=False)
+                outfile = f'{self.comparisonsInputDir}/{self.args.controlGroup}_{group}_flashLFQ_input.tsv'
+                run = self.verify_checkpoint(outfile=outfile, step=f"input preparing for {group}")
+                if run:
+                    files_to_include = self.mzmlFileByGroup[group] + self.mzmlFileByGroup[self.args.controlGroup]
+                    df = cat_df[cat_df["File Name"].isin(files_to_include)]
+                    df.to_csv(f'{self.comparisonsInputDir}/{self.args.controlGroup}_{group}_flashLFQ_input.tsv',
+                              sep='\t', index=False)
 
     def run_flash_lfq(self):
         print(f"--Running FlashLFQ")
         for group in self.groupCompFolders:
-            self.print_row(word=f"{group} x {self.args.controlGroup}", character="--")
-            cmd = (f'{self.toolPaths["FlashLFQ"]} '
-                   f'--idt {self.comparisonsInputDir}/{self.args.controlGroup}_{group}_flashLFQ_input.tsv'
-                   f' --ppm 20 --rep {self.mzMLCatDir} --nor --ctr {self.args.controlGroup} '
-                   f'--out {self.groupCompFolders[group]} --thr {self.args.threads}')
-            os.system(cmd)
+            outfile = f'{self.groupCompFolders[group]}/BayesianFoldChangeAnalysis.tsv'
+            run = self.verify_checkpoint(outfile=outfile, step=f"FlashLFQ quantification for {group}")
+            self.print_row(word=f"{group} x {self.args.controlGroup}", character="-")
+            if run:
+                cmd = (f'{self.toolPaths["FlashLFQ"]} '
+                       f'--idt {self.comparisonsInputDir}/{self.args.controlGroup}_{group}_flashLFQ_input.tsv'
+                       f' --ppm 20 --rep {self.mzMLCatDir} --nor --ctr {group} '
+                       f'--out {self.groupCompFolders[group]} --thr {self.args.threads} --bay')
+                os.system(cmd)
         print(f"--Done. Results at {self.flashLFQDir}.")
         self.print_row(word="Finished")
+
+    def split_microproteins(self):
+        """
+        Splits the results into three subsets: unannotated microproteins, annotated microproteins, and
+        annotated standard-sized proteins.
+        """
+        print(f"--Splitting FlashLFQ results into protein groups")
+        protsplit = ProtSplit(args=self.args)
+        protsplit.split_protein_groups()
+        prot_groups = protsplit.get_protein_groups(order='group_prot')  # dict: protein, group
+        groups = os.listdir(self.flashLFQComparisonsDir)
+        for group in groups:  # first get all proteins that passed the thresholds. We need their sequences
+            outfile = f'{self.flashLFQComparisonsDir}/{group}/BayesianFoldChangeAnalysis.tsv'
+            df = pd.read_csv(outfile, sep='\t')
+            df = df[df["False Discovery Rate"] <= self.args.quantFDR]
+            df = df[abs(df["Protein Log2 Fold-Change"]) > self.args.foldChangeCutoff]
+            for prot_group in prot_groups:
+                outfile = f'{self.flashLFQComparisonsDir}/{group}/{prot_group}_foldChangeAnalysis.csv'
+                run = self.verify_checkpoint(outfile, step="foldChange analysis protein group splitting")
+                if run:
+                    gdf = df[df["Protein Group"].isin(prot_groups[prot_group])]
+                    gdf.to_csv(outfile, sep='\t', index=False)

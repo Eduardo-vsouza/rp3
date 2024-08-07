@@ -151,6 +151,11 @@ class PipelineStructure:
         self.intermediatePGCFiles = f'{self.pgContextDir}/intermediate_files'
         self.contextFiguresDir = f'{self.pgContextDir}/context_figures'
 
+        # protein groups
+        self.proteinGroupsDir = f'{self.outdir}/protein_groups'
+        self.proteinGroups = f'{self.proteinGroupsDir}/protein_groups.csv'
+
+
     # def __set__postms_mode(self):
     #     self.percInputSingle = f'{db_path}/percolator_input_single'
 
@@ -339,9 +344,29 @@ class PipelineStructure:
             gtf = self.uniqueMicroproteinsGTF
         return gtf
 
-    def verify_checkpoint(self, outfile, step):
+    def select_database(self, decoy=False):
+        db = None
+        if self.is_rescored():
+            if not decoy:
+                db = f'{self.rescoreDatabaseDir}/rescore_target_database.fasta'
+            else:
+                db = f'{self.rescoreDatabaseDir}/rescore_target_decoy_database.fasta'
+        else:
+            dbs = os.listdir(self.databaseDir)
+            for fasta in dbs:
+                if decoy:
+                    if fasta.endswith("target_decoy_database.fasta"):
+                        db = fasta
+                else:
+                    if fasta.endswith("target_database.fasta"):
+                        db = fasta
+        return db
+
+
+    def verify_checkpoint(self, outfile, step, mute=False):
         if os.path.exists(outfile) and not self.args.overwrite:
-            print(f"(!) Found output file {outfile}. Skipping {step}...")
+            if not mute:
+                print(f"(!) Found output file {outfile}. Skipping {step}...")
             run = False
         else:
             run = True

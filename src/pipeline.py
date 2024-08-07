@@ -359,6 +359,7 @@ class Pipeline:
             quant.iterate_groups()
             quant.prepare_input()
             quant.run_flash_lfq()
+            quant.split_microproteins()
 
 
     def visualize_context(self):
