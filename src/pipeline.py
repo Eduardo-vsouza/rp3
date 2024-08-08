@@ -360,6 +360,9 @@ class Pipeline:
             quant.prepare_input()
             quant.run_flash_lfq()
             quant.split_microproteins()
+            quant.format_intermediate_heatmap_input()
+            quant.merge_conditions_heatmaps()
+
 
 
     def visualize_context(self):

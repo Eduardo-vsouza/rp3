@@ -80,8 +80,6 @@ class MOFF(PipelineStructure):
         with open(f'{self.summarizedDir}/proteins_by_group_db.json', 'w') as outfile:
             json.dump(proteins_by_file, outfile)
 
-
-
     def generate_moff_input(self):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
         groups = os.listdir(self.searchDir)
