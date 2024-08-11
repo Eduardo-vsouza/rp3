@@ -12,5 +12,7 @@ Full documentation at: https://eduardo-vsouza.github.io/
 # Contact
 The Rp3 pipeline is in continuous development. For any questions or suggestions, please contact me at esouza@salk.edu or open an issue on this GitHub page.
 
-  
+# Citation
+If you used the Rp3 pipeline, please cite its manuscript:
+Vieira de Souza, E., L. Bookout, A., Barnes, C.A. et al. Rp3: Ribosome profiling-assisted proteogenomics improves coverage and confidence during microprotein discovery. Nat Commun 15, 6839 (2024). https://doi.org/10.1038/s41467-024-50301-4
 
