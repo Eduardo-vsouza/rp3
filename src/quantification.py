@@ -63,6 +63,7 @@ class MOFF(PipelineStructure):
         # peptides = f'{content.dbDir}/peptides_fixed.txt'
         df = pd.read_csv(peptides, sep='\t')
         df = df[df["q-value"] <= 0.01]
+        df = df[~df["proteinIds"].str.contains(",")]
         df = df[(df["proteinIds"].str.contains("rev_") == False) & (df["proteinIds"].str.contains("contaminant") == False)]
         if self.args.no_anno:
             df = df[df["proteinIds"].str.contains("_ANNO") == False]
@@ -129,7 +130,7 @@ class MOFF(PipelineStructure):
             files = os.listdir(db_dir)
             for file in files:
                 # print(file)
-                if file.endswith(".tsv"):
+                if file.endswith(".tsv") and 'spectraRT' not in file:
                     ndf = self.convert_tsv_to_flash_lfq(file=f'{db_dir}/{file}')
                     df = pd.concat([df, ndf])
                     # group_db = f'{group}/{db}'
@@ -174,7 +175,10 @@ class MOFF(PipelineStructure):
     def convert_tsv_to_flash_lfq(self, file):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
         df = pd.read_csv(file, sep='\t')
+        # print(df.columns)
+        print('└──', file)
         # df = df[['a', 'b']]
+        # if 'modification_info' in df.columns:
         df = df[['peptide', 'protein', 'modification_info', 'retention_time', 'calc_neutral_pep_mass', 'charge']]
         mods = self.__reformat_modifications_flash_lfq(df)
         proteins = self.__reformat_protein_accession(df)

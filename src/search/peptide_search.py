@@ -249,8 +249,9 @@ class MSFragger(PipelineStructure):
                               f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
                               f'--digest_min_length {min_pep_len} {tmt_mod} --digest_max_length {max_pep_len}{search_files[db]}'
                         self.params.append(cmd)
-                        if not self.args.quantifyOnly:
-                            self.exec(cmd)
+                        os.system(cmd)
+                        # if not self.args.quantifyOnly:
+                        #     self.exec(cmd)
                         # print(cmd)
                         # os.system(cmd)
                     # print("\n TARGET \n\n")

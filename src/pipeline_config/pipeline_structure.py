@@ -182,11 +182,15 @@ class PipelineStructure:
             self.rescoredPathogenMicroproteins = f'{self.duoDir}/{self.args.pathoPattern}_rescored_microproteins.fasta'
 
     def __set_demo_args(self):
+        # rna
+        # self.args.pairedPattern = ''
+        # database
+
         self.args.genome = f'{self.testDir}/genome.fasta'
         self.args.proteome = f'{self.testDir}/proteome.fasta'
         self.args.refseq = f'{self.testDir}/refseq.fasta'
         self.args.gtf = f'{self.testDir}/demo.gtf'
-        self.args.mzml = f'{self.testDir}/search'
+        self.args.mzml = f'{self.testDir}/search/group'
         # self.args.outdir = f'{sys.path[0]}/demo_outdir/'
         self.outdir = self.args.outdir
         self.args.gtf_folder = f'{self.testDir}/database'
@@ -197,6 +201,8 @@ class PipelineStructure:
 
 
         # search
+        self.args.quantifyOnly = False
+        self.args.quantify = False
         self.args.cat = True
         self.args.quantify = False
         self.args.mod = None
@@ -217,8 +223,13 @@ class PipelineStructure:
         self.args.minReplicates = 1
         self.args.rescore = True
         self.args.rescored = True
+        self.args.keepAnnotated = False
+        self.args.maxORFLength = 150
+        self.args.phosphorylation = False
+        self.args.groupedFDR = False
 
         # ribocov
+        self.args.manualPlot = False
         self.args.adapter = "AGATCGGAAGAGCACACGTCT"
         self.args.genome_index = f'{sys.path[0]}/STAR_indexes/hg19.star'
         self.args.cont_index = f'{sys.path[0]}/STAR_indexes/hg19cont.star'

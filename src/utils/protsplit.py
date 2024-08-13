@@ -5,9 +5,11 @@ from ..pipeline_config import PipelineStructure
 
 
 class ProtSplit(PipelineStructure):
-    def __init__(self, args):
+    def __init__(self, args, outdir):
         super().__init__(args=args)
+        self.outdir = outdir
         self.check_dirs([self.proteinGroupsDir])
+        # self.peptidesDF
         self.proteinDict = self.__split_results()
 
     def split_protein_groups(self):
@@ -26,6 +28,7 @@ class ProtSplit(PipelineStructure):
         run = self.verify_checkpoint(outfile=self.proteinGroups, step="protein group splitting", mute=True)
         if run:
             file = self.select_peptides_df()
+            file = f'{self.rescorePostProcessDir}/group/peptides_fixed.txt'
             df = pd.read_csv(file, sep='\t')
             df = df[df["q-value"] <= 0.01]
             df = df[~df["proteinIds"].str.contains("rev_")]

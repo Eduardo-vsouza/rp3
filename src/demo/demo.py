@@ -16,13 +16,15 @@ class Demo(PipelineStructure):
 
     # self.check_dirs([self.demoO])
     def test(self):
+        # self.__test_rna_mode()
         self.__test_database_mode()
         self.__test_search_mode()
         self.__test_ribocov_mode()
-        # self.__test_rna_mode()
 
     def __test_rna_mode(self):
         if not self.args.skip_rna:
+            self.args.libType = 'paired'
+
             pipe = Pipeline(args=self.args)
             pipe.assemble_transcriptomes()
             skip = False

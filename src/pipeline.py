@@ -42,6 +42,9 @@ class Pipeline:
             os.mkdir(self.translationFolder)
 
     def translate_in_silico(self):
+        assembly = f'{self.outdir}/transcriptomics/assembly/merged_assembly.gtf'
+        if os.path.exists(assembly):
+            self.args.gtf_folder = assembly
         translation = GTFtoFasta(folder=self.args.gtf_folder, genome=self.args.genome,
                                  local_outdir=self.translationFolder)
         translation.translate()
@@ -49,9 +52,11 @@ class Pipeline:
         self.parameters.update_params_file()
 
     def generate_databases(self):
+        self.args.cat = True
         database = Database(outdir=self.outdir, reference_proteome=self.args.proteome,
                             translation_folder=self.translationFolder, external_database=self.args.external_database,
                             args=self.args)
+
         if self.args.external_database is None:
             # database.unzip_assemblies()
             ...
@@ -314,7 +319,7 @@ class Pipeline:
             counter = ORFCounter(args=self.args)
             counter.count_smorfs_union()
 
-            seqdist = SeqDist(args=self.args)
+            # seqdist = SeqDist(args=self.args)
             # seqdist.get_genome_coverage()
             # seqdist.get_orf_coverage()
             # seqdist.plot_coverage()
@@ -327,10 +332,6 @@ class Pipeline:
         assembly.align_to_genome()
         assembly.assemble_transcriptome()
         assembly.merge_transcriptomes()
-        # assembly.check_index()
-        # assembly.align()
-        # assembly.assemble_transcriptomes()
-        # assembly.merge_assemblies()
 
     def find_homologs(self):
         homo = HomologyFinder(args=self.args)
@@ -361,8 +362,9 @@ class Pipeline:
             quant.run_flash_lfq()
             quant.split_microproteins()
             quant.format_intermediate_heatmap_input()
-            quant.merge_conditions_heatmaps()
-
+            # quant.merge_conditions_heatmaps()
+            # quant.generate_heatmaps()
+            quant.erupt_volcanoes()
 
 
     def visualize_context(self):

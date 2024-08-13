@@ -453,8 +453,8 @@ class RP3:
                                         nargs='+',
                                         action=StoreMultipleFiles)
         self.quantArguments.add_argument("--controlGroup")
-        self.quantArguments.add_argument("--quantFDR", default=0.01)
-        self.quantArguments.add_argument("--foldChangeCutoff", default=0.01)
+        self.quantArguments.add_argument("--quantFDR", default=0.01, type=float)
+        self.quantArguments.add_argument("--foldChangeCutoff", default=0.01, type=float)
 
     def __set_pgc_mode(self):
         self.modeArguments.add_argument("--gtf", help="gtf to intersect the Rp3 smORFs with")
