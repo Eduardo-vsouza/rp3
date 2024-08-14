@@ -62,8 +62,8 @@ class FlashLFQ(PipelineStructure):
             args = self.args
             args.outdir = result
             quant = MOFF(args=args, outdir=result)
-            # quant.get_fdr_peptides()
-            # quant.generate_flash_lfq_input()
+            quant.get_fdr_peptides()
+            quant.generate_flash_lfq_input()
             self.flashLFQInputs[group] = quant.flashLFQInput
         self.print_row(word="comparisons", character="=")
 
@@ -144,10 +144,13 @@ class FlashLFQ(PipelineStructure):
         annotated standard-sized proteins.
         """
         print(f"--Splitting FlashLFQ results into protein groups")
-        protsplit = ProtSplit(args=self.args)
+        prot_groups = {}
+        for results in self.args.results:
+            protsplit = ProtSplit(outdir=results)
+            protsplit.split_protein_groups()
+            this_prot_groups = protsplit.get_protein_groups(order='group_prot')  # dict: protein, group
+            prot_groups.update(this_prot_groups)
 
-        protsplit.split_protein_groups()
-        prot_groups = protsplit.get_protein_groups(order='group_prot')  # dict: protein, group
         groups = os.listdir(self.flashLFQComparisonsDir)
         for group in groups:  # first get all proteins that passed the thresholds. We need their sequences
             outfile = self.__get_group_foldchange_output(group)
@@ -380,12 +383,16 @@ class FlashLFQ(PipelineStructure):
         plt.axvline(x=self.args.foldChangeCutoff, color='black', linestyle='--', label='Fold Change Cutoff')
         plt.axvline(x=-self.args.foldChangeCutoff, color='black', linestyle='--', label='Fold Change Cutoff')
         plt.xlim(min(x_min - 0.5, -1.5), max(x_max + 0.5, 1.5))  # Ensuring the xlim includes -1 to 1 range
-        plt.ylim(y_min - 0.5, y_max + 0.5)  # Add some padding around the limits
+        plt.ylim(y_min, y_max + 0.5)  # Add some padding around the limits
 
         plt.axhline(y=-np.log10(0.05), color='black', linestyle='--', label='q-value Cutoff')
         passed_cutoffs = (df[fdr] <= self.args.quantFDR) & (abs(df['Protein Log2 Fold-Change']) >= self.args.foldChangeCutoff)
         df_passed = df[passed_cutoffs]
         ax = plt.gca()
+        x = 0.05
+        for i, row in df_passed.iterrows():
+            plt.text(row['Protein Log2 Fold-Change']+x, row['-log10(q-value)'], row['Protein Group'].split("_")[0].split("|")[-1],
+                     fontsize=8)
 
         # plt.xlim(x_min, x_max)  # Add some padding around the limits
         # plt.ylim(y_min, y_max)  # Add some padding around the limits
