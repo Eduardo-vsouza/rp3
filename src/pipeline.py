@@ -16,6 +16,7 @@ from .paralogy import HomologyFinder
 from .quant import SpecComparison
 from .quantification import MOFF
 from .quant import FlashLFQ
+from .shiny import RPS
 
 
 class Pipeline:
@@ -385,4 +386,8 @@ class Pipeline:
             pgc.define_smorf_limits()
             pgc.gather_ms_peptides()
             pgc.analyze_context()
+
+    def create_rps(self):
+        rps = RPS(args=self.args)
+        rps.visualize()
 

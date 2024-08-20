@@ -119,6 +119,9 @@ class RP3:
         elif self.mode == 'pgc':
             self.__set_pgc_mode()
 
+        elif self.mode == 'rps':
+            self.__set_rps_mode()
+
         # def check_mode(self):
         #     if self.mode == 'first_mode':
         #         self.__set_align_mode()
@@ -465,6 +468,15 @@ class RP3:
         self.modeArguments.add_argument("--noPep", action="store_true")
         self.modeArguments.add_argument("--noPepSeq", action="store_true")
 
+    def __set_rps_mode(self):
+        self.modeArguments.add_argument("--results", help="accepts multiple Rp3 output directories",
+                                        nargs='+',
+                                        action=StoreMultipleFiles)
+        self.modeArguments.add_argument("--groups", help="accepts multiple Rp3 output group names",
+                                        nargs='+',
+                                        action=StoreMultipleFiles)
+        self.modeArguments.add_argument("--compare", action="store_true")
+
     def execute(self):
         if not self.mode == 'demo':
             pipe = Pipeline(args=self.args)
@@ -550,6 +562,8 @@ class RP3:
         elif self.mode == 'pgc':
             pipe.visualize_context()
 
+        elif self.mode == 'rps':
+            pipe.create_rps()
 
 if __name__ == '__main__':
     print(" ____       _____\n"

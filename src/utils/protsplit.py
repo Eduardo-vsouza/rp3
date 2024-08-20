@@ -14,6 +14,8 @@ class ProtSplit:
 
         self.proteinGroupsDir = f'{outdir}/protein_groups'
         PipelineStructure.check_dirs([self.proteinGroupsDir])
+        self.sequences = {}
+
         self.proteinDict = self.__split_results()
         self.proteinGroups = f'{self.proteinGroupsDir}/protein_groups.csv'
 
@@ -36,7 +38,7 @@ class ProtSplit:
                 data['group'].append(group)
         df = pd.DataFrame(data)
         df.to_csv(self.proteinGroups, sep='\t', index=False)
-        self.proteinDict = {}
+        # self.proteinDict = {}
 
     def __split_results(self):
         file = f'{self.outdir}/rescore/post_processing/group/peptides_fixed.txt'
@@ -47,9 +49,12 @@ class ProtSplit:
         prots = df["proteinIds"].tolist()
         filtered_proteins = []
         for prot in prots:
+            prot = prot.replace(",_", "__")
+
             proteins = prot.split(",")
             for protein in proteins:
-                filtered_proteins.append(protein)
+                if 'ANNO' not in prots:
+                    filtered_proteins.append(protein)
         protein_dict = self.__get_prot_dict(filtered_proteins)
         return protein_dict
 
@@ -59,15 +64,18 @@ class ProtSplit:
         records = SeqIO.parse(self.db, 'fasta')
         for record in records:
             entry = str(record.description)
-            if entry in filtered_proteins:
-                seq = str(record.seq)
-                if len(seq) <= mp_threshold:
-                    if '_ANNO' not in entry:
+            seq = str(record.seq)
+
+            self.sequences[entry] = seq
+
+            if len(seq) <= mp_threshold:
+                if '_ANNO' not in entry:
+                    if entry in filtered_proteins:
                         protein_dict['microproteins'].append(entry)
-                    else:
-                        protein_dict['annotated_microproteins'].append(entry)
                 else:
-                    protein_dict['standard'].append(entry)
+                    protein_dict['annotated_microproteins'].append(entry)
+            else:
+                protein_dict['standard'].append(entry)
         return protein_dict
 
     def get_protein_groups(self, order='group_prot'):
