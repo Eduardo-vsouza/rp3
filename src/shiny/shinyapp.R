@@ -21,9 +21,10 @@ if (length(df_aliases) != length(paths_to_dfs)) {
 }
 
 ui <- fluidPage(
-  titlePanel("Data Frame Viewer with Filtering, Volcano Plot, and Image Comparison"),
+  titlePanel("RpShiny"),
   sidebarLayout(
     sidebarPanel(
+      width=3,
       selectInput("selected_df", "Select Data Frame", choices = df_aliases),
       uiOutput("column_selector"),
       actionButton("apply_filters", "Apply Filters", class = "btn-primary"),
