@@ -89,12 +89,15 @@ class FlashLFQ(PipelineStructure):
         df.to_csv(self.metadataFile, sep='\t', index=False)
 
     def __prepare_metadata(self, files, group, fraction):
+        j = 0
         for i, file in enumerate(files):
-            self.metadata['FileName'].append(file.split(".")[0])
-            self.metadata['Condition'].append(group)
-            self.metadata['Biorep'].append(i+1)
-            self.metadata['Fraction'].append(fraction)
-            self.metadata['Techrep'].append(1)
+            if file.split(".")[0] not in self.metadata['FileName']:
+                j += 1
+                self.metadata['FileName'].append(file.split(".")[0])
+                self.metadata['Condition'].append(group)
+                self.metadata['Biorep'].append(j)
+                self.metadata['Fraction'].append(fraction)
+                self.metadata['Techrep'].append(1)
 
     def __define_outdirs(self):
         folders = {}
