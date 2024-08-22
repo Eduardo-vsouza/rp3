@@ -37,6 +37,8 @@ class RPS(PipelineStructure):
         print(cmd)
         os.system(cmd)
 
+
+
     def __get_fold_change_dfs(self):
         compdir = f'{self.args.results[0]}/flashLFQ/comparisons'
         comps = os.listdir(compdir)
@@ -56,6 +58,15 @@ class RPS(PipelineStructure):
             df_paths += f'{df},'
         return df_paths[:-1]
 
+    def filter_fold_change_df(self, df):
+        """
+        Removes unnecessary columns for shiny visualization
+        """
+        to_drop = ['Standard Deviation of Peptide Log2 Fold Changes',
+                   'Bayes.Factor'
+                   'Gene',
+                   'Organism',
+                   ]
 
     def __get_results_data_frames(self):
         paths = {}

@@ -132,7 +132,7 @@ class FlashLFQ(PipelineStructure):
             if run:
                 cmd = (f'{self.toolPaths["FlashLFQ"]} '
                        f'--idt {self.comparisonsInputDir}/{self.args.controlGroup}_{group}_flashLFQ_input.tsv'
-                       f' --ppm 50 --rep {self.mzMLCatDir} --nor --ctr {group} '
+                       f' --ppm 50 --rep {self.mzMLCatDir} --nor --ctr {self.args.controlGroup} '
                        f'--out {self.groupCompFolders[group]} --thr {self.args.threads} --bay')
                 os.system(cmd)
 

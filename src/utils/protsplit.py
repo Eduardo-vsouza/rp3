@@ -49,9 +49,9 @@ class ProtSplit:
         prots = df["proteinIds"].tolist()
         filtered_proteins = []
         for prot in prots:
-            prot = prot.replace(",_", "__")
+            proto = prot.replace(",_", "_").replace("__", "_")
 
-            proteins = prot.split(",")
+            proteins = proto.split(",")
             for protein in proteins:
                 if 'ANNO' not in prots:
                     filtered_proteins.append(protein)
@@ -65,7 +65,8 @@ class ProtSplit:
         for record in records:
             entry = str(record.description)
             seq = str(record.seq)
-
+            # if 'sp|' in entry:
+            entry = entry.replace(",_", "_").replace("__", "_")
             self.sequences[entry] = seq
 
             if len(seq) <= mp_threshold:
