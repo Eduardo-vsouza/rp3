@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 
 import pandas as pd
 
@@ -37,7 +38,9 @@ class RPS(PipelineStructure):
         pgc_cols = ','.join([f'PGContext_{group}' for group in self.args.groups])
         print(pgc_cols)
         pgc_paths = ','.join([f'{result}/pg_context/context_figures' for result in self.args.results])
-        cmd = f'Rscript {self.shinyRScript} {fold_change_dfs} {pgc_cols} {pgc_paths} {alias}'
+        msa_cols = ','.join([f'MSA_{group}' for group in self.args.groups])
+        msa_paths = ','.join([f'{result}/homology/MSA_prot' for result in self.args.results])
+        cmd = f'Rscript {self.shinyRScript} {fold_change_dfs} {pgc_cols} {pgc_paths} {alias} {msa_cols} {msa_paths}'
         print(cmd)
         os.system(cmd)
 
@@ -88,20 +91,23 @@ class RPS(PipelineStructure):
             if file.endswith("unique.csv"):
                 unique_df_input = pd.read_csv(f'{self.args.outdir}/{file}', sep='\t')
                 unique_df_input = self.__add_ribocov(df=unique_df_input)
+                unique_df_input = self.__add_paralogs_msa(df=unique_df_input)
                 unique_df = self.__add_pg_context(unique_df_input, save=f'{self.args.outdir}/{file}')
             elif file.endswith("upregulated.csv"):
                 enriched_input = pd.read_csv(f'{self.args.outdir}/{file}', sep='\t')
                 enriched_input = self.__add_ribocov(df=enriched_input)
+                enriched_input = self.__add_paralogs_msa(df=enriched_input)
                 enriched =  self.__add_pg_context(enriched_input, save=f'{self.args.outdir}/{file}')
 
         full_comp_input = pd.read_csv(f'{self.args.outdir}/group_comparison.csv', sep='\t')
         full_comp_input = self.__add_ribocov(df=full_comp_input)
+        full_comp_input = self.__add_paralogs_msa(df=full_comp_input)
         full_comp = self.__add_pg_context(full_comp_input, save=f'{self.args.outdir}/group_comparison.csv')
 
         dfs = [unique_df, enriched, full_comp]
         for df in dfs:
             df_paths += f'{df},'
-            alias = df.split("/")[-1].replace("_pgc", "")
+            alias = df.split("/")[-1].replace("_pgc", "").replace("_forShiny.csv", "")
             df_alias += f'{alias},'
         return df_paths[:-1], df_alias[:-1]
 
@@ -188,31 +194,58 @@ class RPS(PipelineStructure):
             mapping_groups[smorf] = group
         return mapping_groups
 
-    def __add_paralogs_msa(self, df, protein_col):
+    def __add_paralogs_msa(self, df, protein_col='protein'):
         """
         :param df: pandas data frame to be used in the Shiny app. This will add data for paralogs in the genome
         and paths to their MSA files
         """
         paths = {}
         proteins = df[protein_col].tolist()
+
         for results, group in zip(self.args.results, self.args.groups):
+
             if group not in paths:
                 paths[group] = []
+                paths[f'homologs_{group}'] = []
             for prot in proteins:
-                added = False
+                added_fasta = False
+
+                added_msa = False
                 msa_dir = f'{results}/homology/MSA_prot'
                 if os.path.exists(msa_dir):
                     files = os.listdir(msa_dir)
                     for file in files:
                         if prot in file:
-                            paths[group].append(os.path.abspath(f'{msa_dir}/{file}'))
-                            added = True
-                            break
-                if not added:
+                            if file.endswith(".pdf") and not added_msa:
+                                paths[group].append(os.path.abspath(f'{msa_dir}/{file}'))
+                                added_msa = True
+                            if file.endswith(".fasta") and not added_fasta:
+                                homologs = self.__count_homologs_in_fasta(msa_fasta=os.path.abspath(f'{msa_dir}/{file}'))
+                                added_fasta = True
+                                paths[f'homologs_{group}'].append(homologs)
+                if not added_msa:
                     paths[group].append('')
+                if not added_fasta:
+                    paths[f'homologs_{group}'].append('')
         for group in paths:
-            df.insert(5, f"MSA_{group}", paths[group])
+            if 'homologs' not in group:
+                df.insert(6, f"MSA_{group}", paths[group])
+            else:
+                df.insert(7, group, paths[group])
         return df
+
+    def __count_homologs_in_fasta(self, msa_fasta):
+        grep_process = subprocess.run(['grep', '>', msa_fasta], stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      text=True)
+
+        # Pass the grep output to wc -l
+        wc_process = subprocess.run(['wc', '-l'], input=grep_process.stdout, stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE, text=True)
+
+        # Convert the output to an integer and subtract 1
+        homologs = int(wc_process.stdout.strip()) - 1
+
+        return homologs
 
     def __get_results_data_frames(self):
         paths = {}

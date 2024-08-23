@@ -9,7 +9,8 @@ paths_to_dfs <- strsplit(args[1], ",")[[1]]  # Comma-separated paths to data fra
 image_columns <- strsplit(args[2], ",")[[1]]  # Comma-separated image column names
 image_dirs <- strsplit(args[3], ",")[[1]]  # Comma-separated directories for each image column
 df_aliases <- strsplit(args[4], ",")[[1]]  # Comma-separated aliases for the data frames
-
+pdf_columns <- strsplit(args[5], ",")[[1]]  # Comma-separated PDF column names
+pdf_dirs <- strsplit(args[6], ",")[[1]]
 # Load data frames
 df_list <- lapply(paths_to_dfs, function(path) {
   read.table(path, sep='\t', header=TRUE, stringsAsFactors = FALSE)
@@ -25,7 +26,6 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       width=3,
-      height=10,
       selectInput("selected_df", "Select Data Frame", choices = df_aliases),
       uiOutput("column_selector"),
       actionButton("apply_filters", "Apply Filters", class = "btn-primary"),
@@ -36,7 +36,8 @@ ui <- fluidPage(
       DTOutput("data_table"),
       plotlyOutput("volcano_plot"),
       fluidRow(
-        uiOutput("image_output_panels")  # This will render multiple image panels side by side
+        uiOutput("image_output_panels"),  # This will render multiple image panels side by side
+        uiOutput("pdf_output_panels")     # This will render multiple PDF panels side by side
       )
     )
   )
@@ -48,10 +49,14 @@ server <- function(input, output, session) {
     addResourcePath(paste0("image_dir_", i), image_dirs[i])
   }
   
+  # Register each PDF directory as a resource path with a unique alias
+  for (i in seq_along(pdf_dirs)) {
+    addResourcePath(paste0("pdf_dir_", i), pdf_dirs[i])
+  }
+  
   # Reactive expression to get the currently selected data frame
   current_df <- reactive({
     req(input$selected_df)
-    # Find the index of the selected alias in df_aliases
     df_index <- match(input$selected_df, df_aliases)
     if (!is.na(df_index) && df_index > 0 && df_index <= length(df_list)) {
       df <- df_list[[df_index]]
@@ -94,7 +99,7 @@ server <- function(input, output, session) {
     df
   })
   
-  # Render the data table with clickable "Show Image" links
+  # Render the data table with clickable "Show Image" and "Show PDF" links
   output$data_table <- renderDT({
     df <- filtered_data()
     if (is.null(df)) return(NULL)
@@ -114,6 +119,21 @@ server <- function(input, output, session) {
       }
     }
     
+    # Ensure PDF columns are associated with their respective directories
+    for (i in seq_along(pdf_columns)) {
+      col <- pdf_columns[i]
+      
+      if (col %in% names(df)) {
+        # Construct relative PDF path using the resource path alias and show "Show PDF" link
+        df[[col]] <- ifelse(!is.na(df[[col]]) & grepl("\\.pdf$", df[[col]]),
+                            {
+                              relative_pdf_path <- file.path(paste0("pdf_dir_", i), basename(df[[col]]))
+                              paste0('<a href="#" onclick="Shiny.setInputValue(\'pdf_click_', i, '\', \'', relative_pdf_path, '\')">Show PDF</a>')
+                            },
+                            df[[col]])
+      }
+    }
+    
     datatable(df, escape = FALSE, filter = "top", options = list(autoWidth = TRUE))
   }, server = TRUE)
   
@@ -121,12 +141,24 @@ server <- function(input, output, session) {
   output$image_output_panels <- renderUI({
     img_panels <- lapply(seq_along(image_columns), function(i) {
       column(
-        width = 10,
+        width = 6,
         h4(paste("Image from", image_columns[i])),
         uiOutput(paste0("image_output_", i))
       )
     })
     do.call(fluidRow, img_panels)
+  })
+  
+  # Dynamically create UI outputs for each PDF column
+  output$pdf_output_panels <- renderUI({
+    pdf_panels <- lapply(seq_along(pdf_columns), function(i) {
+      column(
+        width = 6,
+        h4(paste("PDF from", pdf_columns[i])),
+        uiOutput(paste0("pdf_output_", i))
+      )
+    })
+    do.call(fluidRow, pdf_panels)
   })
   
   # Handle image display for each image column independently
@@ -135,10 +167,21 @@ server <- function(input, output, session) {
       column_index <- i
       observeEvent(input[[paste0("image_click_", column_index)]], {
         relative_img_path <- input[[paste0("image_click_", column_index)]]
-        print(paste("Image clicked for column", image_columns[column_index], ":", relative_img_path))  # Debugging
-        
         output[[paste0("image_output_", column_index)]] <- renderUI({
           tags$img(src = relative_img_path, width = "100%", height = "auto")
+        })
+      })
+    })
+  }
+  
+  # Handle PDF display for each PDF column independently
+  for (i in seq_along(pdf_columns)) {
+    local({
+      column_index <- i
+      observeEvent(input[[paste0("pdf_click_", column_index)]], {
+        relative_pdf_path <- input[[paste0("pdf_click_", column_index)]]
+        output[[paste0("pdf_output_", column_index)]] <- renderUI({
+          tags$iframe(src = relative_pdf_path, width = "100%", height = "600px")
         })
       })
     })
