@@ -48,18 +48,29 @@ class RPS(PipelineStructure):
         df_paths = ''
         df_alias = ''
         for comp in comps:
-            annotated_mp = f'{compdir}/{comp}/annotated_microproteins_foldChangeAnalysis.csv'
-            annotated_std = f'{compdir}/{comp}/standard_foldChangeAnalysis.csv'
-            mp = f'{compdir}/{comp}/microproteins_foldChangeAnalysis.csv'
+            annotated_mp = pd.read_csv(f'{compdir}/{comp}/annotated_microproteins_foldChangeAnalysis.csv', sep='\t')
+            annotated_std = pd.read_csv(f'{compdir}/{comp}/standard_foldChangeAnalysis.csv', sep='\t')
+            mp = pd.read_csv(f'{compdir}/{comp}/microproteins_foldChangeAnalysis.csv', sep='\t')
 
 
-            annotated_mp_pgc = self.__add_pg_context(file=annotated_mp, protein_col='Protein Group')
-            annotated_std_pgc = self.__add_pg_context(file=annotated_std, protein_col='Protein Group')
-            mp_pgc = self.__add_pg_context(file=mp, protein_col='Protein Group')
+            annotated_mp = self.__add_ribocov(annotated_mp, protein_col='Protein Group')
+            annotated_std = self.__add_ribocov(annotated_std, protein_col='Protein Group')
+            mp = self.__add_ribocov(mp, protein_col='Protein Group')
 
-            annotated_mp_shiny = self.__filter_fold_change_df(annotated_mp_pgc)
-            annotated_std_shiny = self.__filter_fold_change_df(annotated_std_pgc)
-            mp_shiny = self.__filter_fold_change_df(mp_pgc)
+            annotated_mp = self.__add_pg_context(df=annotated_mp, protein_col='Protein Group')
+            annotated_std = self.__add_pg_context(df=annotated_std, protein_col='Protein Group')
+            mp = self.__add_pg_context(df=mp, protein_col='Protein Group')
+
+            annotated_mp = self.__add_paralogs_msa(df=annotated_mp, protein_col='Protein Group')
+            annotated_std = self.__add_paralogs_msa(df=annotated_std, protein_col='Protein Group')
+            mp = self.__add_paralogs_msa(df=mp, protein_col='Protein Group')
+
+            annotated_mp_shiny = self.__filter_fold_change_df(df=annotated_mp,
+                                                              file=f'{compdir}/{comp}/annotated_microproteins_foldChangeAnalysis.csv')
+            annotated_std_shiny = self.__filter_fold_change_df(annotated_std,
+                                                               file=f'{compdir}/{comp}/standard_foldChangeAnalysis.csv')
+            mp_shiny = self.__filter_fold_change_df(mp,
+                                                    file=f'{compdir}/{comp}/microproteins_foldChangeAnalysis.csv')
 
             dfs = [annotated_mp_shiny, annotated_std_shiny, mp_shiny]
             for df in dfs:
@@ -75,13 +86,17 @@ class RPS(PipelineStructure):
         enriched = ''
         for file in files:
             if file.endswith("unique.csv"):
-                unique_df_input = f'{self.args.outdir}/{file}'
-                unique_df = self.__add_pg_context(unique_df_input)
+                unique_df_input = pd.read_csv(f'{self.args.outdir}/{file}', sep='\t')
+                unique_df_input = self.__add_ribocov(df=unique_df_input)
+                unique_df = self.__add_pg_context(unique_df_input, save=f'{self.args.outdir}/{file}')
             elif file.endswith("upregulated.csv"):
-                enriched_input = f'{self.args.outdir}/{file}'
-                enriched =  self.__add_pg_context(enriched_input)
-        full_comp_input = f'{self.args.outdir}/group_comparison.csv'
-        full_comp = self.__add_pg_context(full_comp_input)
+                enriched_input = pd.read_csv(f'{self.args.outdir}/{file}', sep='\t')
+                enriched_input = self.__add_ribocov(df=enriched_input)
+                enriched =  self.__add_pg_context(enriched_input, save=f'{self.args.outdir}/{file}')
+
+        full_comp_input = pd.read_csv(f'{self.args.outdir}/group_comparison.csv', sep='\t')
+        full_comp_input = self.__add_ribocov(df=full_comp_input)
+        full_comp = self.__add_pg_context(full_comp_input, save=f'{self.args.outdir}/group_comparison.csv')
 
         dfs = [unique_df, enriched, full_comp]
         for df in dfs:
@@ -90,11 +105,11 @@ class RPS(PipelineStructure):
             df_alias += f'{alias},'
         return df_paths[:-1], df_alias[:-1]
 
-    def __filter_fold_change_df(self, file):
+    def __filter_fold_change_df(self, df, file):
         """
         Removes unnecessary columns for shiny visualization
         """
-        df = pd.read_csv(file, sep='\t')
+        # df = pd.read_csv(file, sep='\t')
         to_drop = ['Standard Deviation of Peptide Log2 Fold-Changes',
                    'Bayes Factor',
                    'Gene',
@@ -114,12 +129,13 @@ class RPS(PipelineStructure):
         df.to_csv(outfile, sep='\t', index=False)
         return outfile
 
-    def __add_pg_context(self, file, protein_col='protein'):
+    def __add_pg_context(self, df, protein_col='protein', save=None):
         """
         Add paths to the appropriate PGC figures to display on the Shiny App.
         """
-        df = pd.read_csv(file, sep='\t')
+        # df = pd.read_csv(file, sep='\t')
         prots = df[protein_col].tolist()
+        print(df)
         fig_paths = {}
         for result, group in zip(self.args.results, self.args.groups):
             if group not in fig_paths:
@@ -132,23 +148,71 @@ class RPS(PipelineStructure):
                     if prot in fig:
                         fig_paths[group].append(os.path.abspath(f'{fig_dir}/{fig}'))
                         added = True
+                        break
                 if not added:
                     fig_paths[group].append('')
         for group in fig_paths:
             df.insert(4, f'PGContext_{group}', fig_paths[group])
-        outfile = f'{file[:-4]}_pgc.csv'
-        df.to_csv(outfile, sep='\t', index=False)
-        return outfile
+        if save is not None:
+            outfile = f'{save[:-4]}_pgc.csv'
+            df.to_csv(outfile, sep='\t', index=False)
+            return outfile
+        else:
+            return df
+
+    def __add_ribocov(self, df, protein_col='protein'):
+        # df = pd.read_csv(file, sep='\t')
+        proteins = df[protein_col].tolist()
+        mapping_groups_for_df = {}
+        for results, group in zip(self.args.results, self.args.groups):
+            mapping_groups_for_df[group] = []
+            mappings_df = f'{results}/counts/microprotein_mapping_groups_plots_union.txt'
+            if os.path.exists(mappings_df):
+                mapping_groups = self.__get_microprotein_mapping_groups(mappings_df)
+            else:
+                mapping_groups = {}
+            for protein in proteins:
+                if protein in mapping_groups:
+                    mapping_groups_for_df[group].append(mapping_groups[protein])
+                else:
+                    mapping_groups_for_df[group].append('No coverage')
+        for group in mapping_groups_for_df:
+            df.insert(4, f'mapping_groups_{group}', mapping_groups_for_df[group])
+        return df
+
+    def __get_microprotein_mapping_groups(self, df):
+        mapping_groups = {}
+        df = pd.read_csv(df, sep='\t')
+        smorfs, groups = df["smorf"].tolist(), df["group"].tolist()
+        for smorf, group in zip(smorfs, groups):
+            mapping_groups[smorf] = group
+        return mapping_groups
 
     def __add_paralogs_msa(self, df, protein_col):
         """
         :param df: pandas data frame to be used in the Shiny app. This will add data for paralogs in the genome
         and paths to their MSA files
         """
+        paths = {}
         proteins = df[protein_col].tolist()
-        for prot in proteins:
-            for results, group in zip(self.args.results, self.args.groups):
-                msa_dir = f''
+        for results, group in zip(self.args.results, self.args.groups):
+            if group not in paths:
+                paths[group] = []
+            for prot in proteins:
+                added = False
+                msa_dir = f'{results}/homology/MSA_prot'
+                if os.path.exists(msa_dir):
+                    files = os.listdir(msa_dir)
+                    for file in files:
+                        if prot in file:
+                            paths[group].append(os.path.abspath(f'{msa_dir}/{file}'))
+                            added = True
+                            break
+                if not added:
+                    paths[group].append('')
+        for group in paths:
+            df.insert(5, f"MSA_{group}", paths[group])
+        return df
 
     def __get_results_data_frames(self):
         paths = {}

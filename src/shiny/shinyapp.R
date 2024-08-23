@@ -25,6 +25,7 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       width=3,
+      height=10,
       selectInput("selected_df", "Select Data Frame", choices = df_aliases),
       uiOutput("column_selector"),
       actionButton("apply_filters", "Apply Filters", class = "btn-primary"),
@@ -120,7 +121,7 @@ server <- function(input, output, session) {
   output$image_output_panels <- renderUI({
     img_panels <- lapply(seq_along(image_columns), function(i) {
       column(
-        width = 6,
+        width = 10,
         h4(paste("Image from", image_columns[i])),
         uiOutput(paste0("image_output_", i))
       )

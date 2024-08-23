@@ -107,6 +107,7 @@ class Homologs(PipelineStructure):
         print(f"Blasting novel smORFs against the transcriptome to identify paralogs.")
         cmd = (f'blastn -query {self.fastaToBlast} -subject {subject} -evalue 0.01 -outfmt 5 -out'
                f' {self.blastedXML} -task blastn-short -soft_masking false -dust no')
+        print(cmd)
         os.system(cmd)
 
     def parse(self, evalue=0.001, score=50, pc_id=0, qcov=0):

@@ -2,6 +2,8 @@ import os
 import sys
 import subprocess
 
+import pandas as pd
+
 from ..utils import check_multiple_dirs
 
 
@@ -175,6 +177,8 @@ class PipelineStructure:
             self.args.ensembleGTF = files[self.args.genomeAssembly]['ensembl_gtf']
             self.args.genome_index = files[self.args.genomeAssembly]['genome_index']
             self.args.cont_index = files[self.args.genomeAssembly]['cont_index']
+            if self.args.mode == 'anno':
+                self.args.gtf = files[self.args.genomeAssembly]['ensembl_gtf']
 
     def __check_suffix(self):
         suffix = ''
@@ -406,6 +410,13 @@ class PipelineStructure:
         row = f'{first}{word}{first}'
         print(row)
 
+    def get_microprotein_mapping_groups(self):
+        mapping_groups = {}
+        df = pd.read_csv(self.microproteinMappingGroupsForPlotsUnion, sep='\t')
+        smorfs, groups = df["smorf"].tolist(), df["group"].tolist()
+        for smorf, group in zip(smorfs, groups):
+            mapping_groups[smorf] = group
+        return mapping_groups
 
 class Content:
     def __init__(self, file, fullfile, group, db, main_dir):
