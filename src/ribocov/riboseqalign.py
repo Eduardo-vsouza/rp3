@@ -55,7 +55,7 @@ class RiboSeqAlign(PipelineStructure):
             files = os.listdir(self.args.fastq)
             self.riboSeqTrimmedDir = self.args.fastq
         for file in files:
-            if file.endswith(".fastq") or file.endswith("fastq.gz"):
+            if file.endswith(".fastq") or file.endswith("fastq.gz") or self.args.skip_trimming:
                 out = f'{self.riboSeqContaminantAlnDir}/no_contaminant_{file}Unmapped.out.mate1'
                 run = self.verify_checkpoint(outfile=out, step=f"removal of contaminants for {file}.")
                 if run:

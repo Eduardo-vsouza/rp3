@@ -14,6 +14,10 @@ class PipelineStructure:
         if self.args.mode == 'demo':
             self.testDir = f'{sys.path[0]}/demo_data'
             self.__set_demo_args()
+        self.dataFolder = f'{sys.path[0]}/data'
+        self.refAnnoDir = f'{self.dataFolder}/reference_annotations'
+        self.__define_genomes()
+
         self.outdir = self.args.outdir
         self.check_dirs(self.outdir)
         self.translationDir = f'{self.outdir}/translation'
@@ -158,6 +162,19 @@ class PipelineStructure:
 
     # def __set__postms_mode(self):
     #     self.percInputSingle = f'{db_path}/percolator_input_single'
+
+    def __define_genomes(self):
+        files = {'hg38': {'genome': f'{self.refAnnoDir}/hg38/gencode.GRCh38.primary_assembly.genome.shortHead.fa',
+                          'gtf': f'{self.refAnnoDir}/hg38/gencode.v38.annotation.gtf',
+                          'ensembl_gtf': f'{self.refAnnoDir}/hg38/ensembl_hg38_chromRenamed.gtf',
+                          'genome_index': f'{self.refAnnoDir}/hg38/STARindex_GencodeGTF',
+                          'cont_index': f'{self.refAnnoDir}/hg38/STARindex_RNAcont'}}
+        if self.args.genomeAssembly in files:
+            self.args.genome = files[self.args.genomeAssembly]['genome']
+            self.args.gtf = files[self.args.genomeAssembly]['gtf']
+            self.args.ensembleGTF = files[self.args.genomeAssembly]['ensembl_gtf']
+            self.args.genome_index = files[self.args.genomeAssembly]['genome_index']
+            self.args.cont_index = files[self.args.genomeAssembly]['cont_index']
 
     def __check_suffix(self):
         suffix = ''

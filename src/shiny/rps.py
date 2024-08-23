@@ -140,7 +140,15 @@ class RPS(PipelineStructure):
         df.to_csv(outfile, sep='\t', index=False)
         return outfile
 
-
+    def __add_paralogs_msa(self, df, protein_col):
+        """
+        :param df: pandas data frame to be used in the Shiny app. This will add data for paralogs in the genome
+        and paths to their MSA files
+        """
+        proteins = df[protein_col].tolist()
+        for prot in proteins:
+            for results, group in zip(self.args.results, self.args.groups):
+                msa_dir = f''
 
     def __get_results_data_frames(self):
         paths = {}

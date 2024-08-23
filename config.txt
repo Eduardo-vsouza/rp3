@@ -19,3 +19,4 @@ trim_galore	/home/microway/programs/trim_galore/TrimGalore-0.6.10/trim_galore
 stringtie	stringtie
 bedtools	bedtools
 FlashLFQ	FlashLFQ
+fastx_toolkit   fastx_toolkit
