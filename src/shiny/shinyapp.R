@@ -2,6 +2,7 @@ library(shiny)
 library(DT)
 library(ggplot2)
 library(plotly)
+library(shinyBS)  # For accordion panels
 
 # Arguments from command line
 args <- commandArgs(trailingOnly = TRUE)
@@ -11,6 +12,8 @@ image_dirs <- strsplit(args[3], ",")[[1]]  # Comma-separated directories for eac
 df_aliases <- strsplit(args[4], ",")[[1]]  # Comma-separated aliases for the data frames
 pdf_columns <- strsplit(args[5], ",")[[1]]  # Comma-separated PDF column names
 pdf_dirs <- strsplit(args[6], ",")[[1]]
+# Load data frames
+
 # Load data frames
 df_list <- lapply(paths_to_dfs, function(path) {
   read.table(path, sep='\t', header=TRUE, stringsAsFactors = FALSE)
@@ -23,21 +26,93 @@ if (length(df_aliases) != length(paths_to_dfs)) {
 
 ui <- fluidPage(
   titlePanel("RpShiny"),
-  sidebarLayout(
-    sidebarPanel(
-      width=3,
-      selectInput("selected_df", "Select Data Frame", choices = df_aliases),
-      uiOutput("column_selector"),
+  
+  # Custom CSS for resizable images and PDFs
+  tags$head(
+    tags$style(HTML("
+      .resizable-panel {
+        overflow: auto;
+        resize: both;
+        border: 1px solid #ddd;
+        padding: 10px;
+      }
+      .data-table-container {
+        height: 400px;
+        overflow: auto;
+        resize: vertical;
+      }
+      .zoom-container {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      .zoomable-image {
+        max-width: 100%;
+        height: auto;
+        transition: transform 0.25s ease;
+      }
+      .resizable-media {
+        resize: both;
+        overflow: auto;
+        border: 1px solid #ddd;
+        padding: 10px;
+        width: 100%;
+        height: auto;
+      }
+    "))
+  ),
+  
+  fluidRow(
+    column(
+      width = 2,
+      selectInput("selected_df", "Select Data Frame", choices = df_aliases)
+    ),
+    column(
+      width = 10,
+      div(
+        style = "display: flex; flex-wrap: wrap;",
+        uiOutput("column_selector")
+      )
+    )
+  ),
+  
+  fluidRow(
+    column(
+      width = 12,
       actionButton("apply_filters", "Apply Filters", class = "btn-primary"),
       actionButton("clear_filters", "Clear Filters", class = "btn-secondary"),
       actionButton("plot_volcano", "Plot Volcano Plot", class = "btn-success")
+    )
+  ),
+  
+  fluidRow(
+    column(
+      width = 12,
+      bsCollapse(id = "accordion_left", multiple = TRUE,
+                 bsCollapsePanel(
+                   "Data Table", 
+                   div(DTOutput("data_table"), class = "resizable-panel data-table-container"), 
+                   style = "info"
+                 ),
+                 bsCollapsePanel(
+                   "Volcano Plot", 
+                   div(plotlyOutput("volcano_plot"), class = "resizable-panel"), 
+                   style = "info"
+                 )
+      )
     ),
-    mainPanel(
-      DTOutput("data_table"),
-      plotlyOutput("volcano_plot"),
-      fluidRow(
-        uiOutput("image_output_panels"),  # This will render multiple image panels side by side
-        uiOutput("pdf_output_panels")     # This will render multiple PDF panels side by side
+    column(
+      width = 12,
+      bsCollapse(id = "accordion_right", multiple = TRUE,
+                 bsCollapsePanel(
+                   "Images", 
+                   fluidRow(uiOutput("image_output_panels")), 
+                   style = "info"
+                 ),
+                 bsCollapsePanel(
+                   "PDFs", 
+                   fluidRow(uiOutput("pdf_output_panels")), 
+                   style = "info"
+                 )
       )
     )
   )
@@ -66,11 +141,20 @@ server <- function(input, output, session) {
     }
   })
   
-  # UI for column selector
+  # Update checkbox group for column selector
   output$column_selector <- renderUI({
     df <- current_df()
     if (is.null(df)) return(NULL)
-    checkboxGroupInput("show_columns", "Show/Hide Columns", choices = names(df), selected = names(df))
+    
+    # Divide the checkbox inputs into 4 columns
+    column_names <- names(df)
+    column_groups <- split(column_names, ceiling(seq_along(column_names) / 4))
+    
+    tagList(
+      lapply(seq_along(column_groups), function(i) {
+        column(3, checkboxGroupInput(paste0("show_columns_group_", i), NULL, choices = column_groups[[i]], selected = column_groups[[i]]))
+      })
+    )
   })
   
   # Reactive data for filtering and showing selected columns
@@ -78,24 +162,17 @@ server <- function(input, output, session) {
     df <- current_df()
     if (is.null(df)) return(NULL)
     
+    # Combine selected columns from all groups
+    column_groups <- split(names(df), ceiling(seq_along(names(df)) / 4))
+    selected_columns <- unlist(lapply(seq_along(column_groups), function(i) {
+      input[[paste0("show_columns_group_", i)]]
+    }), use.names = FALSE)
+    
     # Only show selected columns
-    if (!is.null(input$show_columns)) {
-      df <- df[, input$show_columns, drop = FALSE]
+    if (!is.null(selected_columns)) {
+      df <- df[, selected_columns, drop = FALSE]
     }
     
-    for (col in names(df)) {
-      input_id_slider <- paste0("slider_", col)
-      input_id_text <- paste0("text_", col)
-      
-      if (!is.null(input[[input_id_slider]]) && length(input[[input_id_slider]]) == 2) {
-        range <- input[[input_id_slider]]
-        df <- df[df[[col]] >= range[1] & df[[col]] <= range[2], ]
-      }
-      if (!is.null(input[[input_id_text]]) && nchar(input[[input_id_text]]) > 0) {
-        text <- input[[input_id_text]]
-        df <- df[grepl(text, df[[col]], ignore.case = TRUE), ]
-      }
-    }
     df
   })
   
@@ -107,14 +184,9 @@ server <- function(input, output, session) {
     # Ensure image columns are associated with their respective directories
     for (i in seq_along(image_columns)) {
       col <- image_columns[i]
-      
       if (col %in% names(df)) {
-        # Construct relative image path using the resource path alias and show "Show Image" link
         df[[col]] <- ifelse(!is.na(df[[col]]) & grepl("\\.png$", df[[col]]),
-                            {
-                              relative_img_path <- file.path(paste0("image_dir_", i), basename(df[[col]]))
-                              paste0('<a href="#" onclick="Shiny.setInputValue(\'image_click_', i, '\', \'', relative_img_path, '\')">Show Image</a>')
-                            },
+                            paste0('<a href="#" onclick="Shiny.setInputValue(\'image_click_', i, '\', \'', file.path(paste0("image_dir_", i), basename(df[[col]])), '\')">Show Image</a>'),
                             df[[col]])
       }
     }
@@ -122,14 +194,9 @@ server <- function(input, output, session) {
     # Ensure PDF columns are associated with their respective directories
     for (i in seq_along(pdf_columns)) {
       col <- pdf_columns[i]
-      
       if (col %in% names(df)) {
-        # Construct relative PDF path using the resource path alias and show "Show PDF" link
         df[[col]] <- ifelse(!is.na(df[[col]]) & grepl("\\.pdf$", df[[col]]),
-                            {
-                              relative_pdf_path <- file.path(paste0("pdf_dir_", i), basename(df[[col]]))
-                              paste0('<a href="#" onclick="Shiny.setInputValue(\'pdf_click_', i, '\', \'', relative_pdf_path, '\')">Show PDF</a>')
-                            },
+                            paste0('<a href="#" onclick="Shiny.setInputValue(\'pdf_click_', i, '\', \'', file.path(paste0("pdf_dir_", i), basename(df[[col]])), '\')">Show PDF</a>'),
                             df[[col]])
       }
     }
@@ -143,7 +210,11 @@ server <- function(input, output, session) {
       column(
         width = 6,
         h4(paste("Image from", image_columns[i])),
-        uiOutput(paste0("image_output_", i))
+        div(class = "zoom-container",
+            actionButton(paste0("zoom_in_", i), "Zoom In", class = "btn-info"),
+            actionButton(paste0("zoom_out_", i), "Zoom Out", class = "btn-info")
+        ),
+        uiOutput(paste0("image_output_", i), class = "resizable-media")
       )
     })
     do.call(fluidRow, img_panels)
@@ -155,7 +226,7 @@ server <- function(input, output, session) {
       column(
         width = 6,
         h4(paste("PDF from", pdf_columns[i])),
-        uiOutput(paste0("pdf_output_", i))
+        uiOutput(paste0("pdf_output_", i), class = "resizable-media")
       )
     })
     do.call(fluidRow, pdf_panels)
@@ -165,10 +236,26 @@ server <- function(input, output, session) {
   for (i in seq_along(image_columns)) {
     local({
       column_index <- i
+      zoom_level <- reactiveVal(1)
+      
       observeEvent(input[[paste0("image_click_", column_index)]], {
         relative_img_path <- input[[paste0("image_click_", column_index)]]
         output[[paste0("image_output_", column_index)]] <- renderUI({
-          tags$img(src = relative_img_path, width = "100%", height = "auto")
+          tags$img(src = relative_img_path, class = "zoomable-image", style = paste0("transform: scale(", zoom_level(), ");"))
+        })
+      })
+      
+      observeEvent(input[[paste0("zoom_in_", column_index)]], {
+        zoom_level(zoom_level() * 1.2)
+        output[[paste0("image_output_", column_index)]] <- renderUI({
+          tags$img(src = input[[paste0("image_click_", column_index)]], class = "zoomable-image", style = paste0("transform: scale(", zoom_level(), ");"))
+        })
+      })
+      
+      observeEvent(input[[paste0("zoom_out_", column_index)]], {
+        zoom_level(zoom_level() / 1.2)
+        output[[paste0("image_output_", column_index)]] <- renderUI({
+          tags$img(src = input[[paste0("image_click_", column_index)]], class = "zoomable-image", style = paste0("transform: scale(", zoom_level(), ");"))
         })
       })
     })
@@ -181,7 +268,7 @@ server <- function(input, output, session) {
       observeEvent(input[[paste0("pdf_click_", column_index)]], {
         relative_pdf_path <- input[[paste0("pdf_click_", column_index)]]
         output[[paste0("pdf_output_", column_index)]] <- renderUI({
-          tags$iframe(src = relative_pdf_path, width = "100%", height = "600px")
+          tags$iframe(src = relative_pdf_path, class = "resizable-media", width = "100%", height = "600px")
         })
       })
     })
