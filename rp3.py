@@ -476,6 +476,7 @@ class RP3:
                                         nargs='+',
                                         action=StoreMultipleFiles)
         self.modeArguments.add_argument("--compare", action="store_true")
+        self.modeArguments.add_argument("--deploy", action="store_true")
 
     def execute(self):
         if not self.mode == 'demo':

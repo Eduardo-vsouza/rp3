@@ -25,7 +25,7 @@ if (length(df_aliases) != length(paths_to_dfs)) {
 }
 
 ui <- fluidPage(
-  titlePanel("RpShiny"),
+  titlePanel("RpS"),
   
   # Custom CSS for resizable images and PDFs
   tags$head(
@@ -80,7 +80,7 @@ ui <- fluidPage(
       width = 12,
       actionButton("apply_filters", "Apply Filters", class = "btn-primary"),
       actionButton("clear_filters", "Clear Filters", class = "btn-secondary"),
-      actionButton("plot_volcano", "Plot Volcano Plot", class = "btn-success")
+      actionButton("plot_volcano", "Erupt Volcano", class = "btn-success")
     )
   ),
   
@@ -104,12 +104,12 @@ ui <- fluidPage(
       width = 12,
       bsCollapse(id = "accordion_right", multiple = TRUE,
                  bsCollapsePanel(
-                   "Images", 
+                   "PGContext", 
                    fluidRow(uiOutput("image_output_panels")), 
                    style = "info"
                  ),
                  bsCollapsePanel(
-                   "PDFs", 
+                   "MSA for homologs across the genome", 
                    fluidRow(uiOutput("pdf_output_panels")), 
                    style = "info"
                  )

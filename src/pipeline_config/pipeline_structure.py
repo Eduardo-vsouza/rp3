@@ -161,6 +161,9 @@ class PipelineStructure:
         self.proteinGroupsDir = f'{self.outdir}/protein_groups'
         self.proteinGroups = f'{self.proteinGroupsDir}/protein_groups.csv'
 
+        # shiny
+        self.shinyRScript = f'{sys.path[0]}/src/shiny/shinyapp.R'
+
 
     # def __set__postms_mode(self):
     #     self.percInputSingle = f'{db_path}/percolator_input_single'

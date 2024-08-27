@@ -5,13 +5,13 @@ import subprocess
 import pandas as pd
 
 from ..pipeline_config import PipelineStructure
+from .deploy import RPSDeployer
 
 
 class RPS(PipelineStructure):
     def __init__(self, args):
         super().__init__(args=args)
 
-        self.shinyRScript = f'{sys.path[0]}/src/shiny/shinyapp.R'
 
     def visualize(self):
         self.print_row(word="RpS")
@@ -37,14 +37,28 @@ class RPS(PipelineStructure):
         """
         print(f"--Preparing data to deploy Shiny App")
         fold_change_dfs, alias = self.__get_fold_change_dfs()
+        print(fold_change_dfs)
         pgc_cols = ','.join([f'PGContext_{group}' for group in self.args.groups])
         pgc_paths = ','.join([f'{result}/pg_context/context_figures' for result in self.args.results])
         msa_cols = ','.join([f'MSA_{group}' for group in self.args.groups])
         msa_paths = ','.join([f'{result}/homology/MSA_prot' for result in self.args.results])
-        print(f"--Deploying App")
-        cmd = f'Rscript {self.shinyRScript} {fold_change_dfs} {pgc_cols} {pgc_paths} {alias} {msa_cols} {msa_paths}'
-        print(cmd)
-        os.system(cmd)
+        self.print_row(word="ShinyApp Deployment")
+        if self.args.deploy:
+            deploy = RPSDeployer(outdir=self.outdir,
+                                 shiny_r=self.shinyRScript,
+                                 paths_to_dfs=fold_change_dfs,
+                                 image_cols=pgc_cols,
+                                 image_dirs=pgc_paths,
+                                 df_alias=alias,
+                                 pdf_cols=msa_cols,
+                                 pdf_dirs=msa_paths)
+            deploy.copy_files()
+            deploy.edit_rscript()
+        else:
+            print(f"--Deploying App")
+            cmd = f'Rscript {self.shinyRScript} {fold_change_dfs} {pgc_cols} {pgc_paths} {alias} {msa_cols} {msa_paths}'
+            print(cmd)
+            os.system(cmd)
 
     def __get_fold_change_dfs(self):
         # fold change comparison
@@ -296,10 +310,11 @@ class RPS(PipelineStructure):
                         added = False
                         if protein in rpkms[group][rep][mg]:
                             rpkm = rpkms[group][rep][mg][protein]
-                            added = True
+                            # added = True
                             rpkms_for_df[group][rep][mg].append(rpkm)
                             # break
-                        if not added:
+                        # if not added:
+                        else:
                             rpkms_for_df[group][rep][mg].append(0)
         for group in rpkms_for_df:
             for rep in rpkms_for_df[group]:
