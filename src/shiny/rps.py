@@ -84,6 +84,7 @@ class RPS(PipelineStructure):
             mp = self.__add_pg_context(df=mp, protein_col='Protein Group')
 
             print(f"--Adding MSA for paralogs")
+            # if os.path.exists()
             annotated_mp = self.__add_paralogs_msa(df=annotated_mp, protein_col='Protein Group')
             annotated_std = self.__add_paralogs_msa(df=annotated_std, protein_col='Protein Group')
             mp = self.__add_paralogs_msa(df=mp, protein_col='Protein Group')

@@ -59,7 +59,7 @@ class HomologyFinder(PipelineStructure):
 
     def tblastn_mm_microproteins(self):
         print(f"--Blasting microproteins amino acid sequences against the genome.")
-        cmd = (f'tblastn -query {self.microproteinsMM} -subject {self.args.genome} -outfmt 5 -out '
+        cmd = (f'tblastn -query {self.select_fasta()} -subject {self.args.genome} -outfmt 5 -out '
                f'{self.blastedMMMicroproteinsXMLProtein}')
         os.system(cmd)
 
