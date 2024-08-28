@@ -80,7 +80,8 @@ ui <- fluidPage(
       width = 12,
       actionButton("apply_filters", "Apply Filters", class = "btn-primary"),
       actionButton("clear_filters", "Clear Filters", class = "btn-secondary"),
-      actionButton("plot_volcano", "Erupt Volcano", class = "btn-success")
+      actionButton("plot_volcano", "Erupt Volcano", class = "btn-success"),
+      downloadButton("download_filtered_df", "Download Filtered Data", class = "btn-info") # New button to download
     )
   ),
   
@@ -203,6 +204,20 @@ server <- function(input, output, session) {
     
     datatable(df, escape = FALSE, filter = "top", options = list(autoWidth = TRUE))
   }, server = TRUE)
+  
+  # Download handler for the filtered data frame
+  output$download_filtered_df <- downloadHandler(
+    filename = function() {
+      paste0(input$selected_df, "_filtered.csv")  # Use .tsv extension for tab-separated files
+    },
+    content = function(file) {
+      df <- filtered_data()
+      if (!is.null(df)) {
+        write.table(df, file, sep = "\t", row.names = FALSE, quote = FALSE)  # Specify tab separator
+      }
+    }
+  )
+  
   
   # Dynamically create UI outputs for each image column
   output$image_output_panels <- renderUI({

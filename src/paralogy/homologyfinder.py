@@ -159,7 +159,7 @@ class HomologyFinder(PipelineStructure):
 
     def __get_mp_sequences(self, mp_entries, blast):
         if blast == 'tblastn':
-            fasta = self.microproteinsMM
+            fasta = self.select_fasta()
         elif blast == 'blastn':
             fasta = self.microproteinsMMFastaNucleotide
         mp_sequences = {}
