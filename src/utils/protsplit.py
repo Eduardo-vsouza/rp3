@@ -27,7 +27,7 @@ class ProtSplit:
             dbs = os.listdir(f'{self.outdir}/databases')
             for fasta in dbs:
                 if fasta.endswith("target_database.fasta"):
-                    db = fasta
+                    db = f'{self.outdir}/databases/{fasta}'
         return db
 
     def split_protein_groups(self):
@@ -42,6 +42,8 @@ class ProtSplit:
 
     def __split_results(self):
         file = f'{self.outdir}/rescore/post_processing/group/peptides_fixed.txt'
+        if not os.path.exists(file):
+            file = f'{self.outdir}/post_processing/group/db/peptides_fixed.txt'
         df = pd.read_csv(file, sep='\t')
         df = df[df["q-value"] <= 0.01]
         df = df[~df["proteinIds"].str.contains("rev_")]
