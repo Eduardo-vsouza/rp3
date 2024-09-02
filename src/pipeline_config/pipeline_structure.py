@@ -164,6 +164,18 @@ class PipelineStructure:
         # shiny
         self.shinyRScript = f'{sys.path[0]}/src/shiny/shinyapp.R'
 
+        # wgs
+        self.wgsDir = f'{self.outdir}/WGS'
+        self.variantsDir = f'{self.wgsDir}/variants'
+        self.wgsTrimmeddir = f'{self.wgsDir}/trimmed_reads'
+        self.wgsAlignDir = f'{self.wgsDir}/alignments'
+        self.wgsSamDir = f'{self.wgsAlignDir}/sam'
+        self.wgsBamDir = f'{self.wgsAlignDir}/bam'
+        self.wgsDeduplicatedBamDir = f'{self.wgsAlignDir}/deduplicated_bam'
+
+    def check_wgs_dirs(self):
+        self.check_dirs([self.wgsDir, self.variantsDir, self.wgsTrimmeddir,
+                         self.wgsAlignDir, self.wgsSamDir, self.wgsBamDir, self.wgsDeduplicatedBamDir])
 
     # def __set__postms_mode(self):
     #     self.percInputSingle = f'{db_path}/percolator_input_single'

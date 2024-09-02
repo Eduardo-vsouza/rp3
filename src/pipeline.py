@@ -17,7 +17,7 @@ from .quant import SpecComparison
 from .quantification import MOFF
 from .quant import FlashLFQ
 from .shiny import RPS
-
+from .wgs import Variant
 
 class Pipeline:
     def __init__(self, args):
@@ -391,3 +391,6 @@ class Pipeline:
         rps = RPS(args=self.args)
         rps.visualize()
 
+    def analyze_wgs(self):
+        variant = Variant(args=self.args)
+        variant.pre_process_reads()

@@ -122,11 +122,8 @@ class RP3:
         elif self.mode == 'rps':
             self.__set_rps_mode()
 
-        # def check_mode(self):
-        #     if self.mode == 'first_mode':
-        #         self.__set_align_mode()
-        #     elif self.mode == 'second_mode':
-        #         self.__set_assembly_mode()
+        elif self.mode == 'wgs':
+            self.__set_wgs_mode()
 
         args = self.parser.parse_args()
         return args
@@ -478,6 +475,10 @@ class RP3:
         self.modeArguments.add_argument("--compare", action="store_true")
         self.modeArguments.add_argument("--deploy", action="store_true")
 
+    def __set_wgs_mode(self):
+        self.modeArguments.add_argument("--fastq")
+        self.modeArguments.add_argument("--metadata")
+
     def execute(self):
         if not self.mode == 'demo':
             pipe = Pipeline(args=self.args)
@@ -565,6 +566,9 @@ class RP3:
 
         elif self.mode == 'rps':
             pipe.create_rps()
+
+        elif self.mode == 'wgs':
+            pipe.analyze_wgs()
 
 if __name__ == '__main__':
     print(" ____       _____\n"
