@@ -173,11 +173,12 @@ class PipelineStructure:
         self.wgsBamDir = f'{self.wgsAlignDir}/bam'
         self.wgsDeduplicatedBamDir = f'{self.wgsAlignDir}/deduplicated_bam'
         self.wgsRecalDir = f'{self.variantsDir}/recalibration'
+        self.wgsMutectDir = f'{self.variantsDir}/mutect2'
 
     def check_wgs_dirs(self):
         self.check_dirs([self.wgsDir, self.variantsDir, self.wgsTrimmeddir,
                          self.wgsAlignDir, self.wgsSamDir, self.wgsBamDir, self.wgsDeduplicatedBamDir,
-                         self.wgsRecalDir])
+                         self.wgsRecalDir, self.wgsMutectDir])
 
     # def __set__postms_mode(self):
     #     self.percInputSingle = f'{db_path}/percolator_input_single'
@@ -200,6 +201,8 @@ class PipelineStructure:
                 variant_data = f'{self.refAnnoDir}/hg38/variant'
                 self.args.knownSites = [f'{variant_data}/resources_broad_hg38_v0_Homo_sapiens_assembly38.dbsnp138.vcf',
                                         f'{variant_data}/resources_broad_hg38_v0_Mills_and_1000G_gold_standard.indels.hg38.vcf.gz']
+                self.args.germlineResource = f'{variant_data}/hg38/somatic-hg38_af-only-gnomad.hg38.vcf.gz'
+                self.args.panelOfNormals = f'{variant_data}/somatic-hg38_1000g_pon.hg38.vcf.gz'
 
 
     def __check_suffix(self):

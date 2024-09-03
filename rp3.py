@@ -482,6 +482,8 @@ class RP3:
         self.modeArguments.add_argument("--knownSites", help="known VCF sites",
                                         nargs='+',
                                         action=StoreMultipleFiles)
+        self.modeArguments.add_argument("--panelOfNormals")
+        self.modeArguments.add_argument("--germlineResource")
 
     def execute(self):
         if not self.mode == 'demo':

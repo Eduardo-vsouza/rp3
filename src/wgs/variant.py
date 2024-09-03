@@ -52,6 +52,7 @@ class Variant(PipelineStructure):
 
     def align_reads(self):
         print(f"--Aligning reads to the genome")
+        print(self.args.genome)
         reads = os.listdir(self.wgsTrimmeddir)
         i = 0
         for read in reads:
@@ -69,7 +70,7 @@ class Variant(PipelineStructure):
                     print(self.args.genome)
                     cmd = (f"{self.toolPaths['bwa']} mem -M -R '@RG\\tID:{sample}\\tSM:{sample}\\tPL:ILLUMINA' "
                            f"-t {self.args.threads} "
-                           f"{self.args.genome}.fai {self.wgsTrimmeddir}/{name1} {self.wgsTrimmeddir}/{pair} "
+                           f"{self.args.genome} {self.wgsTrimmeddir}/{name1} {self.wgsTrimmeddir}/{pair} "
                            f"> {self.wgsSamDir}/{read}_alignedToGenome.sam")
                     os.system(cmd)
         print(f"--Finished aligning reads to the genome")
@@ -82,7 +83,7 @@ class Variant(PipelineStructure):
                 print(f"--Converting {file} to sorted bam format")
                 cmd = (f'{self.toolPaths["samtools"]} view -Sb {self.wgsSamDir}/{file} --threads {self.args.threads}'
                        f' | samtools sort --threads {self.args.threads}'
-                       f'-o {self.wgsBamDir}/{file.replace(".sam", "_sorted.bam")}')
+                       f' -o {self.wgsBamDir}/{file.replace(".sam", "_sorted.bam")}')
                 os.system(cmd)
         print(f"--Finished generating bam files")
 
@@ -92,7 +93,7 @@ class Variant(PipelineStructure):
         for file in files:
             if file.endswith("bam"):
                 print(f"--Marking duplicates for {file}")
-                cmd = (f'{self.toolPaths["gatk"]} MarkDuplicates -I {self.wgsBamDir}/{file} -o'
+                cmd = (f'{self.toolPaths["gatk"]} MarkDuplicates -I {self.wgsBamDir}/{file} -O'
                        f' {self.wgsDeduplicatedBamDir}/{file.replace(".bam", "deduplicated.bam")} '
                        f'-M {self.wgsDeduplicatedBamDir}/{file.replace(".bam", "deduplicated.metrics")}')
                 os.system(cmd)
@@ -134,8 +135,33 @@ class Variant(PipelineStructure):
                     os.system(cmd)
 
     def run_mutect2(self):
+        print(f"--Running Mutect2 to detect variants")
         files = os.listdir(self.wgsRecalDir)
         for file in files:
             if file.endswith(".bam"):
+                print(f"--Running Mutect2 on {file}")
                 cmd = (f'{self.toolPaths["gatk"]} Mutect2 -R {self.args.genome} '
-                       f'-I {self.wgsRecalDir}/{file} ')
+                       f'-I {self.wgsRecalDir}/{file}'
+                       f'-germline-resource {self.args.germlineResource} '
+                       f'-pon {self.args.panelOfNormals} '
+                       f'--f1r2-tar-gz {self.wgsMutectDir}/{file}_f1r2.tar.gz '
+                       f'-O {self.wgsMutectDir}/{file}_unfiltered.vcf')
+                os.system(cmd)
+
+    def filter_vcf(self):
+        ...
+
+    def __learn_read_orientation(self):
+        files = os.listdir(self.wgsMutectDir)
+        for file in files:
+            if file.endswith("f1r2.tar.gz"):
+                cmd = (f'{self.toolPaths["gatk"]} LearnReadOrientationModel '
+                       f'-I {self.wgsMutectDir}/{file} '
+                       f'-O {self.wgsMutectDir}/{file}_read_orientation_model.tar.gz')
+                os.system(cmd)
+
+    def __get_pileup_summaries(self):
+        ...
+
+
+
