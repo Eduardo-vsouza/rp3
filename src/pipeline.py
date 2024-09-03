@@ -393,4 +393,10 @@ class Pipeline:
 
     def analyze_wgs(self):
         variant = Variant(args=self.args)
-        variant.pre_process_reads()
+        # variant.pre_process_reads()
+        variant.prepare_annotation_files()
+        variant.align_reads()
+        variant.convert_to_sorted_bam()
+        variant.mark_duplicates()
+        variant.recalibrate_base_score()
+

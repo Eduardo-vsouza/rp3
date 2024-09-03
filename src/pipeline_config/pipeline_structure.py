@@ -172,10 +172,12 @@ class PipelineStructure:
         self.wgsSamDir = f'{self.wgsAlignDir}/sam'
         self.wgsBamDir = f'{self.wgsAlignDir}/bam'
         self.wgsDeduplicatedBamDir = f'{self.wgsAlignDir}/deduplicated_bam'
+        self.wgsRecalDir = f'{self.variantsDir}/recalibration'
 
     def check_wgs_dirs(self):
         self.check_dirs([self.wgsDir, self.variantsDir, self.wgsTrimmeddir,
-                         self.wgsAlignDir, self.wgsSamDir, self.wgsBamDir, self.wgsDeduplicatedBamDir])
+                         self.wgsAlignDir, self.wgsSamDir, self.wgsBamDir, self.wgsDeduplicatedBamDir,
+                         self.wgsRecalDir])
 
     # def __set__postms_mode(self):
     #     self.percInputSingle = f'{db_path}/percolator_input_single'
@@ -194,6 +196,11 @@ class PipelineStructure:
             self.args.cont_index = files[self.args.genomeAssembly]['cont_index']
             if self.args.mode == 'anno':
                 self.args.gtf = files[self.args.genomeAssembly]['ensembl_gtf']
+            if self.args.mode == 'wgs':
+                variant_data = f'{self.refAnnoDir}/hg38/variant'
+                self.args.knownSites = [f'{variant_data}/resources_broad_hg38_v0_Homo_sapiens_assembly38.dbsnp138.vcf',
+                                        f'{variant_data}/resources_broad_hg38_v0_Mills_and_1000G_gold_standard.indels.hg38.vcf.gz']
+
 
     def __check_suffix(self):
         suffix = ''

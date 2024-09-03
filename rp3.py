@@ -477,7 +477,11 @@ class RP3:
 
     def __set_wgs_mode(self):
         self.modeArguments.add_argument("--fastq")
+        self.modeArguments.add_argument("--genome")
         self.modeArguments.add_argument("--metadata")
+        self.modeArguments.add_argument("--knownSites", help="known VCF sites",
+                                        nargs='+',
+                                        action=StoreMultipleFiles)
 
     def execute(self):
         if not self.mode == 'demo':
