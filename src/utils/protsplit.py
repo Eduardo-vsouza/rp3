@@ -31,6 +31,8 @@ class ProtSplit:
         return db
 
     def split_protein_groups(self):
+        print(f"--Splitting proteins into standard-sized proteins, unannotated microproteins, and "
+              f"annotated microproteins.")
         data = {'protein': [], 'group': []}
         for group in self.proteinDict:
             for prot in self.proteinDict[group]:
@@ -52,11 +54,11 @@ class ProtSplit:
         filtered_proteins = []
         for prot in prots:
             proto = prot.replace(",_", "_").replace("__", "_")
-
-            proteins = proto.split(",")
-            for protein in proteins:
-                if 'ANNO' not in prots:
-                    filtered_proteins.append(protein)
+            if ',' not in prots:
+                proteins = proto.split(",")
+                for protein in proteins:
+                    if 'ANNO' not in prots:
+                        filtered_proteins.append(protein)
         protein_dict = self.__get_prot_dict(filtered_proteins)
         return protein_dict
 
@@ -70,15 +72,15 @@ class ProtSplit:
             # if 'sp|' in entry:
             entry = entry.replace(",_", "_").replace("__", "_")
             self.sequences[entry] = seq
+            if entry in filtered_proteins:
+                if len(seq) <= mp_threshold:
 
-            if len(seq) <= mp_threshold:
-                if '_ANNO' not in entry:
-                    if entry in filtered_proteins:
-                        protein_dict['microproteins'].append(entry)
+                        if '_ANNO' not in entry:
+                                protein_dict['microproteins'].append(entry)
+                        else:
+                            protein_dict['annotated_microproteins'].append(entry)
                 else:
-                    protein_dict['annotated_microproteins'].append(entry)
-            else:
-                protein_dict['standard'].append(entry)
+                    protein_dict['standard'].append(entry)
         return protein_dict
 
     def get_protein_groups(self, order='group_prot'):
@@ -98,3 +100,13 @@ class ProtSplit:
             else:
                 protein_groups[prot] = group
         return protein_groups
+
+    def split_fasta(self):
+        groups = self.get_protein_groups()
+        for group in groups:
+            fasta = []
+            for entry in self.sequences:
+                if entry in groups[group]:
+                    fasta.append(f'>{entry}\n{self.sequences[entry]}\n')
+            with open(f'{self.proteinGroupsDir}/{group}.fasta', 'w') as out:
+                out.writelines(fasta)

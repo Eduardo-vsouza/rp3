@@ -5,7 +5,7 @@ from .post_process import PercolatorPostProcessing
 from .database import Database
 from .translation_ssh import GTFtoFasta
 from .metrics import DatabaseMetrics, ORFMetrics, MicroproteinCombiner
-from .utils import Params
+from .utils import Params, ProtSplit
 from .extra_filter import ExtraFilter
 from .mods import FormylSummarizer
 from .annotation import *
@@ -18,6 +18,7 @@ from .quantification import MOFF
 from .quant import FlashLFQ
 from .shiny import RPS
 from .wgs import Variant
+
 
 class Pipeline:
     def __init__(self, args):
@@ -129,6 +130,11 @@ class Pipeline:
             summ = MicroproteinCombiner(args=self.args)
             summ.gather_microprotein_info()
             summ.save()
+            protsplit = ProtSplit(outdir=self.args.outdir)
+            protsplit.split_protein_groups()
+            protsplit.split_fasta()
+
+
 
     def quantify(self):
         quant = MOFF(args=self.args)
@@ -397,6 +403,6 @@ class Pipeline:
         # variant.prepare_annotation_files()
         # variant.align_reads()
         # variant.convert_to_sorted_bam()
-        variant.mark_duplicates()
+        # variant.mark_duplicates()
         variant.recalibrate_base_score()
 

@@ -117,7 +117,7 @@ class Variant(PipelineStructure):
                 if run:
                     print(f"--Generating recalibration table for {file}")
                     cmd = (f'{self.toolPaths["gatk"]} BaseRecalibrator -I {self.wgsDeduplicatedBamDir}/{file} '
-                           f'-R {self.args.genome} --known-sites {known_sites} -O {recal_file}')
+                           f'-R {self.args.genome}{known_sites} -O {recal_file}')
                     os.system(cmd)
 
                 out_recal_bam = f'{self.wgsRecalDir}/{file.replace(".bam", "recalibrated.bam")}'
