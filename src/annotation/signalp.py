@@ -12,27 +12,30 @@ class SignalP(PipelineStructure):
         self.check_dirs([self.signalPDir, self.plotsDir])
 
     def run(self):
-        files = os.listdir(self.mergedResults)
-        # print(files)
-        # if self.microproteinsBlast.split("/")[-1] in files:
-        file = self.microproteinsBlast
-        if self.args.rescored:
-            file = self.rescoredMicroproteinsFasta
+        self.check_dirs([self.signalPDir, self.signalPstandardDir,
+                         self.signalPAnnoMPDir, self.signalPMicroproteinDir])
+
+        # rp3 microproteins
+        # if self.args.rescored:
+        #     file = self.rescoredMicroproteinsFasta
         # else:
         #     file = self.uniqueMicroproteins
-        # print(file)
-        # self.__run_signalp(file)
+        file = self.select_fasta()
+        self.__run_signalp(file, self.signalPMicroproteinDir)
+
+        # annotated microproteins
         file = f'{self.proteinGroupsDir}/annotated_microproteins.fasta'
         if os.path.exists(file):
-            self.__run_signalp(file)
+            self.__run_signalp(file, self.signalPAnnoMPDir)
 
+        # standard-sized proteins
         file = f'{self.proteinGroupsDir}/standard.fasta'
         if os.path.exists(file):
-            self.__run_signalp(file)
+            self.__run_signalp(file, self.signalPstandardDir)
 
-    def __run_signalp(self, file):
+    def __run_signalp(self, file, outdir):
         cmd = f'{self.toolPaths["signalP"]} --fastafile {file} --format all --organism eukarya ' \
-              f'--organism {self.args.organism} --output_dir {self.signalPDir} --mode slow-sequential -wp ' \
+              f'--organism {self.args.organism} --output_dir {outdir} --mode slow-sequential -wp ' \
               f'{self.args.threads} -tt {self.args.threads}'
         os.system(cmd)
 

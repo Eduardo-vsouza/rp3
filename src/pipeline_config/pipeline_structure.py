@@ -38,7 +38,11 @@ class PipelineStructure:
         self.summarizedResultsDir = f'{self.outdir}/summarized_results'
         self.mergedResults = f'{self.summarizedResultsDir}/merged'
         self.spectrumDir = f'{self.outdir}/spectra'
-        self.signalPDir = f'{self.mergedResults}/signalP'
+        self.signalPDir = f'{self.outdir}/signalP'
+        self.signalPstandardDir = f'{self.signalPDir}/standardSizes_proteins'
+        self.signalPMicroproteinDir = f'{self.signalPDir}/microproteins'
+        self.signalPAnnoMPDir = f'{self.signalPDir}/annotated_microproteins'
+
 
         self.indexesDir = f'{self.pipelineDir}/data/STAR_indexes'
 
