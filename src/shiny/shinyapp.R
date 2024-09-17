@@ -15,7 +15,32 @@ pdf_dirs <- strsplit(args[6], ",")[[1]]
 
 # Load data frames
 df_list <- lapply(paths_to_dfs, function(path) {
-  read.table(path, sep = '\t', header = TRUE, stringsAsFactors = FALSE)
+  # Read the table with fill=TRUE to handle missing values and na.strings to treat missing entries as NA
+  df <- read.table(path, sep = '\t', header = TRUE, stringsAsFactors = FALSE, fill = TRUE, na.strings = c("", "NA"))
+
+  # Define columns to ignore during conversion
+  columns_to_ignore <- c('protein', 'GeneName')
+
+  # Automatically detect and convert columns that should be numeric, except for the ignored columns
+  df[] <- lapply(names(df), function(col_name) {
+    # Check if the column should be ignored
+    if (col_name %in% columns_to_ignore) {
+      return(df[[col_name]])  # Keep the column unchanged
+    } else {
+      # Attempt to convert each column to numeric if it is not in the ignore list
+      converted_col <- as.numeric(df[[col_name]])
+
+      # If the conversion results in NA where it wasn't, keep it as character
+      if (all(is.na(converted_col[!is.na(df[[col_name]])]))) {
+        return(df[[col_name]])  # Keep as is if conversion fails
+      } else {
+        return(converted_col)  # Convert to numeric if successful
+      }
+    }
+  })
+
+  # Return the cleaned data frame
+  return(df)
 })
 
 if (length(df_aliases) != length(paths_to_dfs)) {
@@ -187,7 +212,7 @@ server <- function(input, output, session) {
   # Download handler for the filtered data frame
   output$download_filtered_df <- downloadHandler(
     filename = function() {
-      paste0(input$selected_df, "_filtered.csv")
+      paste0(input$selected_df, "_filtered.tsv")
     },
     content = function(file) {
       df <- filtered_data()
