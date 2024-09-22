@@ -408,11 +408,6 @@ class RPS(PipelineStructure):
             mg = 'Default'
         return mg
 
-
-
-
-
-
     def __get_results_data_frames(self):
             paths = {}
             for outdir in self.args.results:
