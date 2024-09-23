@@ -83,7 +83,11 @@ class PeptideReScoring(PipelineStructure):
             else:
                 amida = ''
 
-
+            if self.args.pyroGlu:
+                pyroglu = f' --variable_mod_0{i} -17.0265_nQ_1'
+                i += 1
+            else:
+                pyroglu = ''
             if self.args.mod is not None:
                 mod = f' --variable_mod_0{i} {self.args.mod}'
                 i += 1
@@ -92,23 +96,23 @@ class PeptideReScoring(PipelineStructure):
             if self.args.hlaPeptidomics:
                 cmd = f'java -Xmx256g -jar {self.MSFraggerPath} --output_format pin ' \
                       f'--database_name {self.rescoreDatabase} --decoy_prefix rev --search_enzyme_name nonspecific ' \
-                      f'--num_threads {self.args.threads}{phospho}{mod}{amida} --fragment_mass_tolerance 20 --num_enzyme_termini 0 ' \
+                      f'--num_threads {self.args.threads}{phospho}{mod}{amida}{pyroglu} --fragment_mass_tolerance 20 --num_enzyme_termini 0 ' \
                       f'--precursor_true_tolerance 6 --digest_mass_range 500.0_1500.0 ' \
                       f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
-                      f'--digest_min_length 8 --digest_max_length 25{group_files}'
+                      f'--use_all_mods_in_first_search 1 --digest_min_length 8 --digest_max_length 25{group_files}'
             else:
                 if self.args.quantifyOnly or self.args.quantify:
                     cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format tsv ' \
                           f'--database_name {self.rescoreDatabase} --decoy_prefix rev ' \
-                          f'--num_threads {self.args.threads}{phospho}{mod}{amida} --digest_min_length {min_pep_len} ' \
-                          f'--digest_max_length {max_pep_len}{group_files}'
+                          f'--num_threads {self.args.threads}{phospho}{mod}{amida}{pyroglu} --digest_min_length {min_pep_len} ' \
+                          f'--use_all_mods_in_first_search 1 --digest_max_length {max_pep_len}{group_files}'
                     os.system(cmd)
 
                 if not self.args.quantifyOnly:
                     cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
                           f'--database_name {self.rescoreDatabase} --decoy_prefix rev ' \
                           f'--num_threads {self.args.threads}{phospho}{mod}{amida} --digest_min_length {min_pep_len} ' \
-                          f'--digest_max_length {max_pep_len}{group_files}'
+                          f'--use_all_mods_in_first_search 1 --digest_max_length {max_pep_len}{group_files}'
                     os.system(cmd)
 
             out_group_dir = f'{self.rescoreSearchDir}/{group}'

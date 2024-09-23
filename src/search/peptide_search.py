@@ -73,6 +73,7 @@ class MSFragger(PipelineStructure):
     def iterate_searches(self, min_pep_len=7, max_pep_len=50):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
         databases = os.listdir(self.databaseDir)
+        mod = ''
         mzml = os.listdir(self.mzMLFolder)
         if self.args.groups is not None:
             groups_per_file = self.read_groups(groups_df=self.args.groups)
@@ -90,9 +91,6 @@ class MSFragger(PipelineStructure):
                     pattern = 'mzML'
                 for db in databases:
                     search_files = ''
-                    mod = ''
-                    if self.mod is not None:
-                        mod = f' --variable_mod_03 {self.mod}'
                     if db.endswith(".fasta") and 'target' in db:
                         if self.args.groups is not None:
                             print(file)
@@ -176,7 +174,7 @@ class MSFragger(PipelineStructure):
         # print(groups_per_file)
 
         if self.args.tmt_mod is not None:
-            tmt_mod = f'--variable_mod_03 {self.args.tmt_mod}_K_3 --variable_mod_04 {self.args.tmt_mod}_n*_3 '
+            tmt_mod = f' --variable_mod_03 {self.args.tmt_mod}_K_3 --variable_mod_04 {self.args.tmt_mod}_n*_3 '
         else:
             tmt_mod = ''
         for group in mzml:
@@ -241,24 +239,32 @@ class MSFragger(PipelineStructure):
                     else:
                         amida = ''
 
+                    if self.args.pyroGlu:
+                        pyroglu = f' --variable_mod_0{i} -17.0265_nQ_1'
+                        i += 1
+                    else:
+                        pyroglu = ''
+                    tmt_mod = ''
+
                     mod = ''
-                    if self.mod is not None:
+                    if self.args.mod is not None:
                         mod = f' --variable_mod_0{i} {self.mod}'
                         i += 1
+                    print(amida, pyroglu)
                     if self.args.hlaPeptidomics:
                         self.__search_hla_peptidomics(db=db, search_files=search_files)
-
                     else:
                         if self.quantify: # --output_format tsv
                             cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format tsv ' \
                               f'--database_name {self.databaseDir}/{db} --decoy_prefix rev ' \
                               f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
-                              f'--digest_min_length {min_pep_len} {tmt_mod}{mod}{amida} --digest_max_length {max_pep_len}{search_files[db]}'
+                              f'--use_all_mods_in_first_search 1 --digest_min_length {min_pep_len} {tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {max_pep_len}{search_files[db]}'
                             os.system(cmd)
                         cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
                               f'--database_name {self.databaseDir}/{db} --decoy_prefix rev ' \
                               f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
-                              f'--digest_min_length {min_pep_len} {tmt_mod}{mod}{amida} --digest_max_length {max_pep_len}{search_files[db]}'
+                              f'--use_all_mods_in_first_search 1 --digest_min_length {min_pep_len}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {max_pep_len}{search_files[db]}'
+                        print(cmd)
                         self.params.append(cmd)
                         os.system(cmd)
 

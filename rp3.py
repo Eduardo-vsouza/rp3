@@ -178,15 +178,22 @@ class RP3:
                                         help="Do not generate pin files for percolator. This is only relevant when "
                                              "running quantification later on after finishing all the analysis, and "
                                              "generating pin files for proteogenomics searches is not needed.")
-        self.modeArguments.add_argument("--mod")
         self.modeArguments.add_argument("--create_gtf", action="store_true")
         self.modeArguments.add_argument("--cat", action="store_true", help="Perform the search using a concatenated "
                                                                            "target and decoy database. Requires the "
                                                                            "databases to be generated using the 'cat' "
                                                                            "flag.")
-        self.modeArguments.add_argument("--tmt_mod")
-        self.modeArguments.add_argument("--amidation", action='store_true')
+
+        self.modArguments = self.parser.add_argument_group("Post-translational Modifications (PTMs) arguments")
+        self.modArguments.add_argument("--mod")
+        self.modArguments.add_argument("--tmt_mod")
+        self.modArguments.add_argument("--amidation", action='store_true')
+        self.modArguments.add_argument("--pyroGlu", help="Includes pyro glu as a variable "
+                                                          "modification", action="store_true")
+        self.modArguments.add_argument("--phosphorylation", action="store_true")
+
         self.modeArguments.add_argument("--fragment_mass_tolerance", default=600)
+
         self.modeArguments.add_argument("--refseq")  # blasts results against refseq or another database
         self.modeArguments.add_argument("--groups", help="Tab-delimited file associating a database with a raw file. "
                                                          "Should contain two columns: files, groups. Groups should have "
@@ -224,7 +231,6 @@ class RP3:
                                                                                             "with --uniprotAnnotation.")
         self.modeArguments.add_argument("--memory", help="RAM available for MSFragger.", default=64)
         self.modeArguments.add_argument("--keepAnnotated", action="store_true")
-        self.modeArguments.add_argument("--phosphorylation", action="store_true")
         self.modeArguments.add_argument("--maxORFLength", type=int, default=150)
 
     def __set_quant_mode(self):
