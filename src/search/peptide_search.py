@@ -192,9 +192,7 @@ class MSFragger(PipelineStructure):
             for file in files:
                 if not file.endswith(".pin"):
                     for db in databases:
-                        mod = ''
-                        if self.mod is not None:
-                            mod = f' --variable_mod_03 {self.mod}'
+
 
                         if db.endswith(".fasta") and 'target_decoy' in db:
                             if self.args.groups is not None:
@@ -234,30 +232,36 @@ class MSFragger(PipelineStructure):
                 splat = search_files[db].split(" ")
                 outfile = splat[1]
                 run = True
+                i = 3
+
                 if run:
+                    if self.args.amidation:
+                        amida = f' --variable_mod_0{i} -0.9840_c*_1'
+                        i += 1
+                    else:
+                        amida = ''
+
+                    mod = ''
+                    if self.mod is not None:
+                        mod = f' --variable_mod_0{i} {self.mod}'
+                        i += 1
                     if self.args.hlaPeptidomics:
                         self.__search_hla_peptidomics(db=db, search_files=search_files)
+
                     else:
                         if self.quantify: # --output_format tsv
                             cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format tsv ' \
                               f'--database_name {self.databaseDir}/{db} --decoy_prefix rev ' \
                               f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
-                              f'--digest_min_length {min_pep_len} {tmt_mod} --digest_max_length {max_pep_len}{search_files[db]}'
+                              f'--digest_min_length {min_pep_len} {tmt_mod}{mod}{amida} --digest_max_length {max_pep_len}{search_files[db]}'
                             os.system(cmd)
                         cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
                               f'--database_name {self.databaseDir}/{db} --decoy_prefix rev ' \
                               f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
-                              f'--digest_min_length {min_pep_len} {tmt_mod} --digest_max_length {max_pep_len}{search_files[db]}'
+                              f'--digest_min_length {min_pep_len} {tmt_mod}{mod}{amida} --digest_max_length {max_pep_len}{search_files[db]}'
                         self.params.append(cmd)
                         os.system(cmd)
-                        # if not self.args.quantifyOnly:
-                        #     self.exec(cmd)
-                        # print(cmd)
-                        # os.system(cmd)
-                    # print("\n TARGET \n\n")
-                    # print(db)
-                    # print(search_files)
-                    # print(group)
+
                     splat = search_files[db].split(" ")
                     for file in splat:
                         # print(pattern)

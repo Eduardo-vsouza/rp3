@@ -2,11 +2,15 @@ import os
 import sys
 import inspect
 
+from .pipeline_config import PipelineStructure
 
-class GTFtoFasta:
-    def __init__(self, folder, genome, local_outdir):
+
+class GTFtoFasta(PipelineStructure):
+    def __init__(self, folder, genome, local_outdir, args):
+        super().__init__(args=args)
+        self.args = args
+        self.genome = self.args.genome
         self.folder = folder
-        self.genome = genome
         self.localOutdir = local_outdir
 
         self.__check_dirs()
@@ -22,7 +26,7 @@ class GTFtoFasta:
             os.mkdir(self.localOutdir)
 
     def translate(self):
-        genome_short_path = self.genome.split("/")[-1]
+        # genome_short_path = self.genome.split("/")[-1]
         # cmd = f'cp {self.genome} {self.localOutdir}/.'
         # self.params.append(cmd)
         # os.system(cmd)
@@ -67,6 +71,7 @@ class GTFtoFasta:
                 print(f' {local_dir}/{file} ')
                 # os.system(f'cat {local_dir}/{file}')
                 cmd_gtf = f'{sys.path[0]}/dependencies/GTFtoFasta/GTFtoFasta {local_dir}/{file} {self.genome} met'
+                print(cmd_gtf)
                 self.params.append(cmd_gtf)
                 os.system(cmd_gtf)
 

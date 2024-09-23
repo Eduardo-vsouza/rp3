@@ -48,7 +48,7 @@ class Pipeline:
         if os.path.exists(assembly):
             self.args.gtf_folder = assembly
         translation = GTFtoFasta(folder=self.args.gtf_folder, genome=self.args.genome,
-                                 local_outdir=self.translationFolder)
+                                 local_outdir=self.translationFolder, args=self.args)
         translation.translate()
         self.parameters.add_mode_parameters(translation, args=self.args)
         self.parameters.update_params_file()
