@@ -26,11 +26,11 @@ class ORFClassification(PipelineStructure):
         self.intersectionFile = f'{self.orfClassDir}/intersection_annotation.gtf'
         self.annotationOutfile = f'{self.orfClassDir}/predicted_nonhomolog_smorfs_annotation'
 
-    @staticmethod
-    def check_dirs(folders):
-        for folder in folders:
-            if not os.path.exists(folder):
-                os.mkdir(folder)
+    # @staticmethod
+    # def check_dirs(folders):
+    #     for folder in folders:
+    #         if not os.path.exists(folder):
+    #             os.mkdir(folder)
 
     def intersect(self):
         # Set the input and output file paths

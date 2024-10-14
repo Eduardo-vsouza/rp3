@@ -3,6 +3,7 @@ import sys
 import subprocess
 
 import pandas as pd
+from statsmodels.sandbox.regression.gmm import results_class_dict
 
 from ..pipeline_config import PipelineStructure
 from .deploy import RPSDeployer
@@ -99,6 +100,12 @@ class RPS(PipelineStructure):
             annotated_std = self.__add_differential_expression(df=annotated_std)
             mp = self.__add_differential_expression(df=mp)
 
+            print(f"--Adding orf classes")
+            annotated_mp = self.__add_orf_class(df=annotated_mp, protein_col='Protein Group')
+            annotated_std = self.__add_orf_class(df=annotated_std, protein_col='Protein Group')
+            mp = self.__add_orf_class(df=mp, protein_col='Protein Group')
+
+
             print(f"--Adding MS1 quantification")
             annotated_mp_shiny = self.__filter_fold_change_df(df=annotated_mp,
                                                               file=f'{compdir}/{comp}/annotated_microproteins_foldChangeAnalysis.csv')
@@ -127,6 +134,7 @@ class RPS(PipelineStructure):
                 unique_df_input = self.__add_paralogs_msa(df=unique_df_input)
                 unique_df_input = self.__add_protein_names(df=unique_df_input)
                 unique_df_input = self.__add_differential_expression(df=unique_df_input)
+                unique_df_input = self.__add_orf_class(df=unique_df_input)
                 unique_df = self.__add_pg_context(unique_df_input, save=f'{self.args.outdir}/{file}')
             elif file.endswith("upregulated.csv"):
                 enriched_input = pd.read_csv(f'{self.args.outdir}/{file}', sep='\t')
@@ -134,6 +142,7 @@ class RPS(PipelineStructure):
                 enriched_input = self.__add_paralogs_msa(df=enriched_input)
                 enriched_input = self.__add_protein_names(df=enriched_input)
                 enriched_input = self.__add_differential_expression(df=enriched_input)
+                enriched_input = self.__add_orf_class(df=enriched_input)
                 enriched =  self.__add_pg_context(enriched_input, save=f'{self.args.outdir}/{file}')
 
         full_comp_input = pd.read_csv(f'{self.args.outdir}/group_comparison.csv', sep='\t')
@@ -141,6 +150,7 @@ class RPS(PipelineStructure):
         full_comp_input = self.__add_paralogs_msa(df=full_comp_input)
         full_comp_input = self.__add_protein_names(df=full_comp_input)
         full_comp_input = self.__add_differential_expression(df=full_comp_input)
+        full_comp_input = self.__add_orf_class(df=full_comp_input)
         print(f"--Adding Ribo-seq counts")
         # full_comp_input = self.__add_ribo_seq_counts(df=full_comp_input)
         full_comp = self.__add_pg_context(full_comp_input, save=f'{self.args.outdir}/group_comparison.csv')
@@ -300,6 +310,31 @@ class RPS(PipelineStructure):
             names.append(name)
         df.insert(1, "GeneName", names)
         return df
+
+    def __get_orf_classes(self, outdir):
+        df = pd.read_csv(f'{outdir}/orf_class/predicted_nonhomolog_smorfs_annotation', sep='\t',
+                         header=None, names=["microprotein", "class", "overlap"])
+        h_dict = df.set_index("microprotein").to_dict(orient='index')
+        return h_dict
+
+    def __add_orf_class(self, df, protein_col='protein'):
+        mps = df[protein_col].tolist()
+
+        orf_classes = {}
+        for result in self.args.results:
+            result_class = self.__get_orf_classes(outdir=result)
+            orf_classes.update(result_class)
+
+        class_col = []
+        for mp in mps:
+            if mp in orf_classes:
+                orf_class = orf_classes[mp]['class']
+            else:
+                orf_class = 'None'
+            class_col.append(orf_class)
+        df.insert(3, "ORF Class", class_col)
+        return df
+
 
     def __add_differential_expression(self, df):
         de = f'{self.outdir}/de_analysis.csv'

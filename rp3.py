@@ -337,6 +337,9 @@ class RP3:
                                                                                 "the rescored microproteins will be "
                                                                                 "analyzed for conservation in this "
                                                                                 "case.")
+        self.modeArguments.add_argument("--predictAnnotated",
+                                        help="Make predictions for annotated proteins as well. Boolean flag",
+                                        action="store_true")
         self.modeArguments.add_argument("--uniprotTable")
         self.modeArguments.add_argument("--orfClass", action="store_true")
         self.modeArguments.add_argument("--paralogy", action="store_true")

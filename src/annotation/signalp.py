@@ -23,15 +23,16 @@ class SignalP(PipelineStructure):
         file = self.select_fasta()
         self.__run_signalp(file, self.signalPMicroproteinDir)
 
-        # annotated microproteins
-        file = f'{self.proteinGroupsDir}/annotated_microproteins.fasta'
-        if os.path.exists(file):
-            self.__run_signalp(file, self.signalPAnnoMPDir)
+        if self.args.predictAnnotated:
+            # annotated microproteins
+            file = f'{self.proteinGroupsDir}/annotated_microproteins.fasta'
+            if os.path.exists(file):
+                self.__run_signalp(file, self.signalPAnnoMPDir)
 
-        # standard-sized proteins
-        file = f'{self.proteinGroupsDir}/standard.fasta'
-        if os.path.exists(file):
-            self.__run_signalp(file, self.signalPstandardDir)
+            # standard-sized proteins
+            file = f'{self.proteinGroupsDir}/standard.fasta'
+            if os.path.exists(file):
+                self.__run_signalp(file, self.signalPstandardDir)
 
     def __run_signalp(self, file, outdir):
         cmd = f'{self.toolPaths["signalP"]} --fastafile {file} --format all --organism eukarya ' \
