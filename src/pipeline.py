@@ -210,12 +210,14 @@ class Pipeline:
             orfclass.intersect()
             orfclass.annotate()
             class_vis = ORFClassVis(args=self.args)
-            class_vis.classify_by_groups()
-            class_vis.get_annotations()
-            class_vis.annotate_groups()
-            # class_vis.plot_group_per_anno()
-            class_vis.get_annotation_percentages()
-            class_vis.plot_stacked_bar()
+            file = class_vis.microproteinMappingGroupsForPlotsUnion
+            if os.path.exists(file):
+                class_vis.classify_by_groups()
+                class_vis.get_annotations()
+                class_vis.annotate_groups()
+                # class_vis.plot_group_per_anno()
+                class_vis.get_annotation_percentages()
+                class_vis.plot_stacked_bar()
         if self.args.mhc:
             mhc = MHCDetector(args=self.args)
             mhc.run_mhc_flurry()

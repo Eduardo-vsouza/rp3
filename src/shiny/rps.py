@@ -105,6 +105,10 @@ class RPS(PipelineStructure):
             annotated_std = self.__add_orf_class(df=annotated_std, protein_col='Protein Group')
             mp = self.__add_orf_class(df=mp, protein_col='Protein Group')
 
+            annotated_mp = self.__add_external_data(df=annotated_mp, protein_col="Protein Group")
+            annotated_std = self.__add_external_data(df=annotated_std, protein_col="Protein Group")
+            mp = self.__add_external_data(df=mp, protein_col="Protein Group")
+
 
             print(f"--Adding MS1 quantification")
             annotated_mp_shiny = self.__filter_fold_change_df(df=annotated_mp,
@@ -135,6 +139,7 @@ class RPS(PipelineStructure):
                 unique_df_input = self.__add_protein_names(df=unique_df_input)
                 unique_df_input = self.__add_differential_expression(df=unique_df_input)
                 unique_df_input = self.__add_orf_class(df=unique_df_input)
+                unique_df_input = self.__add_external_data(df=unique_df_input)
                 unique_df = self.__add_pg_context(unique_df_input, save=f'{self.args.outdir}/{file}')
             elif file.endswith("upregulated.csv"):
                 enriched_input = pd.read_csv(f'{self.args.outdir}/{file}', sep='\t')
@@ -143,6 +148,7 @@ class RPS(PipelineStructure):
                 enriched_input = self.__add_protein_names(df=enriched_input)
                 enriched_input = self.__add_differential_expression(df=enriched_input)
                 enriched_input = self.__add_orf_class(df=enriched_input)
+                enriched_input = self.__add_external_data(df=enriched_input)
                 enriched =  self.__add_pg_context(enriched_input, save=f'{self.args.outdir}/{file}')
 
         full_comp_input = pd.read_csv(f'{self.args.outdir}/group_comparison.csv', sep='\t')
@@ -151,6 +157,7 @@ class RPS(PipelineStructure):
         full_comp_input = self.__add_protein_names(df=full_comp_input)
         full_comp_input = self.__add_differential_expression(df=full_comp_input)
         full_comp_input = self.__add_orf_class(df=full_comp_input)
+        full_comp_input = self.__add_external_data(df=full_comp_input)
         print(f"--Adding Ribo-seq counts")
         # full_comp_input = self.__add_ribo_seq_counts(df=full_comp_input)
         full_comp = self.__add_pg_context(full_comp_input, save=f'{self.args.outdir}/group_comparison.csv')
@@ -312,7 +319,10 @@ class RPS(PipelineStructure):
         return df
 
     def __get_orf_classes(self, outdir):
-        df = pd.read_csv(f'{outdir}/orf_class/predicted_nonhomolog_smorfs_annotation', sep='\t',
+        file = f'{outdir}/orf_class/predicted_nonhomolog_smorfs_annotation'
+        # h_dict = None
+        # if os.path.exists(file):
+        df = pd.read_csv(file, sep='\t',
                          header=None, names=["microprotein", "class", "overlap"])
         h_dict = df.set_index("microprotein").to_dict(orient='index')
         return h_dict
@@ -323,17 +333,48 @@ class RPS(PipelineStructure):
         orf_classes = {}
         for result in self.args.results:
             result_class = self.__get_orf_classes(outdir=result)
+            # if result_class is not None:
             orf_classes.update(result_class)
 
         class_col = []
         for mp in mps:
             if mp in orf_classes:
-                orf_class = orf_classes[mp]['class']
+                orf_class = orf_classes[mp]['class'].replace("rtORF", "psORF")
             else:
-                orf_class = 'None'
+                orf_class = ''
             class_col.append(orf_class)
         df.insert(3, "ORF Class", class_col)
         return df
+
+    def __add_external_data(self, df, protein_col='protein'):
+        if self.args.externalData is not None:
+            for e_data in self.args.externalData:
+                e_df = pd.read_csv(e_data, sep=',')
+
+                e_dict = e_df.set_index(self.args.mpColumn).to_dict(orient='index')
+
+                # define columns in the external data frame excluding the microprotein column
+                columns = []
+                for mp in e_dict:
+                    for col in e_dict[mp]:
+                        columns.append(col)
+                    break
+
+                to_insert = {col: [] for col in columns}
+
+                mps = df[protein_col].tolist()
+                # iterate mps in the Rp3 data frame
+                for mp in mps:
+                    for col in to_insert:
+
+                        if mp in e_dict:
+                            to_insert[col].append(e_dict[mp][col])
+                        else:
+                            to_insert[col].append('')
+                for col in to_insert:
+                    df.insert(len(df.columns), col, to_insert[col])
+        return df
+
 
 
     def __add_differential_expression(self, df):

@@ -484,6 +484,14 @@ class RP3:
                                         action=StoreMultipleFiles)
         self.modeArguments.add_argument("--compare", action="store_true")
         self.modeArguments.add_argument("--deploy", action="store_true")
+        self.modeArguments.add_argument("--externalData",
+                                        help="Path to external csv tables that include information about the "
+                                             "microproteins to be added to the shiny App. Accepts multiple "
+                                             "files.",
+                                        nargs='+',
+                                        action=StoreMultipleFiles)
+        self.modeArguments.add_argument("--mpColumn", default="microprotein")
+
 
     def __set_wgs_mode(self):
         self.modeArguments.add_argument("--fastq")
