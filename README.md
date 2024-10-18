@@ -1,4 +1,3 @@
-=============================
 
 <img src="https://github.com/Eduardo-vsouza/rp3/assets/60533781/ee5208ad-5a1a-42a0-830e-13fbfc8cef20" width="230" height="150" />
 

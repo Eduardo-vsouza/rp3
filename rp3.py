@@ -404,12 +404,18 @@ class RP3:
         self.modeArguments.add_argument("--qvalue", default=0.01)
         self.modeArguments.add_argument("--postms_mode", help="cat, sep")
         self.modeArguments.add_argument("--keepAnnotated", action="store_true")
-        self.modeArguments.add_argument("--phosphorylation", action="store_true")
         self.modeArguments.add_argument("--memory", default=32)
         self.modeArguments.add_argument("--maxORFLength", default=150)
         self.modeArguments.add_argument("--quantify", action="store_true")
         self.modeArguments.add_argument("--quantifyOnly", action="store_true")
 
+        self.modArguments = self.parser.add_argument_group("Post-translational Modifications (PTMs) arguments")
+        self.modArguments.add_argument("--mod")
+        self.modArguments.add_argument("--tmt_mod")
+        self.modArguments.add_argument("--amidation", action='store_true')
+        self.modArguments.add_argument("--pyroGlu", help="Includes pyro glu as a variable "
+                                                          "modification", action="store_true")
+        self.modArguments.add_argument("--phosphorylation", action="store_true")
 
     def __set_rna_mode(self):
         self.modeArguments.add_argument("--strandness", help="Inform the strandness of the experiment."

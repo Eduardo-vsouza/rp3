@@ -52,7 +52,8 @@ class RPS(PipelineStructure):
                                  image_dirs=pgc_paths,
                                  df_alias=alias,
                                  pdf_cols=msa_cols,
-                                 pdf_dirs=msa_paths)
+                                 pdf_dirs=msa_paths,
+                                 groups=self.args.groups)
             deploy.copy_files()
             deploy.edit_rscript()
         else:
@@ -132,7 +133,7 @@ class RPS(PipelineStructure):
         unique_df = ''
         enriched = ''
         for file in files:
-            if file.endswith("unique.csv"):
+            if file.endswith(f"{self.args.groups[-1]}_unique.csv"):
                 unique_df_input = pd.read_csv(f'{self.args.outdir}/{file}', sep='\t')
                 unique_df_input = self.__add_ribocov(df=unique_df_input)
                 unique_df_input = self.__add_paralogs_msa(df=unique_df_input)
@@ -143,8 +144,9 @@ class RPS(PipelineStructure):
                 unique_df = self.__add_pg_context(unique_df_input, save=f'{self.args.outdir}/{file}')
             elif file.endswith("upregulated.csv"):
                 enriched_input = pd.read_csv(f'{self.args.outdir}/{file}', sep='\t')
+                # enriched_input = enriched_input[enriched_input["sequence"] != None]
                 enriched_input = self.__add_ribocov(df=enriched_input)
-                enriched_input = self.__add_paralogs_msa(df=enriched_input)
+                # enriched_input = self.__add_paralogs_msa(df=enriched_input)
                 enriched_input = self.__add_protein_names(df=enriched_input)
                 enriched_input = self.__add_differential_expression(df=enriched_input)
                 enriched_input = self.__add_orf_class(df=enriched_input)
@@ -152,12 +154,15 @@ class RPS(PipelineStructure):
                 enriched =  self.__add_pg_context(enriched_input, save=f'{self.args.outdir}/{file}')
 
         full_comp_input = pd.read_csv(f'{self.args.outdir}/group_comparison.csv', sep='\t')
+        # full_comp_input = full_comp_input[full_comp_input["sequence"].]
+        #df.dropna(subset=['name', 'toy'])
+
         full_comp_input = self.__add_ribocov(df=full_comp_input)
         full_comp_input = self.__add_paralogs_msa(df=full_comp_input)
         full_comp_input = self.__add_protein_names(df=full_comp_input)
-        full_comp_input = self.__add_differential_expression(df=full_comp_input)
-        full_comp_input = self.__add_orf_class(df=full_comp_input)
-        full_comp_input = self.__add_external_data(df=full_comp_input)
+        # full_comp_input = self.__add_differential_expression(df=full_comp_input)
+        full_comp_input = self.__add_orf_class(df=full_comp_input, protein_col="protein")
+        # full_comp_input = self.__add_external_data(df=full_comp_input)
         print(f"--Adding Ribo-seq counts")
         # full_comp_input = self.__add_ribo_seq_counts(df=full_comp_input)
         full_comp = self.__add_pg_context(full_comp_input, save=f'{self.args.outdir}/group_comparison.csv')
@@ -224,6 +229,9 @@ class RPS(PipelineStructure):
             return df
 
     def __add_ribocov(self, df, protein_col='protein'):
+        if "sequence" in df.columns:
+            df = df.dropna(subset=["sequence"])
+
         # df = pd.read_csv(file, sep='\t')
         proteins = df[protein_col].tolist()
         mapping_groups_for_df = {}
@@ -258,37 +266,39 @@ class RPS(PipelineStructure):
         """
         paths = {}
         proteins = df[protein_col].tolist()
-
+        run = False
         for results, group in zip(self.args.results, self.args.groups):
+            msa_dir = f'{results}/homology/MSA_prot'
+            if os.path.exists(msa_dir):
+                run = True
+                if group not in paths:
+                    paths[group] = []
+                    paths[f'homologs_{group}'] = []
+                for prot in proteins:
+                    added_fasta = False
 
-            if group not in paths:
-                paths[group] = []
-                paths[f'homologs_{group}'] = []
-            for prot in proteins:
-                added_fasta = False
-
-                added_msa = False
-                msa_dir = f'{results}/homology/MSA_prot'
-                if os.path.exists(msa_dir):
-                    files = os.listdir(msa_dir)
-                    for file in files:
-                        if prot in file:
-                            if file.endswith(".pdf") and not added_msa:
-                                paths[group].append(os.path.abspath(f'{msa_dir}/{file}'))
-                                added_msa = True
-                            if file.endswith(".fasta") and not added_fasta:
-                                homologs = self.__count_homologs_in_fasta(msa_fasta=os.path.abspath(f'{msa_dir}/{file}'))
-                                added_fasta = True
-                                paths[f'homologs_{group}'].append(homologs)
-                if not added_msa:
-                    paths[group].append('')
-                if not added_fasta:
-                    paths[f'homologs_{group}'].append('')
-        for group in paths:
-            if 'homologs' not in group:
-                df.insert(6, f"MSA_{group}", paths[group])
-            else:
-                df.insert(7, group, paths[group])
+                    added_msa = False
+                    if os.path.exists(msa_dir):
+                        files = os.listdir(msa_dir)
+                        for file in files:
+                            if prot in file:
+                                if file.endswith(".pdf") and not added_msa:
+                                    paths[group].append(os.path.abspath(f'{msa_dir}/{file}'))
+                                    added_msa = True
+                                if file.endswith(".fasta") and not added_fasta:
+                                    homologs = self.__count_homologs_in_fasta(msa_fasta=os.path.abspath(f'{msa_dir}/{file}'))
+                                    added_fasta = True
+                                    paths[f'homologs_{group}'].append(homologs)
+                    if not added_msa:
+                        paths[group].append('')
+                    if not added_fasta:
+                        paths[f'homologs_{group}'].append('')
+        if run:
+            for group in paths:
+                if 'homologs' not in group:
+                    df.insert(6, f"MSA_{group}", paths[group])
+                else:
+                    df.insert(7, group, paths[group])
         return df
 
     def __count_homologs_in_fasta(self, msa_fasta):
@@ -305,7 +315,12 @@ class RPS(PipelineStructure):
         return homologs
 
     def __add_protein_names(self, df, protein_col='protein'):
+
         proteins = df[protein_col].tolist()
+        # to_exclude = ['sp|Q14573|ITPR3_HUMAN_Inositol_1', '4',
+        #               '5-trisphosphate-gated_calcium_channel_ITPR3_OS=Homo_sapiens_OX=9606_GN=ITPR3_PE=1_SV=2_ANNO',
+        #               'sp|Q04446|GLGB_HUMAN_1', '4-alpha-glucan-branching_enzyme_OS=Homo_sapiens_OX=9606_GN=GBE1_PE=1_SV=3_ANNO',]
+        # df = df[~df[protein_col].isin(to_exclude)]
         names = []
         for prot in proteins:
             name = prot
@@ -341,9 +356,9 @@ class RPS(PipelineStructure):
             if mp in orf_classes:
                 orf_class = orf_classes[mp]['class'].replace("rtORF", "psORF")
             else:
-                orf_class = ''
+                orf_class = 'unclassified'
             class_col.append(orf_class)
-        df.insert(3, "ORF Class", class_col)
+        df.insert(2, "ORF Class", class_col)
         return df
 
     def __add_external_data(self, df, protein_col='protein'):

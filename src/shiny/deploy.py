@@ -6,13 +6,14 @@ from ..pipeline_config import PipelineStructure
 
 
 class RPSDeployer:
-    def __init__(self, outdir, shiny_r, paths_to_dfs, image_cols, image_dirs, df_alias, pdf_cols, pdf_dirs):
+    def __init__(self, outdir, shiny_r, paths_to_dfs, image_cols, image_dirs, df_alias, pdf_cols, pdf_dirs, groups):
         self.pathsToDFs = paths_to_dfs
         self.imageCols = image_cols
         self.imageDirs = image_dirs
         self.dfAliases = df_alias
         self.pdfCols = pdf_cols
         self.pdfDirs = pdf_dirs
+        self.groups = groups
 
         # outdirs
         self.outdir = outdir
@@ -42,9 +43,12 @@ class RPSDeployer:
     def copy_files(self):
         print(f"--Copying files to the ShinyApp folder.")
 
-        pdf_outdirs = self.__generate_group_data(dirs=self.pdfDirs, app_outdir=self.shinyPDFDir, relative='pdfs')
-        self.shinyPDFGroupDirs = pdf_outdirs
-        print(self.shinyPDFGroupDirs)
+        try:
+            pdf_outdirs = self.__generate_group_data(dirs=self.pdfDirs, app_outdir=self.shinyPDFDir, relative='pdfs')
+            self.shinyPDFGroupDirs = pdf_outdirs
+        except:
+            pass
+        # print(self.shinyPDFGroupDirs)
         image_outdirs = self.__generate_group_data(dirs=self.imageDirs, app_outdir=self.shinyImageDir, relative='images')
         self.shinyImageGroupDirs = image_outdirs
         self.__get_data_frames()
@@ -70,8 +74,9 @@ class RPSDeployer:
     def __generate_group_data(self, dirs, app_outdir, relative):
         outdirs = ''
         folders = dirs.split(",")
-        for folder in folders:
-            groupdir = folder.split('/')[-4]
+        for folder, group in zip(folders, self.groups):
+            # groupdir = folder.split('/')[-4]
+            groupdir = group
             outdir = f'{app_outdir}/{groupdir}'
 
             outdirs += f'{relative}/{groupdir},'

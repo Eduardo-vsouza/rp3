@@ -132,22 +132,23 @@ class Homologs(PipelineStructure):
         return mismatches
 
     def save_clusters(self):
-        df = pd.read_csv(self.microproteinsMappingGroupsExclusive, sep='\t')
-        orfs = {}
-        smorfs, clusters = df["smorf"].tolist(), df["group"].tolist()
+        if os.path.exists(self.microproteinsMappingGroupsExclusive):
+            df = pd.read_csv(self.microproteinsMappingGroupsExclusive, sep='\t')
+            orfs = {}
+            smorfs, clusters = df["smorf"].tolist(), df["group"].tolist()
 
-        cluster_for_plot = {'group': [], 'homologs': []}
+            cluster_for_plot = {'group': [], 'homologs': []}
 
-        for smorf, groups in zip(smorfs, clusters):
-            # if cluster not in cluster_for_plot:
-            #     cluster_for_plot[cluster] = []
-            # clusters = groups.split(",")
-            # for cluster in clusters:
-            if smorf in self.homologs:
-                cluster_for_plot['group'].append(groups)
-                cluster_for_plot['homologs'].append(len(self.homologs[smorf]))
-        df = pd.DataFrame(data=cluster_for_plot)
-        df.to_csv(self.mappingGroupsHomologs, sep='\t', index=False)
+            for smorf, groups in zip(smorfs, clusters):
+                # if cluster not in cluster_for_plot:
+                #     cluster_for_plot[cluster] = []
+                # clusters = groups.split(",")
+                # for cluster in clusters:
+                if smorf in self.homologs:
+                    cluster_for_plot['group'].append(groups)
+                    cluster_for_plot['homologs'].append(len(self.homologs[smorf]))
+            df = pd.DataFrame(data=cluster_for_plot)
+            df.to_csv(self.mappingGroupsHomologs, sep='\t', index=False)
 
     def plot(self):
         df = pd.read_csv(self.mappingGroupsHomologs, sep='\t')
