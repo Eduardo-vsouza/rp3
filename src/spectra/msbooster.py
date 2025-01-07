@@ -13,15 +13,39 @@ class Booster(PipelineStructure):
         self.boosterTmpDir = f'{self.boosterDir}/tmp'
         self.check_dirs([self.boosterDir, self.boosterPinDir, self.boosterTmpDir])
 
+        self.pinFolder, self.boosterSearchDir = self.__define_pin_folder()
+
+    def __define_pin_folder(self):
+        if self.args.rescore:
+            pin_folder = f'{self.rescoreSearchDir}'
+            search_dir = self.rescoreSearchDir
+        else:
+            pin_folder = None
+            search_dir = f'{self.searchDir}/group'
+            db_dirs = os.listdir(search_dir)
+            for subdir in db_dirs:
+                if subdir.endswith("target_decoy_database.fasta"):
+                    pin_folder = f'{search_dir}/{subdir}'
+                    break
+        return pin_folder, search_dir
+
     def prepare_pin_files(self):
         print("Preparing pin files.")
-        subdirs = os.listdir(self.rescoreSearchDir)
+        subdirs = os.listdir(self.boosterSearchDir)
         for subdir in subdirs:
-            pin_files = os.listdir(f'{self.rescoreSearchDir}/{subdir}')
-            for file in pin_files:
-                pin = f'{self.rescoreSearchDir}/{subdir}/{file}'
-                cmd = f'mv {pin} {pin.replace("_target", "")}'
-                os.system(cmd)
+            if not self.args.rescore:
+                if subdir.endswith("target_decoy_database.fasta"):
+                    pin_files = os.listdir(f'{self.boosterSearchDir}/{subdir}')
+                    for file in pin_files:
+                        pin = f'{self.boosterSearchDir}/{subdir}/{file}'
+                        cmd = f'mv {pin} {pin.replace("_target.pin", ".pin")}'
+                        os.system(cmd)
+            else:
+                pin_files = os.listdir(f'{self.boosterSearchDir}/{subdir}')
+                for file in pin_files:
+                    pin = f'{self.rescoreSearchDir}/{subdir}/{file}'
+                    cmd = f'mv {pin} {pin.replace("_target.pin", ".pin")}'
+                    os.system(cmd)
         # pin_files = {}
 
         # with open(f'{self.rescoreDir}/all_pins.pin', 'r') as handler:
@@ -61,9 +85,9 @@ class Booster(PipelineStructure):
                     line = f'mzmlDirectory = {mzml_folders[:-1]}\n'
                 if 'pinPepXMLDirectory =' in line:
                     line = 'pinPepXMLDirectory ='
-                    search_files = os.listdir(self.rescoreSearchDir)
+                    search_files = os.listdir(self.boosterSearchDir)
                     for subdir in search_files:
-                        line += f' {self.rescoreSearchDir}/{subdir}/'
+                        line += f' {self.boosterSearchDir}/{subdir}/'
                     line += '\n'
                 params.append(line)
         with open(self.msBoosterParams, 'w') as outfile:
@@ -76,12 +100,12 @@ class Booster(PipelineStructure):
 
     def merge_pin_files(self):
         cats = ''
-        subdirs = os.listdir(self.rescoreSearchDir)
+        subdirs = os.listdir(self.boosterSearchDir)
         for subdir in subdirs:
-            pins = os.listdir(f'{self.rescoreSearchDir}/{subdir}')
+            pins = os.listdir(f'{self.boosterSearchDir}/{subdir}')
             for pin in pins:
                 if pin.endswith('_edited.pin'):
-                    cats += f' {self.rescoreSearchDir}/{subdir}/{pin}'
+                    cats += f' {self.boosterSearchDir}/{subdir}/{pin}'
         cmd = f'cat {cats} > {self.boosterTmpDir}/merged_edited.pin'
         os.system(cmd)  # merge pin files
         cmd = f"awk 'FNR<2' {self.boosterTmpDir}/merged_edited.pin > {self.boosterTmpDir}/header.txt"

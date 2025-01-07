@@ -92,6 +92,15 @@ class Pipeline:
         self.parameters.update_params_file()
 
     def post_process_searches(self):
+        if self.args.msBooster:
+            from .spectra import Booster
+
+            msb = Booster(args=self.args)
+            msb.prepare_pin_files()
+            msb.configure_parameters()
+            msb.run()
+            msb.merge_pin_files()
+
         self.postMSMode = self.args.postms_mode
         if not self.args.quantifyOnly:
             postms = PercolatorPostProcessing(args=self.args)
@@ -183,8 +192,8 @@ class Pipeline:
 
     def check_mods(self):
         mods = FormylSummarizer(args=self.args)
-        mods.get_modified_proteins()
-        mods.summarize_data()
+        # mods.get_modified_proteins()
+        # mods.summarize_data()
 
     def annotate(self):
         if self.args.signalP:
@@ -278,7 +287,7 @@ class Pipeline:
                 rescore.re_assess_fdr()
         if not self.args.quantifyOnly:
             rescore.merge_results()
-            rescore.filter_gtf()
+            # rescore.filter_gtf()
 
     def check_riboseq_coverage(self):
         from .ribocov import FeatureCounts, RiboSeqCoverage, CoverageClassification, ORFCounter, RiboSeqAlign, SeqDist
@@ -346,7 +355,7 @@ class Pipeline:
         homo = HomologyFinder(args=self.args)
         print(f"-Identifying homologs in {self.args.genome} for the identified microproteins.")
         if self.args.tBlastN:
-            homo.tblastn_mm_microproteins()
+            # homo.tblastn_mm_microproteins()
             homo.extract_aligned_sequences(blast='tblastn')
             homo.prepare_alignment_files(blast='tblastn')
             homo.perform_msa(blast='tblastn')

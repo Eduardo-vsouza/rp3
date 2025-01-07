@@ -72,6 +72,7 @@ class HomologyFinder(PipelineStructure):
             msa = self.nucMSADir
         elif blast == 'tblastn':
             blasted = self.blastedMMMicroproteinsXMLProtein
+            blasted = f'{self.args.outdir}/homology/chr6_6795023-6795214_tblastned.xml'
             out = self.tBlastnMMMicroproteinsResults
             aln = self.fastaSeqsToAlignProteinDir
             msa = self.proteinMSADir

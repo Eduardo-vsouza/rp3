@@ -234,7 +234,14 @@ class PercolatorPostProcessing(PipelineStructure):
             if db.endswith("target_decoy_database.fasta"):
                 pins = os.listdir(f'{self.searchDir}/group/{db}')
                 for pin in pins:
-                    if pin.endswith(".pin"):
+                    run = False
+                    if self.args.msBooster:
+                        if '_edited' in pin:
+                            run = True
+                    else:
+                        if pin.endswith(".pin"):
+                            run = True
+                    if run:
                         cmd = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
                                f'--post-processing-tdc --results-psms {group_outdir}/{pin}_psm.txt --results-peptides '
                                f'{group_outdir}/{pin}_peptides.txt --no-terminate --num-threads {self.args.threads} '

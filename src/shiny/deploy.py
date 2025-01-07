@@ -43,11 +43,11 @@ class RPSDeployer:
     def copy_files(self):
         print(f"--Copying files to the ShinyApp folder.")
 
-        try:
-            pdf_outdirs = self.__generate_group_data(dirs=self.pdfDirs, app_outdir=self.shinyPDFDir, relative='pdfs')
-            self.shinyPDFGroupDirs = pdf_outdirs
-        except:
-            pass
+        # try:
+        #     pdf_outdirs = self.__generate_group_data(dirs=self.pdfDirs, app_outdir=self.shinyPDFDir, relative='pdfs')
+        #     self.shinyPDFGroupDirs = pdf_outdirs
+        # except:
+        #     pass
         # print(self.shinyPDFGroupDirs)
         image_outdirs = self.__generate_group_data(dirs=self.imageDirs, app_outdir=self.shinyImageDir, relative='images')
         self.shinyImageGroupDirs = image_outdirs
