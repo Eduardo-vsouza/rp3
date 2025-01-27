@@ -74,7 +74,7 @@ class RiboSeqAlign(PipelineStructure):
         """
 
         if self.args.skip_trimming:
-            print("Skipping trimming step, as requested.")
+            print("Skipping trimming step.")
             return
 
         # Gather input files (FASTQ or FQ, possibly gzipped)
