@@ -20,5 +20,6 @@ stringtie	stringtie
 bedtools	bedtools
 FlashLFQ	FlashLFQ
 fastx_toolkit   fastx_toolkit
+cutadapt	cutadapt
 gatk	/home/microway/programs/GATK/gatk-4.6.0.0/gatk
 bwa	bwa

@@ -290,7 +290,8 @@ class Pipeline:
 
         aln = RiboSeqAlign(args=self.args)
         if self.args.aln is None:
-            aln.trim_reads()
+            # aln.trim_reads()
+            aln.run_trimming_parallel()
             aln.remove_ribosome()
             aln.align_rpfs()
         resc = PeptideReScoring(args=self.args)

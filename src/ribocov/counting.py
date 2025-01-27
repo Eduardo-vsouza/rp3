@@ -58,7 +58,9 @@ class FeatureCounts(PipelineStructure):
         if self.args.threads > 64:
             threads = 64
         attribute = 'gene_id'
+        attribute = self.args.GTFattribute
         feature = 'CDS'
+        feature = self.args.GTFfeature
         out_ambig = f'{self.rawCountsDir}/{gtf_name}_ambiguous_counts.txt'
         run = self.verify_checkpoint(outfile=out_ambig, step="read counting with featureCounts")
         if run:
