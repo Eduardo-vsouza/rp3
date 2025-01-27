@@ -283,47 +283,69 @@ class RP3:
 
 
     def __set_ribocov_mode(self):
-        self.modeArguments.add_argument("--fastq", help="Provide the path to the folder containing "
-                                                        "fastq files to be aligned to the genome. If the --aln "
-                                                        "argument is provided, this is not necessary.")
-        self.modeArguments.add_argument("--gtf", help="Reference gtf file containing coordinates for annotated genes. "
+        self.annotationArguments = self.parser.add_argument_group("Annotation files")
+        self.annotationArguments.add_argument("--gtf", help="Reference gtf file containing coordinates for annotated genes. "
                                                       "The novel smORFs sequences from the proteogenomics analysis "
-                                                      "will be appended to it.")
-        self.modeArguments.add_argument("--genome_index", help="Path to the genome STAR index. If not provided, "
-                                                         "it will use the human hg19 index available at /data/")
-        self.modeArguments.add_argument("--cont_index", help="STAR index containing the contaminants "
-                                                             "(tRNA/rRNA sequences). Reads mapped to these will be "
-                                                             "excluded from the analysis.")
-        self.modeArguments.add_argument("--aln", help="Folder containing bam or sam files with Ribo-Seq reads aligned to the"
-                                                      " genome. In case this is provided, indexes are not required "
-                                                      "and the alignment step will be skipped.")
-        self.modeArguments.add_argument("--externalGTF",
+                                                      "will be appended to it. "
+                                                            "Not necessary if --genomeAssembly is specified.")
+        self.annotationArguments.add_argument("--externalGTF",
                                         help="Provide an externalGTF containing exons and transcripts coordinates for "
                                              "the set of smORFs to be analyzed. It will be concatenated with the "
                                              "reference annotation.")
-        self.modeArguments.add_argument("--rpkm", help="RPKM cutoff to consider whether a smORF is sufficiently covered"
-                                                       " by RPFs or not.", default=1, type=float)
-        self.modeArguments.add_argument("--minRawCounts", default=10, type=int)
-        self.modeArguments.add_argument("--multimappings", help="max number of multimappings to be "
+        self.alignmentArguments = self.parser.add_argument_group("--Alignment parameters")
+
+        self.alignmentArguments.add_argument("--genome_index", help="Path to the genome STAR index. If not provided, "
+                                                         "it will use the human hg19 index available at /data/. "
+                                                                    "Not necessary if --genomeAssembly is specified.")
+        self.alignmentArguments.add_argument("--cont_index", help="STAR index containing the contaminants "
+                                                             "(tRNA/rRNA sequences). Reads mapped to these will be "
+                                                             "excluded from the analysis. Not necessary if "
+                                                                  "--genomeAssembly is specified.")
+        self.alignmentArguments.add_argument("--fastq", help="Provide the path to the folder containing "
+                                                        "fastq files to be aligned to the genome. If the --aln "
+                                                        "argument is provided, this is not necessary.")
+        self.alignmentArguments.add_argument("--aln", help="Folder containing bam or sam files with Ribo-Seq reads aligned to the"
+                                                      " genome. In case this is provided, indexes are not required "
+                                                      "and the alignment step will be skipped.")
+        self.alignmentArguments.add_argument("--multimappings", help="max number of multimappings to be "
                                                                 "allowed.", default=9999)
+        self.alignmentArguments.add_argument("--clip5pNbases", help="Inform the number of bases to remove "
+                                                                    "from the 5' end during alignment with STAR. "
+                                                                    "None by default.")
+
+
         self.trimmingArguments = self.parser.add_argument_group("Trimming parameters")
         self.trimmingArguments.add_argument("--trimmer", default='cutadapt', help="fastX or cutadapt")
-        self.modeArguments.add_argument("--adapter", help="Provide the adapter sequence to be removed.",
+        self.trimmingArguments.add_argument("--adapter", help="Provide the adapter sequence to be removed."
+                                                              " Default is Illumina Universal Adapter.",
                                         default="AGATCGGAAGAGCACACGTCT")
-        self.modeArguments.add_argument("--plots", action="store_true")
-        self.modeArguments.add_argument("--fastx_clipper_path",
+        self.trimmingArguments.add_argument("--fastx_clipper_path",
                                         default=f"{sys.path[0]}/dependencies/fastx_clipper")
-        self.modeArguments.add_argument("--fastx_trimmer_path",
+        self.trimmingArguments.add_argument("--fastx_trimmer_path",
                                         default=f'{sys.path[0]}/dependencies/fastx_trimmer')
+
+        self.trimmingArguments.add_argument("--skip_trimming", action="store_true")
+        self.modeArguments.add_argument("--GTFattribute", default="gene_id")
+        self.modeArguments.add_argument("--GTFfeature", default="exon")
+        self.modeArguments.add_argument("--plots", action="store_true")
         self.modeArguments.add_argument("--grouping_method", help="Choose the way smORFS are "
                                                                    "assigned to their respective mapping groups. \n"
                                                                    "union,\n"
                                                                    "separated", default='union')
-        self.modeArguments.add_argument("--skip_trimming", action="store_true")
+        self.modeArguments.add_argument("--rpkm", help="RPKM cutoff to consider whether a smORF is"
+                                                       " sufficiently covered. Default: 0. This used to default to "
+                                                       "1 in previous versions."
+                                                       " by RPFs or not.", default=0, type=float)
+        self.modeArguments.add_argument("--minRawCounts", default=10, type=int,
+                                        help="RPKM cutoff to consider whether a smORF is"
+                                                       " sufficiently covered. Default: 10.")
         self.modeArguments.add_argument("--rescored", action="store_true")
         self.modeArguments.add_argument("--proteinFDR", action="store_true")
         self.modeArguments.add_argument("--qvalue", default=0.01, type=float)
-        self.modeArguments.add_argument("--manualPlot", action="store_true")
+        self.modeArguments.add_argument("--manualPlot", action="store_true",
+                                        help="If provided, every plot generated will open a GUI window "
+                                             "for user customization. Note that this will halt the execution of the "
+                                             "pipeline until the window is closed.")
         # self.modeArguments.add_argument("--simulateMM", action="store_true")
         # self.mmSimulationArguments = self.parser.add_argument_group("MM simulation parameters")
         # self.mmSimulationArguments.add_argument("--maxMismatches", default=2)
