@@ -82,12 +82,8 @@ class Pipeline:
         print("searching")
         search = MSFragger(mzml_folder=self.mzMLFolder, outdir=self.outdir,
                            threads=self.threads, mod=self.args.mod, quantify=quantify, args=self.args)
-        # if self.postMSMode == 'cat':
+
         search.iterate_searches_cat()
-        # elif self.postMSMode == 'sep':
-        #     search.iterate_searches_cat()
-        # else:
-        #     search.iterate_searches_multi()
         self.parameters.add_mode_parameters(search, self.args)
         self.parameters.update_params_file()
 
@@ -95,7 +91,7 @@ class Pipeline:
         if self.args.msBooster:
             from .spectra import Booster
 
-            msb = Booster(args=self.args)
+            msb = Booster(args=self.args, rescore=False)
             msb.prepare_pin_files()
             msb.configure_parameters()
             msb.run()
@@ -302,7 +298,7 @@ class Pipeline:
             rescored = True
         else:
             rescored = False
-        resc.filter_gtf(rescored=rescored)
+        # resc.filter_gtf(rescored=rescored)
 
         feature_counts = FeatureCounts(args=self.args)
         feature_counts.append_reference_annotation()

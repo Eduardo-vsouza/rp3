@@ -297,11 +297,17 @@ class RP3:
         self.modeArguments.add_argument("--aln", help="Folder containing bam or sam files with Ribo-Seq reads aligned to the"
                                                       " genome. In case this is provided, indexes are not required "
                                                       "and the alignment step will be skipped.")
+        self.modeArguments.add_argument("--externalGTF",
+                                        help="Provide an externalGTF containing exons and transcripts coordinates for "
+                                             "the set of smORFs to be analyzed. It will be concatenated with the "
+                                             "reference annotation.")
         self.modeArguments.add_argument("--rpkm", help="RPKM cutoff to consider whether a smORF is sufficiently covered"
                                                        " by RPFs or not.", default=1, type=float)
         self.modeArguments.add_argument("--minRawCounts", default=10, type=int)
         self.modeArguments.add_argument("--multimappings", help="max number of multimappings to be "
                                                                 "allowed.", default=9999)
+        self.trimmingArguments = self.parser.add_argument_group("Trimming parameters")
+        self.trimmingArguments.add_argument("--trimmer", default='cutadapt', help="fastX or cutadapt")
         self.modeArguments.add_argument("--adapter", help="Provide the adapter sequence to be removed.",
                                         default="AGATCGGAAGAGCACACGTCT")
         self.modeArguments.add_argument("--plots", action="store_true")
@@ -396,6 +402,7 @@ class RP3:
         self.modeArguments.add_argument("--hlaPeptidomics", help="Sets parameters in the peptide search that are "
                                                                  "adequate for HLA peptidomics datasets.",
                                         action="store_true")
+        self.modeArguments.add_argument("--fragment_mass_tolerance", default=20)
         # self.modeArguments.add_argument("--no_ambiguous", action="store_true", help="If turned on, microproteins "
         #                                                                             "with a peptide matching another "
         #                                                                             "predicted microprotein from "

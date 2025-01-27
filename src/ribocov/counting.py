@@ -17,14 +17,19 @@ class FeatureCounts(PipelineStructure):
         run = self.verify_checkpoint(outfile=self.referencePlusRescoredGTF,
                                      step=f"merging of Rp3 and reference GTF files")
         if run:
-            if os.path.exists(self.rescoredMicroproteinsFasta):
-                cmd = f'cat {self.rescoredMicroproteinsGTF} {self.args.gtf} > {self.referencePlusRescoredGTF}'
+            if self.args.externalGTF:
+                print(f"--Merging external GTF and reference annotations")
+                cmd = f'cat {self.args.externalGTF} {self.args.gtf} > {self.referencePlusRescoredGTF}'
+                os.system(cmd)
             else:
-                if os.path.exists(self.microproteinsBlast):
-                    cmd = f'cat {self.microproteinsBlast} {self.args.gtf} > {self.referencePlusRescoredGTF}'
+                if os.path.exists(self.rescoredMicroproteinsFasta):
+                    cmd = f'cat {self.rescoredMicroproteinsGTF} {self.args.gtf} > {self.referencePlusRescoredGTF}'
                 else:
-                    # cmd = f'cat {self.args.gtf} {self.mergedResults}/merged_predicted_microproteins.gtf > {self.referencePlusRescoredGTF}'
-                    cmd = f'cp {self.uniqueMicroproteinsGTF} {self.referencePlusRescoredGTF}'
+                    if os.path.exists(self.microproteinsBlast):
+                        cmd = f'cat {self.microproteinsBlast} {self.args.gtf} > {self.referencePlusRescoredGTF}'
+                    else:
+                        # cmd = f'cat {self.args.gtf} {self.mergedResults}/merged_predicted_microproteins.gtf > {self.referencePlusRescoredGTF}'
+                        cmd = f'cp {self.uniqueMicroproteinsGTF} {self.referencePlusRescoredGTF}'
 
             os.system(cmd)
 
@@ -52,8 +57,8 @@ class FeatureCounts(PipelineStructure):
         threads = self.args.threads
         if self.args.threads > 64:
             threads = 64
-        attribute = 'transcript_id'
-        feature = 'transcript'
+        attribute = 'gene_id'
+        feature = 'CDS'
         out_ambig = f'{self.rawCountsDir}/{gtf_name}_ambiguous_counts.txt'
         run = self.verify_checkpoint(outfile=out_ambig, step="read counting with featureCounts")
         if run:

@@ -21,16 +21,27 @@ class RiboSeqAlign(PipelineStructure):
                 # run = self.verify_checkpoint(outfile=f'{self.riboSeqTrimmedDir}/trimmed_{file}',
                 #                              step=f'Ribocov trimming for {file}.')
                 # if run:
-                os.system(f'gzip -d {self.args.fastq}/{file}')
+                if file.endswith("gz"):
+                    os.system(f'gzip -d {self.args.fastq}/{file}')
                 # if file.endswith("fastq.gz")
-                print(f'Performing read trimming for {file}.')
-                full = f'{self.args.fastq}/{file.replace(".gz", "")}'
+                if file.endswith(".fastq") or file.endswith(".fq"):
+                    print(f'Performing read trimming for {file}.')
 
-                cmd = (f'{self.args.fastx_clipper_path} -Q33 -l 20 -n -v -c -a {self.adapterSequence} -i {full} | '
-                       f'{self.args.fastx_trimmer_path} -Q33 -f 1 2> {self.riboSeqTrimmedDir}/trim.log > '
-                       f'{self.riboSeqTrimmedDir}/trimmed_{file}')
-                os.system(cmd)
-                print(f"Finished trimming {file}.")
+                    full = f'{self.args.fastq}/{file.replace(".gz", "")}'
+                    if self.args.trimmer == 'fastX':
+
+                        cmd = (f'{self.args.fastx_clipper_path} -Q33 -l 20 -n -v -c -a {self.adapterSequence} -i {full} | '
+                               f'{self.args.fastx_trimmer_path} -Q33 -f 1 2> {self.riboSeqTrimmedDir}/trim.log > '
+                               f'{self.riboSeqTrimmedDir}/trimmed_{file}')
+                        os.system(cmd)
+                    elif self.args.trimmer == 'cutadapt':
+                        threads = self.args.threads
+                        if threads > 8:
+                            threads = 8
+                        cmd = (f'cutadapt -a {self.adapterSequence} -o {self.riboSeqTrimmedDir}/trimmed_{file} {full} '
+                               f'-j {threads}')
+                        os.system(cmd)
+                    print(f"Finished trimming {file}.")
 
     def __check_indexes(self):
         if self.args.aln is None:
@@ -67,7 +78,8 @@ class RiboSeqAlign(PipelineStructure):
                         zcat = f' --readFilesCommand zcat'
                     else:
                         zcat = ''
-                    cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --outReadsUnmapped Fastx --genomeDir '
+                    cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --outReadsUnmapped Fastx '
+                           f'--alignEndsType EndToEnd --genomeDir '
                            f'{self.indexCont} --runThreadN {self.args.threads} --readFilesIn {self.riboSeqTrimmedDir}/{file} '
                            f'--outFileNamePrefix {self.riboSeqContaminantAlnDir}/no_contaminant_{file}{zcat}')
                     os.system(cmd)
@@ -87,11 +99,19 @@ class RiboSeqAlign(PipelineStructure):
                     filepath = f'{self.riboSeqContaminantAlnDir}/{file}'
                     # filepath = f'{self.riboSeqTrimmedDir}/{file}'
                     print(f"Aligning RPF reads from {file} to {self.index}")
+                    # cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --genomeDir {self.index} --runThreadN '
+                    #        f'{self.args.threads} --readFilesIn {filepath} --outFileNamePrefix '
+                    #        f'{self.riboSeqAlnDir}/aligned_to_genome_{file} --outFilterMismatchNmax 2 '
+                    #        f'--outFilterMultimapNmax {self.args.multimappings} --chimScoreSeparation 10 --chimScoreMin '
+                    #        f'20 --chimSegmentMin 15 --outSAMattributes All{gz}')
+                    clipbases = ''
+                    if self.args.clip5pNbases is not None:
+                        clipbases = f' {self.args.clip5pNbases}'
                     cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --genomeDir {self.index} --runThreadN '
                            f'{self.args.threads} --readFilesIn {filepath} --outFileNamePrefix '
-                           f'{self.riboSeqAlnDir}/aligned_to_genome_{file} --outFilterMismatchNmax 2 '
-                           f'--outFilterMultimapNmax {self.args.multimappings} --chimScoreSeparation 10 --chimScoreMin '
-                           f'20 --chimSegmentMin 15 --outSAMattributes All{gz}')
+                           f'{self.riboSeqAlnDir}/aligned_to_genome_{file} '
+                           f'--outFilterMultimapNmax {self.args.multimappings} '
+                           f'--outSAMattributes All{gz}{clipbases}')
                     os.system(cmd)
                     print(f'Finished aligning {file}.')
 

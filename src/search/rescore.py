@@ -182,7 +182,7 @@ class PeptideReScoring(PipelineStructure):
         self.check_dirs([group_outdir])
         pins = os.listdir(f'{self.rescoreSearchDir}/group')
         for pin in pins:
-            if pin.endswith(".pin"):
+            if pin.endswith("edited.pin"):
                 cmd = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
                        f'--post-processing-tdc --results-psms {group_outdir}/{pin}_psm.txt --results-peptides '
                        f'{group_outdir}/{pin}_peptides.txt --no-terminate --num-threads {self.args.threads} '

@@ -7,8 +7,11 @@ from ..pipeline_config import PipelineStructure
 
 
 class Booster(PipelineStructure):
-    def __init__(self, args):
+    def __init__(self, args, rescore=True):
         super().__init__(args=args)
+        if self.args.mode == 'rescore':
+            self.args.rescore = True
+        self.rescore = rescore
         self.msBoosterParams = f'{self.boosterDir}/msbooster_params.txt'
         self.boosterTmpDir = f'{self.boosterDir}/tmp'
         self.check_dirs([self.boosterDir, self.boosterPinDir, self.boosterTmpDir])
@@ -16,7 +19,7 @@ class Booster(PipelineStructure):
         self.pinFolder, self.boosterSearchDir = self.__define_pin_folder()
 
     def __define_pin_folder(self):
-        if self.args.rescore:
+        if self.rescore:
             pin_folder = f'{self.rescoreSearchDir}'
             search_dir = self.rescoreSearchDir
         else:
@@ -33,7 +36,7 @@ class Booster(PipelineStructure):
         print("Preparing pin files.")
         subdirs = os.listdir(self.boosterSearchDir)
         for subdir in subdirs:
-            if not self.args.rescore:
+            if not self.rescore:
                 if subdir.endswith("target_decoy_database.fasta"):
                     pin_files = os.listdir(f'{self.boosterSearchDir}/{subdir}')
                     for file in pin_files:
@@ -41,7 +44,7 @@ class Booster(PipelineStructure):
                         cmd = f'mv {pin} {pin.replace("_target.pin", ".pin")}'
                         os.system(cmd)
             else:
-                pin_files = os.listdir(f'{self.boosterSearchDir}/{subdir}')
+                pin_files = os.listdir(f'{self.rescoreSearchDir}/{subdir}')
                 for file in pin_files:
                     pin = f'{self.rescoreSearchDir}/{subdir}/{file}'
                     cmd = f'mv {pin} {pin.replace("_target.pin", ".pin")}'

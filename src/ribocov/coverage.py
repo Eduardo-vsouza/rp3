@@ -142,7 +142,7 @@ class RiboSeqCoverage(PipelineStructure):
                         #     data['read counts'].append(np.median(smorfs_cov[smorf][mapping_group]))
                         # else:
                         #     data['read counts'].append(np.mean(smorfs_cov[smorf][mapping_group]))
-        from matplotlib import transforms
+        # from matplotlib import transforms
 
         set_bins = 40
         if len(set(map(round, data['read counts']))) < set_bins:
@@ -305,18 +305,21 @@ class RiboSeqCoverage(PipelineStructure):
         cmap_colors = [(0, '#7094EC'), (1, 'red')]
         cmap = LinearSegmentedColormap.from_list("custom_cmap", cmap_colors)
         # print("3")
-        g = nhm(data=df, cmapCenter=cmap, showyticks=False, linewidths=0)
-        # print(4)
-        g.hcluster(optimal_ordering=False)
-        # print(5)
-        df_ordered = g.data.iloc[g.rorder, g.corder]
-        df_ordered.to_csv(f'{self.args.outdir}/ordered_heatmap.xls')
-        # print(6)
-        # print(g.dendrogram)
-        fig, plots = g.run()
-        # print(7)
-        plt.savefig(f"{self.countsDir}/heatmap_{self.expCutoffsSuffix}.png")
-        plt.savefig(f"{self.countsDir}/heatmap_{self.expCutoffsSuffix}.pdf")
+        try:
+            g = nhm(data=df, cmapCenter=cmap, showyticks=False, linewidths=0)
+            # print(4)
+            # g.hcluster(optimal_ordering=True)
+            # print(5)
+            df_ordered = g.data.iloc[g.rorder, g.corder]
+            df_ordered.to_csv(f'{self.args.outdir}/ordered_heatmap.xls')
+            # print(6)
+            # print(g.dendrogram)
+            fig, plots = g.run()
+            # print(7)
+            plt.savefig(f"{self.countsDir}/heatmap_{self.expCutoffsSuffix}.png")
+            plt.savefig(f"{self.countsDir}/heatmap_{self.expCutoffsSuffix}.pdf")
+        except:
+            pass
 
         # plt.show()
 
