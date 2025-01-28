@@ -52,18 +52,37 @@ class RiboSeqAlign(PipelineStructure):
         This is what we'll submit to ProcessPoolExecutor.
         """
         # Cap cutadapt at 8 threads
-        threads_for_cutadapt = min(self.args.threads, 8)
+        if self.args.trimmer == 'cutadapt':
 
-        cmd = [
-            self.toolPaths["cutadapt"],
-            "-a", self.adapterSequence,
-            "-o", output_file,
-            input_file,
-            "-j", str(threads_for_cutadapt)
-        ]
-        print(f"[Cutadapt] Running: {' '.join(cmd)}")
-        subprocess.run(cmd, check=True)
-        print(f"[Cutadapt] Finished trimming {os.path.basename(input_file)}")
+            threads_for_cutadapt = min(self.args.threads, 8)
+
+            cmd = [
+                self.toolPaths["cutadapt"],
+                "-a", self.adapterSequence,
+                "-o", output_file,
+                input_file,
+                "-j", str(threads_for_cutadapt)
+            ]
+            print(f"[Cutadapt] Running: {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+            print(f"[Cutadapt] Finished trimming {os.path.basename(input_file)}")
+
+        # cap fastp at 16 threads
+        if self.args.trimmer == 'fastp':
+            threads_for_cutadapt = min(self.args.threads, 16)
+
+            cmd = [
+                self.toolPaths["fastp"],
+                "--adapter_sequence", self.adapterSequence,
+                "-o", output_file,
+                "-i", input_file,
+                "--thread", str(threads_for_cutadapt)
+            ]
+            print(f"[fastp] Running: {' '.join(cmd)}")
+            subprocess.run(cmd, check=True)
+            print(f"[fastp] Finished trimming {os.path.basename(input_file)}")
+
+
 
     def run_trimming_parallel(self):
         """
@@ -86,7 +105,10 @@ class RiboSeqAlign(PipelineStructure):
 
         # Figure out how many parallel tasks to launch at once
         # e.g. if self.args.threads=32 and cutadapt uses 8 threads each => 4 parallel jobs
+
         max_cutadapt_threads = 8
+        if self.args.trimmer == 'fastp':
+            max_cutadapt_threads = 16
         if self.args.threads <= max_cutadapt_threads:
             n_processes = 1
         else:
