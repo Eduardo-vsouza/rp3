@@ -45,13 +45,16 @@ class RP3:
 
         self.args = self.main_parser.parse_args(sys.argv[1:2])
         self.mode = self.args.mode
+        if self.mode == 'rphub':
+            self.args.outdir = f'{sys.argv[0]}/dump'
         self.parser = argparse.ArgumentParser(description="Run pipeline_config in %s mode" % self.mode,
                                               prog=" ".join(sys.argv[0:2]),
                                               formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
         self.general_args = self.parser.add_argument_group("General Parameters")
         self.general_args.add_argument("mode", metavar=self.mode)
-        self.general_args.add_argument("--outdir", "-o", help="Inform the output directory")
+        self.general_args.add_argument("--outdir", "-o", help="Inform the output directory",
+                                       default=f'{sys.path[0]}/dump')
         self.general_args.add_argument("--threads", "-p", help="Number of threads to be used.", default=1,
                                        type=int)
         self.general_args.add_argument("--overwrite", action="store_true")
@@ -124,6 +127,9 @@ class RP3:
 
         elif self.mode == 'wgs':
             self.__set_wgs_mode()
+
+        elif self.mode == 'rphub':
+            self.__set_rphub_args()
 
         args = self.parser.parse_args()
         return args
@@ -538,6 +544,39 @@ class RP3:
         self.modeArguments.add_argument("--panelOfNormals")
         self.modeArguments.add_argument("--germlineResource")
 
+    def __set_rphub_args(self):
+        self.rpHubDir = f'{sys.path[0]}/rpHub'
+        self.rpHubFile = f'{self.rpHubDir}/projects.json'
+
+        self.modeArguments.add_argument("--rpHubDir", default=f'{sys.path[0]}/rpHub')
+        self.modeArguments.add_argument("--results", help="accepts multiple Rp3 output directories",
+                                        nargs='+',
+                                        action=StoreMultipleFiles)
+        rphubdir = f'{sys.path[0]}/rpHub'
+        projects = None
+        if not os.path.exists(rphubdir):
+            os.mkdir(rphubdir)
+        # self.parser.outdir = f'{sys.path[0]}/dump'
+
+        self.modeArguments.add_argument("--project", help=f"Available projects: "
+                                                          f"{self.__get_rphub_projects()}")
+                                                          # f"{[file for file in os.listdir(rphubdir) if not file.endswith('json')]}")
+        self.modeArguments.add_argument("--summary", action="store_true")
+        self.modeArguments.add_argument("--proteinSeq")
+    #
+    def __get_rphub_projects(self):
+
+        import json
+        projects = []
+        if os.path.exists(self.rpHubFile):
+            with open(self.rpHubFile, 'r') as handler:
+                # Reading from json file
+                self.projects = json.load(handler)
+                for project in self.projects:
+                    projects.append(project)
+
+        return projects
+
     def execute(self):
         if not self.mode == 'demo':
             pipe = Pipeline(args=self.args)
@@ -628,6 +667,11 @@ class RP3:
 
         elif self.mode == 'wgs':
             pipe.analyze_wgs()
+
+        elif self.mode == 'rphub':
+            self.args.outdir = f'{self.args.rpHubDir}/dump'
+
+            pipe.enter_rphub()
 
 if __name__ == '__main__':
     print(" ____       _____\n"

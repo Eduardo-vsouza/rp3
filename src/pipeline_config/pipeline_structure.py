@@ -21,7 +21,9 @@ class PipelineStructure:
         self.__define_genomes()
 
         self.outdir = self.args.outdir
-        self.check_dirs(self.outdir)
+        if self.args.mode == 'rphub':
+            self.outdir = self.args.rpHubDir
+        self.check_dirs([self.outdir])
         self.translationDir = f'{self.outdir}/translation'
 
         # db

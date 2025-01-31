@@ -28,7 +28,6 @@ class Pipeline:
 
         # directories
         self.outdir = args.outdir
-        self.translationFolder = f'{self.outdir}/translation'
         self.__check_dirs()
 
 
@@ -38,9 +37,16 @@ class Pipeline:
 
 
     def __check_dirs(self):
+        if self.args.mode == 'rphub':
+            import sys
+            self.outdir = f'{sys.path[0]}/dump'
+
         if not os.path.exists(self.outdir):
             os.mkdir(self.outdir)
+        self.translationFolder = f'{self.outdir}/translation'
+
         if not os.path.exists(self.translationFolder):
+
             os.mkdir(self.translationFolder)
 
     def translate_in_silico(self):
@@ -414,3 +420,13 @@ class Pipeline:
         # variant.mark_duplicates()
         variant.recalibrate_base_score()
 
+
+    def enter_rphub(self):
+        from .rphub import RpHub
+        rphub = RpHub(args=self.args)
+        if self.args.results is not None:
+            rphub.integrate_results()
+        if self.args.summary:
+            rphub.generate_summary()
+        rphub.fetch_protein_seq()
+        rphub.save()
