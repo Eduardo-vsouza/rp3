@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from ..pipeline_config import PipelineStructure
@@ -183,21 +184,104 @@ class RiboSeqAlign(PipelineStructure):
             if file.endswith(".fastq") or file.endswith("fastq.gz") or self.args.skip_trimming:
                 out = f'{self.riboSeqContaminantAlnDir}/no_contaminant_{file}Unmapped.out.mate1'
                 run = self.verify_checkpoint(outfile=out, step=f"removal of contaminants for {file}.")
+
+                # meninos_problema = {
+                # "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
+                # "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
+                # "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
+                # "SRR15906473": "no_contaminant_polyAtrimmed_trimmed_SRR15906473.fastqUnmapped.out.mate1",
+                # "SRR15906432": "no_contaminant_polyAtrimmed_trimmed_SRR15906432.fastqUnmapped.out.mate1",
+                # "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
+                # "SRR15906472": "no_contaminant_polyAtrimmed_trimmed_SRR15906472.fastqUnmapped.out.mate1",
+                # "SRR15906489": "no_contaminant_polyAtrimmed_trimmed_SRR15906489.fastqUnmapped.out.mate1",
+                # "SRR15906436": "no_contaminant_polyAtrimmed_trimmed_SRR15906436.fastqUnmapped.out.mate1",
+                # "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
+                # "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
+                # "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1"}
+                #
+                # meninos_problema = {
+                #     "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
+                #     "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
+                #     "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
+                #     "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
+                #     "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1",
+                #     "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
+                #     "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
+                #     "SRR15906436": "no_contaminant_polyAtrimmed_trimmed_SRR15906436.fastqUnmapped.out.mate1"
+                # }
+                # meninos_problema = ["SRR15906430", "SRR15906433", "SRR15906487", "SRR15906479"]
+                meninos_problema = ["SRR15906479"]
+
+
+                if any(problem in file for problem in meninos_problema):
+                    run = True
+
                 if run:
                     print(f"Removing contaminants from {file}")
-                    v = f"{self.toolPaths['STAR']} --version"
-                    os.system(v)
-                    # print(v)
+
+                    # Print STAR version for debugging purposes
+                    version_cmd = f"{self.toolPaths['STAR']} --version"
+                    subprocess.run(version_cmd, shell=True)
+
                     if file.endswith(".gz"):
-                        zcat = f' --readFilesCommand zcat'
+                        zcat = ' --readFilesCommand zcat'
                     else:
                         zcat = ''
-                    cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --outReadsUnmapped Fastx '
-                           f'--alignEndsType EndToEnd --genomeDir '
-                           f'{self.indexCont} --runThreadN {self.args.threads} --readFilesIn {self.riboSeqTrimmedDir}/{file} '
-                           f'--outFileNamePrefix {self.riboSeqContaminantAlnDir}/no_contaminant_{file}{zcat}')
-                    os.system(cmd)
-                    print(f"Finished removing contaminants from {file}")
+
+                    # Build the STAR command (note: we wrap it with stdbuf to force line-buffering)
+                    cmd = (
+                        f'stdbuf -oL {self.toolPaths["STAR"]} --outSAMstrandField intronMotif --outReadsUnmapped Fastx '
+                        f'--alignEndsType EndToEnd --genomeDir {self.indexCont} --runThreadN {self.args.threads} '
+                        f'--readFilesIn {self.riboSeqTrimmedDir}/{file} '
+                        f'--outFileNamePrefix {self.riboSeqContaminantAlnDir}/no_contaminant_{file}{zcat}')
+
+                    attempt = 0
+                    success = False
+                    while attempt <= self.args.maxTries and not success:
+                        attempt += 1
+                        print(f"Attempt {attempt} for removing contaminants from {file}...")
+
+                        # Launch STAR using subprocess.Popen with real-time output streaming
+                        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                                   bufsize=1, universal_newlines=True)
+                        output_lines = []
+
+                        # Stream and print each line as it's produced
+                        for line in iter(process.stdout.readline, ""):
+                            print(line, end="")  # print the line immediately
+                            output_lines.append(line)
+                            sys.stdout.flush()
+
+                        process.stdout.close()
+                        process.wait()
+
+                        # Combine all output to check for errors
+                        combined_output = "\n".join(output_lines).lower()
+                        if "fatal error" in combined_output:
+                            print(f"\nError detected during contaminant removal of {file} on attempt {attempt}.")
+                            if attempt <= self.args.maxTries:
+                                print("Retrying after a short pause...\n")
+                                time.sleep(5)
+                            else:
+                                print(f"Contaminant removal for {file} failed after {attempt} attempts.")
+                                break
+                        else:
+                            success = True
+                            print(f"\nFinished removing contaminants from {file} successfully.\n")
+                    # print(f"Removing contaminants from {file}")
+                    # v = f"{self.toolPaths['STAR']} --version"
+                    # os.system(v)
+                    # # print(v)
+                    # if file.endswith(".gz"):
+                    #     zcat = f' --readFilesCommand zcat'
+                    # else:
+                    #     zcat = ''
+                    # cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --outReadsUnmapped Fastx '
+                    #        f'--alignEndsType EndToEnd --genomeDir '
+                    #        f'{self.indexCont} --runThreadN {self.args.threads} --readFilesIn {self.riboSeqTrimmedDir}/{file} '
+                    #        f'--outFileNamePrefix {self.riboSeqContaminantAlnDir}/no_contaminant_{file}{zcat}')
+                    # os.system(cmd)
+                    # print(f"Finished removing contaminants from {file}")
 
     def align_rpfs(self):
         files = os.listdir(self.riboSeqContaminantAlnDir)
@@ -205,29 +289,114 @@ class RiboSeqAlign(PipelineStructure):
             if 'Unmapped.out.mate1' in file or file.endswith(".fastq"):
                 out = f'{self.riboSeqAlnDir}/aligned_to_genome_{file}Aligned.out.sam'
                 run = self.verify_checkpoint(outfile=out, step=f"alignment of clean Ribo-Seq reads to the genome")
+                # meninos_problema = {
+                # "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
+                # "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
+                # "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
+                # "SRR15906473": "no_contaminant_polyAtrimmed_trimmed_SRR15906473.fastqUnmapped.out.mate1",
+                # "SRR15906432": "no_contaminant_polyAtrimmed_trimmed_SRR15906432.fastqUnmapped.out.mate1",
+                # "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
+                # "SRR15906472": "no_contaminant_polyAtrimmed_trimmed_SRR15906472.fastqUnmapped.out.mate1",
+                # "SRR15906489": "no_contaminant_polyAtrimmed_trimmed_SRR15906489.fastqUnmapped.out.mate1",
+                # "SRR15906436": "no_contaminant_polyAtrimmed_trimmed_SRR15906436.fastqUnmapped.out.mate1",
+                # "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
+                # "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
+                # "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1"}
+                # meninos_problema = {
+                # "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
+                # "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
+                # "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
+                # "SRR15906432": "no_contaminant_polyAtrimmed_trimmed_SRR15906432.fastqUnmapped.out.mate1",
+                # "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
+                # "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1",
+                # "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
+                # "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
+                # # "SRR15906472": "no_contaminant_polyAtrimmed_trimmed_SRR15906472.fastqUnmapped.out.mate1"}
+                # meninos_problema = {
+                #     "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
+                #     "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
+                #     "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
+                #     "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
+                #     "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1",
+                #     "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
+                #     "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
+                #     "SRR15906436": "no_contaminant_polyAtrimmed_trimmed_SRR15906436.fastqUnmapped.out.mate1"
+                # }
+
+                # meninos_problema = ["SRR15906430", "SRR15906433", "SRR15906487", "SRR15906479"]
+                # meninos_problema = ["SRR15906487", "SRR15906479"]
+                meninos_problema = ["SRR15906479"]
+
+                if any(problem in file for problem in meninos_problema):
+                    run = True
                 if run:
-                    if file.endswith(".gz"):
-                        gz = ' --readFilesCommand zcat'
-                    else:
-                        gz = ''
+                    gz = ' --readFilesCommand zcat' if file.endswith(".gz") else ''
                     filepath = f'{self.riboSeqContaminantAlnDir}/{file}'
-                    # filepath = f'{self.riboSeqTrimmedDir}/{file}'
                     print(f"Aligning RPF reads from {file} to {self.index}")
-                    # cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --genomeDir {self.index} --runThreadN '
-                    #        f'{self.args.threads} --readFilesIn {filepath} --outFileNamePrefix '
-                    #        f'{self.riboSeqAlnDir}/aligned_to_genome_{file} --outFilterMismatchNmax 2 '
-                    #        f'--outFilterMultimapNmax {self.args.multimappings} --chimScoreSeparation 10 --chimScoreMin '
-                    #        f'20 --chimSegmentMin 15 --outSAMattributes All{gz}')
-                    clipbases = ''
-                    if self.args.clip5pNbases is not None:
-                        clipbases = f' {self.args.clip5pNbases}'
-                    cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --genomeDir {self.index} --runThreadN '
-                           f'{self.args.threads} --readFilesIn {filepath} --outFileNamePrefix '
-                           f'{self.riboSeqAlnDir}/aligned_to_genome_{file} '
-                           f'--outFilterMultimapNmax {self.args.multimappings} '
-                           f'--outSAMattributes All{gz}{clipbases}')
-                    os.system(cmd)
-                    print(f'Finished aligning {file}.')
+
+                    clipbases = f' {self.args.clip5pNbases}' if self.args.clip5pNbases is not None else ''
+                    # Wrap the STAR command with stdbuf to force line-buffering.
+                    cmd = (
+                        f'stdbuf -oL {self.toolPaths["STAR"]} --outSAMstrandField intronMotif --genomeDir {self.index} '
+                        f'--runThreadN {self.args.threads} --readFilesIn {filepath} --outFileNamePrefix '
+                        f'{self.riboSeqAlnDir}/aligned_to_genome_{file} '
+                        f'--outFilterMultimapNmax {self.args.multimappings} '
+                        f'--outSAMattributes All{gz}{clipbases}')
+
+                    attempt = 0
+                    success = False
+                    while attempt <= self.args.maxTries and not success:
+                        attempt += 1
+                        print(f"Attempt {attempt} for aligning {file}...")
+
+                        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                                                   stderr=subprocess.STDOUT, bufsize=1,
+                                                   universal_newlines=True)
+                        output_lines = []
+                        # Iterate over stdout lines in real time
+                        for line in iter(process.stdout.readline, ""):
+                            print(line, end="")  # Print the line immediately
+                            output_lines.append(line)
+                            sys.stdout.flush()
+                        process.stdout.close()
+                        return_code = process.wait()
+
+                        combined_output = "\n".join(output_lines).lower()
+                        if "fatal error" in combined_output:
+                            print(f"\nError detected during alignment of {file} on attempt {attempt}.")
+                            if attempt <= self.args.maxTries:
+                                print("Retrying after a short pause...\n")
+                                time.sleep(5)
+                            else:
+                                print(f"Alignment for {file} failed after {attempt} attempts.")
+                        else:
+                            success = True
+                            print(f"Finished aligning {file} successfully.\n")
+                #
+                #
+                # if run:
+                #     if file.endswith(".gz"):
+                #         gz = ' --readFilesCommand zcat'
+                #     else:
+                #         gz = ''
+                #     filepath = f'{self.riboSeqContaminantAlnDir}/{file}'
+                #     # filepath = f'{self.riboSeqTrimmedDir}/{file}'
+                #     print(f"Aligning RPF reads from {file} to {self.index}")
+                #     # cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --genomeDir {self.index} --runThreadN '
+                #     #        f'{self.args.threads} --readFilesIn {filepath} --outFileNamePrefix '
+                #     #        f'{self.riboSeqAlnDir}/aligned_to_genome_{file} --outFilterMismatchNmax 2 '
+                #     #        f'--outFilterMultimapNmax {self.args.multimappings} --chimScoreSeparation 10 --chimScoreMin '
+                #     #        f'20 --chimSegmentMin 15 --outSAMattributes All{gz}')
+                #     clipbases = ''
+                #     if self.args.clip5pNbases is not None:
+                #         clipbases = f' {self.args.clip5pNbases}'
+                #     cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --genomeDir {self.index} --runThreadN '
+                #            f'{self.args.threads} --readFilesIn {filepath} --outFileNamePrefix '
+                #            f'{self.riboSeqAlnDir}/aligned_to_genome_{file} '
+                #            f'--outFilterMultimapNmax {self.args.multimappings} '
+                #            f'--outSAMattributes All{gz}{clipbases}')
+                #     os.system(cmd)
+                #     print(f'Finished aligning {file}.')
 
 
 

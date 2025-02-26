@@ -435,7 +435,7 @@ class PipelineStructure:
             run = True
         return run
 
-    def print_row(self, n=50, word='', character='='):
+    def print_row(self, n=80, word='', character='='):
         char_n = (n-(len(word))) / 2
         first = character * int(char_n)
         row = f'{first}{word}{first}'

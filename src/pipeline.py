@@ -300,11 +300,11 @@ class Pipeline:
             aln.run_trimming_parallel()
             aln.remove_ribosome()
             aln.align_rpfs()
-        resc = PeptideReScoring(args=self.args)
-        if self.args.rescored:
-            rescored = True
-        else:
-            rescored = False
+        # resc = PeptideReScoring(args=self.args)
+        # if self.args.rescored:
+        #     rescored = True
+        # else:
+        #     rescored = False
         # resc.filter_gtf(rescored=rescored)
 
         feature_counts = FeatureCounts(args=self.args)
@@ -312,9 +312,9 @@ class Pipeline:
         feature_counts.run_feature_counts()
 
         cov = RiboSeqCoverage(args=self.args)
-        cov.feature_counts_to_rpkm()
+        # cov.feature_counts_to_rpkm()
         cov.plot_heatmaps(cutoff=self.args.rpkm)
-        cov.plot_histograms(folder=cov.rawCountsDir, header=1, title='Raw counts', cutoff=self.args.minRawCounts, log=True)
+        # cov.plot_histograms(folder=cov.rawCountsDir, header=1, title='Raw counts', cutoff=self.args.minRawCounts, log=True)
         cov.plot_histograms(folder=cov.rpkmDir, header=0, title='RPKM', cutoff=self.args.rpkm, log=True)
 
         cov_class = CoverageClassification(args=self.args)

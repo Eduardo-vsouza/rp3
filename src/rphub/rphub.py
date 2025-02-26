@@ -86,7 +86,7 @@ class RpHub(PipelineStructure):
                 file = rescored
             else:
                 if os.path.exists(not_rescored):
-                    file = rescored
+                    file = not_rescored
 
         elif filetype == 'peptide':
             rescored = f'{outdir}/rescore/post_processing/group/peptides_fixed.txt'
@@ -152,21 +152,21 @@ class RpHub(PipelineStructure):
                     mps[project][name]['entries'] = {}
 
                 fasta = self.retrieve_file(outdir=run, filetype='fasta')
-                # print(fasta)
-                if fasta != '':
-                    records = SeqIO.parse(fasta, 'fasta')
-                    for record in records:
-                        seq = str(record.seq)
-                        entry = str(record.description)
-                        if entry not in mps[project][name]['entries']:
-                            mps[project][name]['entries'][entry] = {'seq': seq, 'peptides': []}
-                        if seq not in mps[project][name]['mps']:
-                            mps[project][name]['mps'].append(seq)
+                if os.path.exists(fasta):
+                    if fasta != '':
+                        records = SeqIO.parse(fasta, 'fasta')
+                        for record in records:
+                            seq = str(record.seq)
+                            entry = str(record.description)
+                            if entry not in mps[project][name]['entries']:
+                                mps[project][name]['entries'][entry] = {'seq': seq, 'peptides': []}
+                            if seq not in mps[project][name]['mps']:
+                                mps[project][name]['mps'].append(seq)
 
         with open(self.mpsFile, "w") as outfile:
             json.dump(mps, outfile)
         # print(f"--Saving Rp3 projects to {}.")
-
+        total_overall = []
         # for project in na
         for project in mps:
             total = []
@@ -177,6 +177,8 @@ class RpHub(PipelineStructure):
                 # print(mps[project][run])
                 print(run, ': ',len(mps[project][run]['mps']))
                 for mp in mps[project][run]['mps']:
+                    if mp not in total_overall:
+                        total_overall.append(mp)
                     if mp not in total:
                         total.append(mp)
                 # total += len(mps[project][run]['mps'])
@@ -187,6 +189,8 @@ class RpHub(PipelineStructure):
 
             print(f"--Total microproteins (nr): {len(set(total))}")
             print('\n')
+        self.print_row(word="General summary", character='-')
+        print(f"--Total microproteins across all projects (nr): {len(set(total_overall))}")
 
 
     def fetch_protein_seq(self):

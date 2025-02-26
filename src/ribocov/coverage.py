@@ -219,6 +219,7 @@ class RiboSeqCoverage(PipelineStructure):
         return group
 
     def plot_heatmaps(self, cutoff=1):
+        import math
         files = os.listdir(self.rpkmDir)
         rpkms = {'Gene': []}
         for file in files:
@@ -252,7 +253,6 @@ class RiboSeqCoverage(PipelineStructure):
                 #     ndf = df[group].tolist()
 
                 group_rpkms = {group: df[group].tolist() for group in groups}
-
                 for i, gene in enumerate(genes):
                     if '_F:' in gene or gene.startswith("CUFF."):
                         if gene not in rpkms['Gene']:
@@ -261,10 +261,27 @@ class RiboSeqCoverage(PipelineStructure):
                             counts[gene] = []
                         for group in group_rpkms:
                             rpkm = group_rpkms[group][i]
-                            counts[gene].append(float("{:.3f}".format(rpkm)))
+                            if math.isnan(rpkm):
+                                rpkm = 0
+                            # print('a', rpkm)
+                            # print(rpkm)
+                            # print(type(rpkm))
+                            # if type(rpkm) != float:
+                            #     rpkm = 0
+                            # if rpkm <= 0:
+                            #     rpkm = 0
+                            #
+                            # print(rpkm)
+                            # print('\n')
+
+                            # counts[gene].append(float("{:.3f}".format(rpkm)))
+                            counts[gene].append(rpkm)
+                            # print(counts[gene])
 
                 for gene in rpkms['Gene']:
-                    mean = np.median(counts[gene])
+                    mean = np.mean(counts[gene])
+                    if mean  is None:
+                        mean = 0
                     # if mean < self.args.rpkm:
                         # mean = "Remove"
                         # rpkms[]
@@ -278,7 +295,6 @@ class RiboSeqCoverage(PipelineStructure):
         df = pd.DataFrame(data=rpkms)
         # cols = df.columns
         # default = df[(df < 1).all(axis=1)]
-
         # for gene in genes:
         #     i += 1
         #     renamed.append(i)
@@ -287,7 +303,7 @@ class RiboSeqCoverage(PipelineStructure):
             # renamed.append(reduced)
         # df = df.drop(columns=['Gene'])
         # df.insert(0, "Gene", renamed)
-        sys.setrecursionlimit(10000)
+        sys.setrecursionlimit(10000000)
 
         df = df.set_index(df.columns[0])
         df.to_csv(self.mappingGroupsRPKMs, sep='\t')
@@ -305,21 +321,24 @@ class RiboSeqCoverage(PipelineStructure):
         cmap_colors = [(0, '#7094EC'), (1, 'red')]
         cmap = LinearSegmentedColormap.from_list("custom_cmap", cmap_colors)
         # print("3")
-        try:
-            g = nhm(data=df, cmapCenter=cmap, showyticks=False, linewidths=0)
-            # print(4)
-            # g.hcluster(optimal_ordering=True)
-            # print(5)
-            df_ordered = g.data.iloc[g.rorder, g.corder]
-            df_ordered.to_csv(f'{self.args.outdir}/ordered_heatmap.xls')
-            # print(6)
-            # print(g.dendrogram)
-            fig, plots = g.run()
-            # print(7)
-            plt.savefig(f"{self.countsDir}/heatmap_{self.expCutoffsSuffix}.png")
-            plt.savefig(f"{self.countsDir}/heatmap_{self.expCutoffsSuffix}.pdf")
-        except:
-            pass
+        # try:
+        g = nhm(data=df, cmapCenter=cmap, showyticks=False, linewidths=0)
+        # print(4)
+        g.hcluster(optimal_ordering=False)
+        # plt.show()
+        #python3 ~/PycharmProjects/rp3/rp3.py ribocov --outdir 25-01-26_shortStopGTF_ribocov/ --threads 128 --genomeAssembly hg38 --GTFattribute gene_id --GTFfeature CDS --plots --rpkm 0 --minRawCounts 10 --clip5pNbases 3 --externalGTF ../../../brendan/assemblies/cpm05/shortstop_plaqueomics_proteogenomics_appended_brain_microproteins.gtf
+
+        # print(5)
+        # df_ordered = g.data.iloc[g.rorder, g.corder]
+        # df_ordered.to_csv(f'{self.args.outdir}/ordered_heatmap.xls')
+        # print(6)
+        # print(g.dendrogram)
+        fig, plots = g.run()
+        # print(7)
+        plt.savefig(f"{self.countsDir}/heatmap_{self.expCutoffsSuffix}.png")
+        plt.savefig(f"{self.countsDir}/heatmap_{self.expCutoffsSuffix}.pdf")
+        # except:
+        #     pass
 
         # plt.show()
 

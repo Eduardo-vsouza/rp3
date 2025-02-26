@@ -59,6 +59,7 @@ class RP3:
                                        type=int)
         self.general_args.add_argument("--overwrite", action="store_true")
         self.general_args.add_argument("--genomeAssembly", help="available reference assemblies: hg38.")
+        self.general_args.add_argument("--maxTries", default=5)
         self.modeArguments = self.parser.add_argument_group(f"{self.mode} options")
 
         if self.mode == 'database':
