@@ -213,6 +213,7 @@ class RP3:
         self.modeArguments.add_argument("--hlaPeptidomics", help="Sets parameters in the peptide search that are "
                                                                  "adequate for HLA peptidomics datasets.",
                                         action="store_true")
+        # testing this commit
         self.modeArguments.add_argument("--rescore", action="store_true")
         self.modeArguments.add_argument("--msBooster", action="store_true", help="Run MSBooster on "
                                                                                  "MSFragger pin files to predict "
