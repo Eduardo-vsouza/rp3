@@ -180,11 +180,12 @@ class SpectrumAnnotator(PipelineStructure):
         path = ''
 
         groups = os.listdir(self.args.mzml)
-        for group in groups:
-            files = os.listdir(f'{self.args.mzml}/{group}')
+        # if os.path.isdir(self.args.mzml):
+        for file in groups:
+            # files = os.listdir(f'{self.args.mzml}/{group}')
             # for f in files:
-            if file in files:
-                path = f'{self.args.mzml}/{group}/{file}'
+            # if file in files:
+            path = f'{self.args.mzml}/{file}'
         return path
 
     # def annotate_spectra(self):

@@ -61,13 +61,18 @@ class MSFragger(PipelineStructure):
                     if not os.path.exists(out_db):
                         os.mkdir(out_db)
 
-    def read_groups(self, groups_df):
+    def read_groups(self, groups_df, filegroup=False):
         groups_per_file = {}
         df = pd.read_csv(groups_df, sep='\t')
-        files, groups = df["files"].tolist(), df["groups"].tolist()
+        files, groups = df["file"].tolist(), df["group"].tolist()
         for file, group in zip(files, groups):
             # file_group = file.split("_")[1]
-            groups_per_file[file] = group
+            if filegroup:
+                groups_per_file[file].append(file)
+            else:
+                if group not in groups_per_file:
+                    groups_per_file[group] = []
+                groups_per_file[group].append(file)
         return groups_per_file
 
     def iterate_searches(self, min_pep_len=7, max_pep_len=50):
@@ -161,7 +166,77 @@ class MSFragger(PipelineStructure):
                                 os.system(cmd_mv_search_xml)
                             # os.system(cmd_mv_search)
 
+    def __check_ptms(self):
+        if self.args.amidation:
+            amida = f' --variable_mod_0{i} -0.9840_c*_1'
+            i += 1
+        else:
+            amida = ''
 
+        if self.args.pyroGlu:
+            pyroglu = f' --variable_mod_0{i} -17.0265_nQ_1'
+            i += 1
+        else:   
+            pyroglu = ''
+        tmt_mod = ''
+
+        mod = ''
+        if self.args.mod is not None:
+            mod = f' --variable_mod_0{i} {self.mod}'
+            i += 1
+        if self.args.tmt_mod is not None:
+            tmt_mod = f' --variable_mod_03 {self.args.tmt_mod}_K_3 --variable_mod_04 {self.args.tmt_mod}_n*_3 '
+        else:
+            tmt_mod = ''
+        return tmt_mod, mod, amida, pyroglu
+
+    def search_files(self):
+        db = self.select_database(decoy=True)
+        tmt_mod, mod, amida, pyroglu = self.__check_ptms()
+
+        if self.args.groupsFile is not None:
+            groups = self.read_groups(groups_df=self.args.groupsFile)
+            print(groups)
+            for group in groups:
+                filepaths = ''
+                for file in groups[group]:
+                    filepaths += f' {self.args.mzml}/{file}'
+                print(filepaths)                
+                cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
+                f'--database_name {db} --decoy_prefix rev ' \
+                f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
+                f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length}{filepaths}'
+                os.system(cmd)
+                db_relative = db.split("/")[-1]
+                files = os.listdir(self.args.mzml)
+                for file in files:
+                    if file.endswith(".pin"):
+                        cmd_mv = (f'mv {self.args.mzml}/{file} '
+                        f'{self.outdir}/peptide_search/group/{db_relative}/{file.replace(f".pin", "_target.pin")}')
+                        # os.system(cmd_mv)
+                        self.exec(cmd_mv)
+
+        else:
+            files = os.listdir(self.args.mzml)
+
+            for file in files:
+                # if self.quantify: # --output_format tsv
+                #     cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format tsv ' \
+                #         f'--database_name {self.databaseDir}/{db} --decoy_prefix rev ' \
+                #         f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
+                #         f'--use_all_mods_in_first_search 1 --digest_min_length {min_pep_len} {tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {max_pep_len}{search_files[db]}'
+                #     os.system(cmd)
+
+                cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
+                        f'--database_name {db} --decoy_prefix rev ' \
+                        f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
+                        f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length} {self.args.mzml}/{file}'
+                os.system(cmd)
+                db_relative = db.split("/")[-1]
+                cmd_mv = (f'mv {self.args.mzml}/{file.replace(f".mzML", ".pin")} '
+                f'{self.outdir}/peptide_search/group/{db_relative}/{file.replace(f".mzML", "_target.pin")}')
+                # os.system(cmd_mv)
+                self.exec(cmd_mv)
 
 
     def iterate_searches_cat(self, min_pep_len=7, max_pep_len=50):

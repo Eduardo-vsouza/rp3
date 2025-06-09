@@ -23,14 +23,21 @@ class Conservation(PipelineStructure):
         self.nonRedundantFasta = f'{self.mergedResults}/microproteins_blast_filt_non_redundant.fasta'
 
     def generate_non_redundant_fasta(self):
+        print("--Generating non-redundant fasta\n")
         fasta = []
         checker = []
         file = self.microproteinsBlast
         if self.args.rescored:
             file = self.rescoredMicroproteinsFasta
+        if self.args.externalFasta is not None:
+            file = self.args.externalFasta
+            self.nonRedundantFasta = f'{self.outdir}/external_fasta_non_redundant.fasta'
         records = SeqIO.parse(f'{file}', 'fasta')
         for record in records:
             seq = str(record.seq)
+            if '>' in seq:
+                continue
+                # print(str(record.description), seq)
             if seq not in checker:
                 checker.append(seq)
                 fasta.append(f'>{str(record.description)}\n{seq}\n')
@@ -38,20 +45,28 @@ class Conservation(PipelineStructure):
             out.writelines(fasta)
 
     def blast_microproteins(self):
-        cmd = f'{self.toolPaths["tblastn"]} -outfmt 5 -out {self.blastedMicroproteins} -evalue 0.001 ' \
-              f' -num_threads {self.args.threads} -query {self.nonRedundantFasta} ' \
-              f'-db {self.blastDatabase}'
+        print("--BLASTing microproteins to conservation database\n")
+        if self.args.blastType == 'tblastn':
+            cmd = f'{self.toolPaths["tblastn"]} -outfmt 5 -out {self.blastedMicroproteins} -evalue 0.001 ' \
+                f' -num_threads {self.args.threads} -query {self.nonRedundantFasta} ' \
+                f'-db {self.blastDatabase}'
+        elif self.args.blastType == 'diamond':
+            print(f"--Running diamondBlast")
+            cmd = f'{self.toolPaths["diamond"]} blastp -q {self.nonRedundantFasta} -d {self.args.diamondDB} ' \
+                f'--outfmt 5 --out {self.blastedMicroproteins} --threads {self.args.threads} --ultra-sensitive'
+        print(f"command: {cmd}")
         os.system(cmd)
 
     def parse_blast_results(self):
-        print("Parsing blast results\n")
+        print("--Parsing blast results\n")
         blast = BlastParser(xml=self.blastedMicroproteins)
-        blast.parse(evalue=0.001, score=50, pc_id=0, qcov=0, conservation=True)
+        blast.parse(evalue=0.001, score=50, pc_id=0, qcov=0, conservation=True, format=self.args.blastType)
         blast.save_conserved(output=self.homologsPerSpecies)
         blast.create_spreadsheet(output=f'{self.phyloDir}/smorfs_entries_per_species.xls')
         print("Finished parsing\n")
 
     def create_evolview_input(self):
+        print(f"--Creating evolview input\n")
         evol_lines = ['!groups	group1\n',
                       '!colors	#81DBFD\n',
                       '!PlotWidth	500\n',

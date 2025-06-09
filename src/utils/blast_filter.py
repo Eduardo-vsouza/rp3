@@ -31,7 +31,7 @@ class BlastParser:
         df.to_csv(outfile, sep='\t', index=False)
 
 
-    def parse(self, evalue=0.001, score=50, pc_id=100, qcov=100, conservation=False, smorfs=None, paralogs=False):
+    def parse(self, evalue=0.001, score=50, pc_id=100, qcov=100, conservation=False, smorfs=None, paralogs=False, format='blastp'):
         if smorfs is not None:
             entries = self.__filter_smorfs(fasta=smorfs)
         for record in NCBIXML.parse(open(self.xml)):
@@ -68,7 +68,40 @@ class BlastParser:
                                         else:
                                             add = False
                                     if add:
-                                        species = ' '.join(align.hit_def.split(" ")[:2])
+                                        if format == 'diamond':
+                                            # print(align.hit_id)
+                                            species = ' '.join(align.hit_id.split("_")[2: 6]).replace("PREDICTED:", "")
+                                            if 'Bos' in species:
+                                                species = 'Bos taurus'
+                                            elif 'Canis' in species:
+                                                species = 'Canis lupus'
+                                            elif 'Equus' in species:
+                                                species = 'Equus caballus'
+                                            elif 'Homo' in species:
+                                                species = 'Homo sapiens'
+                                            elif 'Pan' in species:
+                                                species = 'Pan troglodytes'
+                                            elif 'Danio' in species:
+                                                species = 'Danio rerio'
+                                            elif 'Ovis' in species:
+                                                species = 'Ovis aries'
+                                            elif 'Balaenoptera' in species:
+                                                species = 'Balaenoptera musculus'
+                                            elif 'Mus' in species:
+                                                species = 'Mus musculus'
+                                            elif 'Loxodonta' in species:
+                                                species = 'Loxodonta africana'
+                                            elif 'Macaca' in species:
+                                                species = 'Macaca mulatta'
+                                            elif 'Drosophila' in species:
+                                                species = 'Drosophila melanogaster'
+                                            elif 'Rattus' in species:
+                                                species = 'Rattus norvegicus'
+                                            elif 'Sus' in species:
+                                                species = 'Sus scrofa'
+                                            
+                                        else:
+                                            species = ' '.join(align.hit_def.split(" ")[:2])    
                                         if species not in self.conservation:
                                             self.conservation[species] = []
                                         if record.query not in self.conservation[species]:

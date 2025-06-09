@@ -2,7 +2,7 @@ import os
 
 from Bio import SeqIO
 import pandas as pd
-
+from tqdm import tqdm
 from ..pipeline_config import PipelineStructure
 
 
@@ -63,7 +63,7 @@ class ProtSplit:
         return protein_dict
 
     def __get_prot_dict(self, filtered_proteins, mp_threshold=150):
-        protein_dict = {'standard': [], 'annotated_microproteins': [], 'microproteins': []}
+        protein_dict = {'standard': [], 'annotated_microprotein': [], 'novel_microprotein': []}
 
         records = SeqIO.parse(self.db, 'fasta')
         for record in records:
@@ -76,9 +76,9 @@ class ProtSplit:
                 if len(seq) <= mp_threshold:
 
                         if '_ANNO' not in entry:
-                                protein_dict['microproteins'].append(entry)
+                            protein_dict['novel_microprotein'].append(entry)
                         else:
-                            protein_dict['annotated_microproteins'].append(entry)
+                            protein_dict['annotated_microprotein'].append(entry)
                 else:
                     protein_dict['standard'].append(entry)
         return protein_dict

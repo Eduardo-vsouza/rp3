@@ -4,20 +4,14 @@ from src.search.peptide_search import MSFragger
 from .post_process import PercolatorPostProcessing
 from .database import Database
 from .translation_ssh import GTFtoFasta
-from .metrics import DatabaseMetrics, ORFMetrics, MicroproteinCombiner
 from .utils import Params, ProtSplit
 from .extra_filter import ExtraFilter
 from .mods import FormylSummarizer
-from .annotation import *
 from .search import PeptideReScoring
 from .transcriptomics import StringTieAssembly
 from .dualpg import DuoMetrics
 from .paralogy import HomologyFinder
-from .quant import SpecComparison
-from .quantification import MOFF
 from .quant import FlashLFQ
-from .shiny import RPS
-from .wgs import Variant
 
 
 class Pipeline:
@@ -50,9 +44,9 @@ class Pipeline:
             os.mkdir(self.translationFolder)
 
     def translate_in_silico(self):
-        assembly = f'{self.outdir}/transcriptomics/assembly/merged_assembly.gtf'
-        if os.path.exists(assembly):
-            self.args.gtf_folder = assembly
+        # assembly = f'{self.outdir}/transcriptomics/assembly/merged_assembly.gtf'
+        # if os.path.exists(assembly):
+            # self.args.gtf_folder = assembly
         translation = GTFtoFasta(folder=self.args.gtf_folder, genome=self.args.genome,
                                  local_outdir=self.translationFolder, args=self.args)
         translation.translate()
@@ -65,10 +59,7 @@ class Pipeline:
                             translation_folder=self.translationFolder, external_database=self.args.external_database,
                             args=self.args)
 
-        if self.args.external_database is None:
-            # database.unzip_assemblies()
-            ...
-        else:
+        if self.args.external_database is not None:
             database.prepare_external_database()
         database.select_highly_homologous()
         database.append_reference()
@@ -89,7 +80,11 @@ class Pipeline:
         search = MSFragger(mzml_folder=self.mzMLFolder, outdir=self.outdir,
                            threads=self.threads, mod=self.args.mod, quantify=quantify, args=self.args)
 
-        search.iterate_searches_cat()
+        if self.args.searchMode == 'cat':
+            search.iterate_searches_cat()
+        else:
+            search.search_files()
+
         self.parameters.add_mode_parameters(search, self.args)
         self.parameters.update_params_file()
 
@@ -138,6 +133,9 @@ class Pipeline:
             # counter = ORFCounter(args=self.args)
             # counter.count_smorfs()
             self.args.noRibocov = False
+
+            from .metrics import MicroproteinCombiner
+
             summ = MicroproteinCombiner(args=self.args)
             summ.gather_microprotein_info()
             summ.save()
@@ -145,9 +143,17 @@ class Pipeline:
             protsplit.split_protein_groups()
             protsplit.split_fasta()
 
+            from .metrics import MS2Summ
+
+            ms2summ = MS2Summ(args=self.args)
+            ms2summ.gather_peptides()
+            ms2summ.gather_spectral_counts()
+            ms2summ.gather_protein_sequences()
+            ms2summ.save()
 
 
     def quantify(self):
+        from .quantification import MOFF
         quant = MOFF(args=self.args)
         if self.args.spec_counts:
             quant.count_spectra()
@@ -166,6 +172,8 @@ class Pipeline:
         duo.count_orfs()
 
     def calculate_metrics(self):
+        from .metrics import MicroproteinCombiner
+
         summ = MicroproteinCombiner(args=self.args)
         summ.gather_microprotein_info()
         summ.save()
@@ -199,11 +207,13 @@ class Pipeline:
 
     def annotate(self):
         if self.args.signalP:
+            from .annotation import SignalP
             signal = SignalP(args=self.args)
             signal.run()
             signal.organize_files()
             signal.save_metrics()
         if self.args.conservation:
+            from .annotation import Conservation
             conserv = Conservation(args=self.args)
             conserv.generate_non_redundant_fasta()
             conserv.blast_microproteins()
@@ -211,12 +221,14 @@ class Pipeline:
             conserv.create_evolview_input()
             # conserv.classify_conservation_by_mapping_groups()
         if self.args.uniprotTable:
+            from .annotation import UniprotAnnotation
             anno = UniprotAnnotation(args=self.args)
             anno.filter_annotations()
             anno.intersect_mass_spec()
             anno.intersect_overall()
             anno.generate_plots()
         if self.args.orfClass:
+            from .annotation import ORFClassification, ORFClassVis
             orfclass = ORFClassification(args=self.args)
             orfclass.intersect()
             orfclass.annotate()
@@ -230,28 +242,36 @@ class Pipeline:
                 class_vis.get_annotation_percentages()
                 class_vis.plot_stacked_bar()
         if self.args.mhc:
+            from .annotation import MHCDetector
             mhc = MHCDetector(args=self.args)
             mhc.run_mhc_flurry()
             mhc.filter_results()
         if self.args.paralogy:
+            from .annotation import Homologs
             paralogy = Homologs(args=self.args)
             paralogy.blast()
             paralogy.parse(evalue=0.01)
             paralogy.save_clusters()
             paralogy.plot()
         if self.args.repeats:
+            from .annotation import Repeater
             repeats = Repeater(args=self.args)
             repeats.fix_repeats_file()
             repeats.get_repeats()
             repeats.check_smorfs_within_repeats()
             repeats.plot_smorfs_in_repeats_based_on_clusters()
         if self.args.isoforms:
+            from .annotation import Isoforms
             isoforms = Isoforms(args=self.args)
             isoforms.filter_gtf_features()
             isoforms.intersect()
             isoforms.read_intersected()
             isoforms.plot_cluster_overlaps()
-
+        if self.args.deepLoc:
+            from .annotation import DeepLoc
+            deep_loc = DeepLoc(args=self.args)
+            # deep_loc.run()
+            deep_loc.plot_results()
 
 
         # comparison = ResultsIntersection(args=self.args)
@@ -296,23 +316,23 @@ class Pipeline:
 
         aln = RiboSeqAlign(args=self.args)
         if self.args.aln is None:
-            # aln.trim_reads()
+            aln.trim_reads()
             aln.run_trimming_parallel()
             aln.remove_ribosome()
             aln.align_rpfs()
-        # resc = PeptideReScoring(args=self.args)
-        # if self.args.rescored:
-        #     rescored = True
-        # else:
-        #     rescored = False
-        # resc.filter_gtf(rescored=rescored)
+        resc = PeptideReScoring(args=self.args)
+        if self.args.rescored:
+            rescored = True
+        else:
+            rescored = False
+        resc.filter_gtf(rescored=rescored)
 
         feature_counts = FeatureCounts(args=self.args)
         feature_counts.append_reference_annotation()
         feature_counts.run_feature_counts()
 
         cov = RiboSeqCoverage(args=self.args)
-        # cov.feature_counts_to_rpkm()
+        cov.feature_counts_to_rpkm()
         cov.plot_heatmaps(cutoff=self.args.rpkm)
         # cov.plot_histograms(folder=cov.rawCountsDir, header=1, title='Raw counts', cutoff=self.args.minRawCounts, log=True)
         cov.plot_histograms(folder=cov.rpkmDir, header=0, title='RPKM', cutoff=self.args.rpkm, log=True)
@@ -358,7 +378,7 @@ class Pipeline:
         homo = HomologyFinder(args=self.args)
         print(f"-Identifying homologs in {self.args.genome} for the identified microproteins.")
         if self.args.tBlastN:
-            # homo.tblastn_mm_microproteins()
+            homo.tblastn_mm_microproteins()
             homo.extract_aligned_sequences(blast='tblastn')
             homo.prepare_alignment_files(blast='tblastn')
             homo.perform_msa(blast='tblastn')
@@ -371,11 +391,13 @@ class Pipeline:
 
     def compare_results(self):
         if self.args.specCounts:
+            from .quant import SpecComparison
+
             comp = SpecComparison(args=self.args)
             comp.get_spec_counts()
             comp.add_overlaps()
             comp.create_data_frame()
-            comp.separate_up_regulated()
+            # comp.separate_up_regulated()
         if self.args.flashLFQ:
             quant = FlashLFQ(args=self.args)
             quant.iterate_groups()
@@ -408,16 +430,18 @@ class Pipeline:
             pgc.analyze_context()
 
     def create_rps(self):
+        from .shiny import RPS
         rps = RPS(args=self.args)
         rps.visualize()
 
     def analyze_wgs(self):
+        from .wgs import Variant
         variant = Variant(args=self.args)
-        # variant.pre_process_reads()
-        # variant.prepare_annotation_files()
-        # variant.align_reads()
-        # variant.convert_to_sorted_bam()
-        # variant.mark_duplicates()
+        variant.pre_process_reads()
+        variant.prepare_annotation_files()
+        variant.align_reads()
+        variant.convert_to_sorted_bam()
+        variant.mark_duplicates()
         variant.recalibrate_base_score()
 
 

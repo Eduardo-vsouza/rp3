@@ -80,14 +80,14 @@ class Database(PipelineStructure):
         folder = self.translationFolder
         if self.args.highHomologyDB:
             folder = self.homologyDBDir
+        added_seqs = []
         assemblies = os.listdir(folder)
         for assembly in assemblies:
             if assembly not in self.targetDatabases:
                 self.targetDatabases[assembly] = []
             pep = f'{folder}/{assembly}/{assembly}.pep'
             predicted = SeqIO.parse(pep, 'fasta')
-            for record in predicted:
-                self.targetDatabases[assembly].append(f'>{str(record.description)}\n{str(record.seq)}\n')
+
             reference = SeqIO.parse(self.proteome, 'fasta')
             for record in reference:
 
@@ -105,8 +105,16 @@ class Database(PipelineStructure):
                     else:
                         self.targetDatabases[assembly].append(
                             f'>{str(record.description).replace(" ", "_").replace(",", "_")}_ANNO\n{str(record.seq)}\n')
+                        
                 else:
+                    if str(record.seq) not in added_seqs:
+                        added_seqs.append(str(record.seq))
                     self.targetDatabases[assembly].append(f'>{str(record.description).replace(" ", "_").replace(",", "_")}_ANNO\n{str(record.seq)}\n')
+
+            for record in predicted:
+                if str(record.seq) not in added_seqs:
+                    self.targetDatabases[assembly].append(f'>{str(record.description)}\n{str(record.seq)}\n')
+                    
 
     def save_target_dbs(self):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')

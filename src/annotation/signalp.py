@@ -35,8 +35,11 @@ class SignalP(PipelineStructure):
                 self.__run_signalp(file, self.signalPstandardDir)
 
     def __run_signalp(self, file, outdir):
+        mode = 'fast'
+        if self.args.signalpMode == 'slow':
+            mode = 'slow-sequential'
         cmd = f'{self.toolPaths["signalP"]} --fastafile {file} --format all --organism eukarya ' \
-              f'--organism {self.args.organism} --output_dir {outdir} --mode slow-sequential -wp ' \
+              f'--organism {self.args.organism} --output_dir {outdir} --mode {mode} -wp ' \
               f'{self.args.threads} -tt {self.args.threads}'
         os.system(cmd)
 

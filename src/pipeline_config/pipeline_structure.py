@@ -15,7 +15,7 @@ class PipelineStructure:
         # self.check_dirs(self.outdir)///
         if self.args.mode == 'demo':
             self.testDir = f'{sys.path[0]}/demo_data'
-            self.__set_demo_args()
+            self.set_demo_args()
         self.dataFolder = f'{sys.path[0]}/data'
         self.refAnnoDir = f'{self.dataFolder}/reference_annotations'
         self.__define_genomes()
@@ -194,13 +194,22 @@ class PipelineStructure:
                           'gtf': f'{self.refAnnoDir}/hg38/gencode.v38.annotation.gtf',
                           'ensembl_gtf': f'{self.refAnnoDir}/hg38/ensembl_hg38_chromRenamed.gtf',
                           'genome_index': f'{self.refAnnoDir}/hg38/STARindex_GencodeGTF',
-                          'cont_index': f'{self.refAnnoDir}/hg38/STARindex_RNAcont'}}
+                          'cont_index': f'{self.refAnnoDir}/hg38/STARindex_RNAcont'},
+                'mm39': {'genome': f'{self.refAnnoDir}/mm39/mm39.fa',
+                         'gtf': f'{self.refAnnoDir}/mm39/mm39.knownGene.gtf',
+                         'proteome': f'{self.refAnnoDir}/mm39/mm_swissProt-trembl-Isoforms_uniprotkb_proteome_UP000000589_2025_03_09.fasta',
+                         'ensembl_gtf': f'{self.refAnnoDir}/mm39/ensembl_mm39.gtf',
+                         'genome_index': f'{self.refAnnoDir}/mm39/STARindex_GencodeGTF',
+                         'cont_index': f'{self.refAnnoDir}/mm39/STARindex_RNAcont'},
+        }
         if self.args.genomeAssembly in files:
-            self.args.genome = files[self.args.genomeAssembly]['genome']
-            self.args.gtf = files[self.args.genomeAssembly]['gtf']
-            self.args.ensembleGTF = files[self.args.genomeAssembly]['ensembl_gtf']
-            self.args.genome_index = files[self.args.genomeAssembly]['genome_index']
-            self.args.cont_index = files[self.args.genomeAssembly]['cont_index']
+            self.args.genome = files[self.args.genomeAssembly].get('genome', None)
+            self.args.gtf = files[self.args.genomeAssembly].get('gtf', None)
+            self.args.ensembleGTF = files[self.args.genomeAssembly].get('ensembl_gtf', None)
+            self.args.genome_index = files[self.args.genomeAssembly].get('genome_index', None)
+            self.args.cont_index = files[self.args.genomeAssembly].get('cont_index', None)
+            if getattr(self.args, 'proteome', None) is None:
+                self.args.proteome = files[self.args.genomeAssembly].get('proteome', None)
             if self.args.mode == 'anno':
                 self.args.gtf = files[self.args.genomeAssembly]['ensembl_gtf']
             if self.args.mode == 'wgs':
@@ -233,7 +242,7 @@ class PipelineStructure:
             self.pathogenMicroproteins = f'{self.duoDir}/{self.args.pathoPattern}_microproteins.fasta'
             self.rescoredPathogenMicroproteins = f'{self.duoDir}/{self.args.pathoPattern}_rescored_microproteins.fasta'
 
-    def __set_demo_args(self):
+    def set_demo_args(self):
         # rna
         # self.args.pairedPattern = ''
         # database
@@ -379,14 +388,44 @@ class PipelineStructure:
             fasta = self.rescoredMicroproteinsFasta
         else:
             fasta = self.uniqueMicroproteins
+        if hasattr(self.args, 'externalFasta'):
+            if self.args.externalFasta:
+                fasta = self.args.externalFasta
         return fasta
+
+    def select_psm_df(self):
+        if os.path.exists(self.rescoredMicroproteinsFasta):
+            psm = f'{self.rescorePostProcessDir}/group/psm_fixed.txt'
+        else:
+            psm = f'{self.postProcessDir}/group/db/psm_fixed.txt'
+        return psm
 
     def select_peptides_df(self):
         if os.path.exists(self.rescoredMicroproteinsFasta):
             pep = f'{self.rescorePostProcessDir}/group/peptides_fixed.txt'
         else:
-            pep = f'{self.postProcessDir}/group/peptides_fixed.txt'
+            pep = f'{self.postProcessDir}/group/db/peptides_fixed.txt'
         return pep
+    
+    def select_database(self, decoy=False):
+        if os.path.exists(self.rescoredMicroproteinsFasta):
+            db = f'{self.rescoreDatabaseDir}/rescore_target_database.fasta'
+            if decoy:
+                db = f'{self.rescoreDatabaseDir}/rescore_target_decoy_database.fasta'
+        else:
+            dbs = os.listdir(self.databaseDir)
+            db = None
+            for file in dbs:
+                if decoy:
+                    if file.endswith("target_decoy_database.fasta"):
+                        db = f'{self.databaseDir}/{file}'
+                        break
+                else:
+                    if file.endswith("target_database.fasta"):
+                        db = f'{self.databaseDir}/{file}'
+                        break
+        return db
+
 
     def is_rescored(self):
         if os.path.exists(self.rescoredMicroproteinsFasta):
@@ -394,6 +433,7 @@ class PipelineStructure:
         else:
             rescored = False
         return rescored
+    
     def select_search_dir(self):
         if os.path.exists(self.rescoreSearchDir):
             return self.rescoreSearchDir
@@ -407,23 +447,23 @@ class PipelineStructure:
             gtf = self.uniqueMicroproteinsGTF
         return gtf
 
-    def select_database(self, decoy=False):
-        db = None
-        if self.is_rescored():
-            if not decoy:
-                db = f'{self.rescoreDatabaseDir}/rescore_target_database.fasta'
-            else:
-                db = f'{self.rescoreDatabaseDir}/rescore_target_decoy_database.fasta'
-        else:
-            dbs = os.listdir(self.databaseDir)
-            for fasta in dbs:
-                if decoy:
-                    if fasta.endswith("target_decoy_database.fasta"):
-                        db = fasta
-                else:
-                    if fasta.endswith("target_database.fasta"):
-                        db = fasta
-        return db
+    # def select_database(self, decoy=False):
+    #     db = None
+    #     if self.is_rescored():
+    #         if not decoy:
+    #             db = f'{self.rescoreDatabaseDir}/rescore_target_database.fasta'
+    #         else:
+    #             db = f'{self.rescoreDatabaseDir}/rescore_target_decoy_database.fasta'
+    #     else:
+    #         dbs = os.listdir(self.databaseDir)
+    #         for fasta in dbs:
+    #             if decoy:
+    #                 if fasta.endswith("target_decoy_database.fasta"):
+    #                     db = fasta
+    #             else:
+    #                 if fasta.endswith("target_database.fasta"):
+    #                     db = fasta
+    #     return db
 
 
     def verify_checkpoint(self, outfile, step, mute=False):
@@ -448,6 +488,18 @@ class PipelineStructure:
         for smorf, group in zip(smorfs, groups):
             mapping_groups[smorf] = group
         return mapping_groups
+
+    def associate_groups_to_files(self):
+        groups_dict = {}
+        if self.args.groupsFile is not None:
+            df = pd.read_csv(self.args.groupsFile, sep='\t')
+            groups = df["group"].tolist()
+            files = df["file"].tolist()
+            groups_dict = {}
+            for group, file in zip(groups, files):
+                groups_dict[file.replace(".mzML", "")] = group
+        return groups_dict
+
 
 class Content:
     def __init__(self, file, fullfile, group, db, main_dir):

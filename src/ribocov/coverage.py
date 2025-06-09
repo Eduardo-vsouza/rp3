@@ -282,6 +282,7 @@ class RiboSeqCoverage(PipelineStructure):
                     mean = np.mean(counts[gene])
                     if mean  is None:
                         mean = 0
+                    print(mean)
                     # if mean < self.args.rpkm:
                         # mean = "Remove"
                         # rpkms[]
@@ -306,6 +307,7 @@ class RiboSeqCoverage(PipelineStructure):
         sys.setrecursionlimit(10000000)
 
         df = df.set_index(df.columns[0])
+        print(df)
         df.to_csv(self.mappingGroupsRPKMs, sep='\t')
         df = df[df.ge(self.args.rpkm).any(axis=1)]
         for col in df.columns:

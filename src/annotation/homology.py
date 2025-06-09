@@ -7,7 +7,6 @@ import numpy as np
 from Bio import SeqIO
 from Bio.Blast import NCBIXML
 
-from ..stats import Stater, DunnWithTukey
 from ..pipeline_config import PipelineStructure
 
 
@@ -174,6 +173,7 @@ class Homologs(PipelineStructure):
             if group not in dictio:
                 dictio[group] = []
             dictio[group].append(intensity)
+        from ..stats import Stater, DunnWithTukey
 
         dunn = DunnWithTukey(data_frame=df)
         dunn.dunn_with_fdr_bh(val_col="homologs", group_col="group")

@@ -72,7 +72,7 @@ class HomologyFinder(PipelineStructure):
             msa = self.nucMSADir
         elif blast == 'tblastn':
             blasted = self.blastedMMMicroproteinsXMLProtein
-            blasted = f'{self.args.outdir}/homology/chr6_6795023-6795214_tblastned.xml'
+            # blasted = f'{self.args.outdir}/homology/chr6_6795023-6795214_tblastned.xml'
             out = self.tBlastnMMMicroproteinsResults
             aln = self.fastaSeqsToAlignProteinDir
             msa = self.proteinMSADir
@@ -124,7 +124,8 @@ class HomologyFinder(PipelineStructure):
                             data['coordinates'].append(f':{hit_start}-{hit_end}')
                             data['microprotein'].append(query_definition)
                             data['subject'].append(f'{hit_strand}{alignment.hit_id}')
-                            data['subject_sequence'].append(hsp.sbjct)
+                            sbjct_seq = hsp.sbjct.split("*")[0]
+                            data['subject_sequence'].append(sbjct_seq)
                             data['evalue'].append(hsp.expect)
                             data['bitscore'].append(hsp.bits)
                             data['alignment_length'].append(hsp.align_length)

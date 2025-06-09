@@ -43,7 +43,7 @@ class PeptideReScoring(PipelineStructure):
             if self.args.keepAnnotated:
                 fasta.append(f'>{str(record.description).replace(" ", "_").replace(",", "_")}\n{str(record.seq)}\n')
             else:
-                fasta.append(f'>{str(record.description).replace(" ", "_")}_ANNO\n{str(record.seq)}\n')
+                fasta.append(f'>{str(record.description).replace(" ", "_").replace(",", "_")}_ANNO\n{str(record.seq)}\n')
         with open(f'{self.rescoreDatabaseDir}/rescore_target_database.fasta', 'w') as outfile:
             outfile.writelines(fasta)
 
@@ -361,6 +361,8 @@ class PeptideReScoring(PipelineStructure):
             fixed = f'{self.rescorePostProcessDir}/{group}/peptides_fixed.txt'
             perc.fix(file=f'{self.rescorePostProcessDir}/{group}/peptides.txt',
                      output=fixed)
+            perc.fix(file=f'{self.rescorePostProcessDir}/{group}/psm.txt',
+                     output=f'{self.rescorePostProcessDir}/{group}/psm_fixed.txt')
             df = pd.read_csv(fixed, sep='\t')
             df = df[df["q-value"] != "q-value"]
             df = df[df["q-value"] < 0.01]

@@ -8,4 +8,5 @@ from .mhc import MHCDetector
 from .homology import Homologs
 from .repeats import Repeater
 from .isoforms import Isoforms
+from .deeploc import DeepLoc
 

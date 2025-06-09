@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 
-from ..stats import Stater, DunnWithTukey
 from ..pipeline_config import PipelineStructure
 
 
