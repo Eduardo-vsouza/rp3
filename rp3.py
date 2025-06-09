@@ -190,7 +190,7 @@ class RP3:
                                                                            "target and decoy database. Requires the "
                                                                            "databases to be generated using the 'cat' "
                                                                            "flag.")
-
+        self.modeArguments.add_argument("--searchMode")
         self.modArguments = self.parser.add_argument_group("Post-translational Modifications (PTMs) arguments")
         self.modArguments.add_argument("--mod")
         self.modArguments.add_argument("--tmt_mod")
@@ -199,7 +199,7 @@ class RP3:
                                                           "modification", action="store_true")
         self.modArguments.add_argument("--phosphorylation", action="store_true")
 
-        self.modeArguments.add_argument("--fragment_mass_tolerance", default=600)
+        self.modeArguments.add_argument("--fragment_mass_tolerance", default=50)
 
         self.modeArguments.add_argument("--refseq")  # blasts results against refseq or another database
         self.modeArguments.add_argument("--groups", help="Tab-delimited file associating a database with a raw file. "
@@ -224,6 +224,9 @@ class RP3:
                                                                                   "and canonical proteins "
                                                                                   "separately.")
         self.modeArguments.add_argument("--postms_mode", help="cat or single.")
+        self.modeArguments.add_argument("--pepAssign", help="razor or unique. Razor by default. If razor, " \
+        "the peptide will be assigned to the protein with the highest number of peptides. If not, " \
+        "the peptide will be assigned as unique only if it's assigned to a single protein.", default='razor') 
         self.modeArguments.add_argument("--smorfUTPs", action="store_true")
         self.modeArguments.add_argument("--proteome", help="required if rescoring")
         self.modeArguments.add_argument("--minReplicates", help="minimum number of replicates a peptide appear in "
@@ -239,6 +242,7 @@ class RP3:
         self.modeArguments.add_argument("--memory", help="RAM available for MSFragger.", default=64)
         self.modeArguments.add_argument("--keepAnnotated", action="store_true")
         self.modeArguments.add_argument("--maxORFLength", type=int, default=150)
+        self.modeArguments.add_argument("--groupsFile")
 
     def __set_quant_mode(self):
         self.modeArguments.add_argument("--moff_path", default="/home/eduardo/programs/moFF/moFF-2.0.3/moff_all.py")
@@ -361,10 +365,14 @@ class RP3:
 
 
     def __set_anno_mode(self):
+        self.modeArguments.add_argument("--externalFasta", help="In case you are using this mode in standalone mode (outside the pipeline), " \
+        "provide a fasta file to process independently.")
         self.modeArguments.add_argument("--signalP", action="store_true")
         self.modeArguments.add_argument("--organism", default='eukarya')
         self.modeArguments.add_argument("--conservation", action='store_true')
+        self.modeArguments.add_argument("--blastType", default='tblastn', help="tblastn or diamond")
         self.modeArguments.add_argument("--blast_db", default='/home/microway/blast_databases/archita/homo_pan_mus_rat_equus_ovis_bos_sus_canis_macaca_loxodonta_balaenoptera_danio_drosophila_database')
+        self.modeArguments.add_argument("--diamondDB", default='/home/microway/blast_databases/transcriptomes/translations2/diamondBlastDB.dmnd')
         self.modeArguments.add_argument("--rescored", action='store_true', help="Use this flag if the "
                                                                                 "'rescore' mode was used to perform a "
                                                                                 "second round of search using the "
@@ -382,11 +390,19 @@ class RP3:
         self.modeArguments.add_argument("--repeats", action="store_true")
         self.modeArguments.add_argument("--isoforms", action="store_true")
         self.modeArguments.add_argument("--exclusiveMappingGroups", action="store_true")
+        self.modeArguments.add_argument("--plot", action="store_true", help="Generate plots for the DeepLoc and signalP results.")
+
         self.__set_mhc_arguments()
         self.__set_paralogy_arguments()
         self.__set_orf_class_arguments()
         self.__set_repeats_arguments()
         self.__set_isoforms_arguments()
+        self.__set_deeploc_argument()
+
+    def __set_deeploc_argument(self):
+        self.deeplocArguments = self.parser.add_argument_group("DeepLoc parameters.")
+        self.deeplocArguments.add_argument("--deepLoc", action="store_true")
+        self.deeplocArguments.add_argument("--deepLocModel", default='Fast', help="either <Fast> or <Accurate>. Fast by default.")
 
     def __set_isoforms_arguments(self):
         self.isoformsArguments = self.parser.add_argument_group("Isoforms parameters.")
@@ -472,6 +488,8 @@ class RP3:
         self.modeArguments.add_argument("--pathoPattern")
 
     def __set_homology_mode(self):
+        self.modeArguments.add_argument("--externalFasta", help="In case you are using this mode in standalone mode (outside the pipeline), " \
+        "provide a fasta file to process independently. Rp3 will generate MSA for homologs of this sequence in the specified genome.")
         self.modeArguments.add_argument("--eValue", type=float, default=0.001)
         self.modeArguments.add_argument("--bitScore", type=int, default=50)
         self.modeArguments.add_argument("--genome")
