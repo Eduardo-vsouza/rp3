@@ -24,3 +24,5 @@ cutadapt	cutadapt
 fastp	fastp
 gatk	/home/microway/programs/GATK/gatk-4.6.0.0/gatk
 bwa	bwa
+diamond	/home/microway/programs/diamond_blast/diamond
+deeploc	deeploc2
