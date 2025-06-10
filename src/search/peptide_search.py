@@ -67,6 +67,8 @@ class MSFragger(PipelineStructure):
         files, groups = df["file"].tolist(), df["group"].tolist()
         for file, group in zip(files, groups):
             # file_group = file.split("_")[1]
+            if not file.endswith("mzML"):
+                file = f'{file}.mzML'
             if filegroup:
                 groups_per_file[file].append(file)
             else:
@@ -196,17 +198,24 @@ class MSFragger(PipelineStructure):
 
         if self.args.groupsFile is not None:
             groups = self.read_groups(groups_df=self.args.groupsFile)
-            print(groups)
+            # print(groups)
+            print(f"Metadata was provided. Files will be searched as:\n")
+            print(f"Group\tFiles")
+            for group in groups:
+                print(f"{group}\t{', '.join(groups[group])}")
             for group in groups:
                 filepaths = ''
                 for file in groups[group]:
                     filepaths += f' {self.args.mzml}/{file}'
                 print(filepaths)                
-                cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
-                f'--database_name {db} --decoy_prefix rev ' \
-                f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
-                f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length}{filepaths}'
-                os.system(cmd)
+                if self.args.hlaPeptidomics:
+                    self.__search_hla_peptidomics(db=db, search_files=filepaths, full_paths=True)
+                else:
+                    cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
+                    f'--database_name {db} --decoy_prefix rev ' \
+                    f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
+                    f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length}{filepaths}'
+                    os.system(cmd)
                 db_relative = db.split("/")[-1]
                 files = os.listdir(self.args.mzml)
                 for file in files:
@@ -369,13 +378,19 @@ class MSFragger(PipelineStructure):
             if single_group:
                 break
 
-    def __search_hla_peptidomics(self, db, search_files):
-        cmd = f'java -Xmx256g -jar {self.MSFraggerPath} --output_format pin ' \
-              f'--database_name {self.databaseDir}/{db} --decoy_prefix rev --search_enzyme_name nonspecific ' \
+    def __search_hla_peptidomics(self, db, search_files, full_paths=False):
+        if full_paths:
+            files = search_files
+            database = db
+        else:
+            files = search_files[db]
+            database = f'{self.databaseDir}/{db}'
+        cmd = f'java -Xmx256g -jar {self.toolPaths["MSFragger"]} --output_format pin ' \
+              f'--database_name {database} --decoy_prefix rev_ --search_enzyme_name nonspecific ' \
               f'--num_threads {self.threads} --fragment_mass_tolerance 20 --num_enzyme_termini 0 ' \
-              f'--precursor_true_tolerance 6 --digest_mass_range 500.0_1500.0 ' \
+              f'--precursor_true_tolerance 20 --digest_mass_range 500.0_1500.0 ' \
               f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
-              f'--digest_min_length 8 --digest_max_length 25{search_files[db]}'
+              f'--digest_min_length 8 --digest_max_length 25{files}'
         # print(cmd)
         self.params.append(cmd)
         os.system(cmd)
