@@ -45,7 +45,13 @@ class MHCDetector(PipelineStructure):
 
     def filter_results(self):
         df = pd.read_csv(f'{self.mhcDir}/predictions.txt', sep=',')
+
         df = df[df["affinity"] != 'affinity']  # we concatenated everything before; remove extra column names
+        df["affinity"] = pd.to_numeric(df["affinity"], errors="coerce")
+        df["affinity_percentile"] = pd.to_numeric(df["affinity_percentile"], errors="coerce")
+
+
+
         df = df[df["affinity"] <= float(self.args.affinity)]
         df = df[df["affinity_percentile"] <= float(self.args.affinityPercentile)]
         smorfs = df["sequence_name"].tolist()
