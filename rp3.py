@@ -368,7 +368,10 @@ class RP3:
     def __set_anno_mode(self):
         self.modeArguments.add_argument("--externalFasta", help="In case you are using this mode in standalone mode (outside the pipeline), " \
         "provide a fasta file to process independently.")
+        self.modeArguments.add_argument("--splitFasta", help="In case the provided fasta is too large, this parameter will split the file " \
+        "into smaller files with the specified number of sequences. ")
         self.modeArguments.add_argument("--signalP", action="store_true")
+        self.modeArguments.add_argument("--signalpMode", default='fast')
         self.modeArguments.add_argument("--organism", default='eukarya')
         self.modeArguments.add_argument("--conservation", action='store_true')
         self.modeArguments.add_argument("--blastType", default='tblastn', help="tblastn or diamond")

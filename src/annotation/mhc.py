@@ -16,19 +16,35 @@ class MHCDetector(PipelineStructure):
         self.mhcMicroproteins = f'{self.mhcDir}/mhc_microproteins.fasta'
 
     def run_mhc_flurry(self):
-        if os.path.exists(self.rescoredMicroproteinsFasta):
-            fasta = self.rescoredMicroproteinsFasta
-        else:
-            fasta = self.uniqueMicroproteins
+        # if os.path.exists(self.rescoredMicroproteinsFasta):
+        #     fasta = self.rescoredMicroproteinsFasta
+        # else:
+        #     fasta = self.uniqueMicroproteins
         alleles = ('HLA-A*02:01,HLA-A*03:01,HLA-B*57:01,HLA-B*45:01,HLA-C*02:02,HLA-C*07:02'
-                   ' HLA-A*01:01,HLA-A*02:06,HLA-B*44:02,HLA-B*07:02,HLA-C*01:02,HLA-C*03:01')
-        # 7-12 is the length in MSBooster paper for HLA peptidomics
-        cmd = (f'mhcflurry-predict-scan {fasta} --alleles {alleles} --peptide-lengths 7-12 --out'
-               f' {self.mhcDir}/predictions.txt')
-        os.system(cmd)
+            ' HLA-A*01:01,HLA-A*02:06,HLA-B*44:02,HLA-B*07:02,HLA-C*01:02,HLA-C*03:01')
+        fasta = self.select_fasta()
+        if self.splitFasta is not None:
+            self.split_big_fasta(fasta, sequences=10000)
+            files = os.listdir(self.splitFastaDir)
+            for file in files:
+                cmd = (f'mhcflurry-predict-scan {self.splitFastaDir}/{file} --alleles {alleles} --peptide-lengths 7-12'
+                       f' --out {self.mhcDir}/predictions_{file}.txt')
+                os.system(cmd)
+            cmd = f'cat {self.mhcDir}/predictions_*.txt > {self.mhcDir}/predictions.txt'
+            os.system(cmd)
+
+        else:
+
+            # 7-12 is the length in MSBooster paper for HLA peptidomics
+            cmd = (f'mhcflurry-predict-scan {fasta} --alleles {alleles} --peptide-lengths 7-12 --out'
+                f' {self.mhcDir}/predictions.txt')
+            os.system(cmd)
+
+
 
     def filter_results(self):
         df = pd.read_csv(f'{self.mhcDir}/predictions.txt', sep=',')
+        df = df[df["affinity"] != 'affinity']  # we concatenated everything before; remove extra column names
         df = df[df["affinity"] <= float(self.args.affinity)]
         df = df[df["affinity_percentile"] <= float(self.args.affinityPercentile)]
         smorfs = df["sequence_name"].tolist()
