@@ -23,10 +23,11 @@ class MHCDetector(PipelineStructure):
         alleles = ('HLA-A*02:01,HLA-A*03:01,HLA-B*57:01,HLA-B*45:01,HLA-C*02:02,HLA-C*07:02'
             ' HLA-A*01:01,HLA-A*02:06,HLA-B*44:02,HLA-B*07:02,HLA-C*01:02,HLA-C*03:01')
         fasta = self.select_fasta()
-        if self.splitFasta is not None:
-            self.split_big_fasta(fasta, sequences=10000)
+        if self.args.splitFasta is not None:
+            self.split_big_fasta(fasta, sequences=self.args.splitFasta)
             files = os.listdir(self.splitFastaDir)
-            for file in files:
+            for i, file in enumerate(files):
+                print(f"--Running MHCFlurry on {file} ({i + 1}/{len(files)})")
                 cmd = (f'mhcflurry-predict-scan {self.splitFastaDir}/{file} --alleles {alleles} --peptide-lengths 7-12'
                        f' --out {self.mhcDir}/predictions_{file}.txt')
                 os.system(cmd)
