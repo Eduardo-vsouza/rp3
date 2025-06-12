@@ -32,6 +32,8 @@ class PipelineStructure:
         self.repeatsDBDir = f'{self.outdir}/repeats_database'
         self.repeatsProteogenomicsDBs = f'{self.outdir}/proteogenomics_databases'
         self.refProteome = f'{self.databaseDir}/proteome.fasta'
+        self.refProteomeWithDecoy = f'{self.databaseDir}/decoy_proteome.fasta'
+
         # folders
         self.resultsDir = f'{self.outdir}/results'
         self.searchDir = f'{self.outdir}/peptide_search'
@@ -64,6 +66,10 @@ class PipelineStructure:
         self.rescoreAnnoGroupDir = f'{self.rescoreGroupPostProcessDir}/anno'
         self.mpPinFile = f'{self.rescoreGroupFDRDir}/mp.pin'
         self.annoPinFile = f'{self.rescoreGroupFDRDir}/anno.pin'
+
+        self.cascadeDir = f'{self.outdir}/cascade'
+        self.cascadePinDir = f'{self.cascadeDir}/pin_files'
+        self.cascadeMzmlDir = f'{self.cascadeDir}/mzml_files'
 
         # counts directories
         self.countsDir = f'{self.outdir}/counts'
@@ -421,10 +427,15 @@ class PipelineStructure:
             pep = f'{self.postProcessDir}/group/db/peptides_fixed.txt'
         return pep
     
-    def select_database(self, decoy=False):
+    def select_database(self, decoy=False, proteome=False):
         """
         Returns full path to the proper database. It will check if rescored. 
         If rescored, it will return the rescored database. If not, it will return the original database."""
+        if proteome:
+            db = self.refProteome
+            if decoy:
+                db = self.refProteomeWithDecoy
+            return db
         if os.path.exists(self.rescoredMicroproteinsFasta):
             db = f'{self.rescoreDatabaseDir}/rescore_target_database.fasta'
             if decoy:

@@ -2,6 +2,7 @@ import os
 import sys
 
 from .basesearch import BaseSearch
+from ..pipeline_config import PipelineStructure
 
 
 class Comet(BaseSearch):
@@ -14,14 +15,18 @@ class Comet(BaseSearch):
         self.searchOutdir = outdir
 
     def run(self, files):
+        checked = self.check_files(files)
         params = self.__define_comet_params()
         db = self.select_database(decoy=True)
-        print(f"--Running comet on {self.args.mzml} with database {db}")
+        print(f"--Running Comet on {self.args.mzml} with database {db}")
 
-        cmd = f'{self.toolPaths["comet"]} -D{db} -P{params} {files}'
+        cmd = f'{self.toolPaths["comet"]} -D{db} -P{params}{checked}'
         print(cmd)
+        os.system(cmd)
 
+        self.move_pin_files()
         return cmd
+
 
     def __define_comet_params(self):
         if self.args.highRes:

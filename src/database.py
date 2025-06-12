@@ -36,10 +36,14 @@ class Database(PipelineStructure):
         self.__save_ref_proteome()
 
     def __save_ref_proteome(self):
-        cmd = f'cp {self.args.proteome} {self.databaseDir}/proteome.fasta'
+        cmd = f'cp {self.args.proteome} {self.refProteome}'
         os.system(cmd)
         print(f"--Reference proteome saved to {self.databaseDir}/proteome.fasta")
-
+        if self.args.cascade:
+            print(f"--Cascade mode detected. Generating decoy sequences for the reference proteome.")
+            decoy = Decoy(db=self.refProteome)
+            decoy.reverse_sequences().to_fasta(output=f'{self.refProteomeWithDecoy}',
+                                                pattern='rev', merge=True)
 
     def __check_dir(self):
         if not os.path.exists(self.databaseDir):

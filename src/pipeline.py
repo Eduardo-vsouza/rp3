@@ -78,17 +78,14 @@ class Pipeline:
             quantify = True
         print("searching")
 
-        if self.args.engine == 'msfragger':
-            search = PeptideSearch(mzml_folder=self.mzMLFolder, outdir=self.outdir,
-                            threads=self.threads, mod=self.args.mod, quantify=quantify, args=self.args)
+        # if self.args.engine == 'msfragger':
+        search = PeptideSearch(quantify=quantify, args=self.args)
 
-            if self.args.searchMode == 'cat':
-                search.iterate_searches_cat()
-            else:
-                search.search_files()
+        if self.args.searchMode == 'cat':
+            search.iterate_searches_cat()
+        else:
+            search.search_files()
         
-        elif self.args.engine == 'comet':
-            ...
 
         self.parameters.add_mode_parameters(search, self.args)
         self.parameters.update_params_file()
