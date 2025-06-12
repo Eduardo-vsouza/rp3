@@ -67,8 +67,8 @@ class SpectrumAnnotator(PipelineStructure):
             fixed_peptides.append(self.reformat_peptide(pep).replace("-", ""))
 
         for i, protein in enumerate(proteins):
-            if '19410554-19430627' in protein:
-                print(protein)
+            # if '19410554-19430627' in protein:
+            #     print(protein)
             prot_list = protein.split(",")
             for prot in prot_list:
                 # if prot in smorfs:

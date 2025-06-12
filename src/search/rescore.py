@@ -95,7 +95,7 @@ class PeptideReScoring(PipelineStructure):
                 phospho = f' --variable_mod_0{i} 79.9663_STY_3'
             if self.args.hlaPeptidomics:
                 cmd = f'java -Xmx256g -jar {self.MSFraggerPath} --output_format pin ' \
-                      f'--database_name {self.rescoreDatabase} --decoy_prefix rev --search_enzyme_name nonspecific ' \
+                      f'--database_name {self.rescoreDatabase} --decoy_prefix rev_ --search_enzyme_name nonspecific ' \
                       f'--num_threads {self.args.threads}{phospho}{mod}{amida}{pyroglu} --fragment_mass_tolerance 20 --num_enzyme_termini 0 ' \
                       f'--precursor_true_tolerance 6 --digest_mass_range 500.0_1500.0 ' \
                       f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
@@ -103,7 +103,7 @@ class PeptideReScoring(PipelineStructure):
             else:
                 if self.args.quantifyOnly or self.args.quantify:
                     cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format tsv ' \
-                          f'--database_name {self.rescoreDatabase} --decoy_prefix rev ' \
+                          f'--database_name {self.rescoreDatabase} --decoy_prefix rev_ ' \
                           f'--num_threads {self.args.threads}{phospho}{mod}{amida}{pyroglu} --digest_min_length {min_pep_len} ' \
                           f'--use_all_mods_in_first_search 1 --digest_max_length {max_pep_len}{group_files}'
                     os.system(cmd)

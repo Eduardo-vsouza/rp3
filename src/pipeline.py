@@ -1,6 +1,6 @@
 import os
 
-from src.search.peptide_search import MSFragger
+from src.search.peptide_search import PeptideSearch
 from .post_process import PercolatorPostProcessing
 from .database import Database
 from .translation_ssh import GTFtoFasta
@@ -77,13 +77,18 @@ class Pipeline:
         if self.args.quantify:
             quantify = True
         print("searching")
-        search = MSFragger(mzml_folder=self.mzMLFolder, outdir=self.outdir,
-                           threads=self.threads, mod=self.args.mod, quantify=quantify, args=self.args)
 
-        if self.args.searchMode == 'cat':
-            search.iterate_searches_cat()
-        else:
-            search.search_files()
+        if self.args.engine == 'msfragger':
+            search = PeptideSearch(mzml_folder=self.mzMLFolder, outdir=self.outdir,
+                            threads=self.threads, mod=self.args.mod, quantify=quantify, args=self.args)
+
+            if self.args.searchMode == 'cat':
+                search.iterate_searches_cat()
+            else:
+                search.search_files()
+        
+        elif self.args.engine == 'comet':
+            ...
 
         self.parameters.add_mode_parameters(search, self.args)
         self.parameters.update_params_file()

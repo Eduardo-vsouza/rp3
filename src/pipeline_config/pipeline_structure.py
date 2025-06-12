@@ -45,6 +45,7 @@ class PipelineStructure:
         self.signalPMicroproteinDir = f'{self.signalPDir}/microproteins'
         self.signalPAnnoMPDir = f'{self.signalPDir}/annotated_microproteins'
 
+        self.splitFastaDir = f'{self.outdir}/split_fasta'
 
         self.indexesDir = f'{self.pipelineDir}/data/STAR_indexes'
 
@@ -393,6 +394,19 @@ class PipelineStructure:
                 fasta = self.args.externalFasta
         return fasta
 
+    def split_big_fasta(self, fasta, sequences=10000):
+        from Bio import SeqIO
+        self.check_dirs([self.splitFastaDir])
+        records = SeqIO.parse(fasta, 'fasta')
+        
+        for i, record in enumerate(records):
+            if i % sequences == 0:
+                if i != 0:
+                    out_fasta.close()
+                out_fasta = open(f'{self.splitFastaDir}/split_{i // sequences}.fasta', 'w')
+            SeqIO.write(record, out_fasta, 'fasta')
+            
+
     def select_psm_df(self):
         if os.path.exists(self.rescoredMicroproteinsFasta):
             psm = f'{self.rescorePostProcessDir}/group/psm_fixed.txt'
@@ -408,6 +422,9 @@ class PipelineStructure:
         return pep
     
     def select_database(self, decoy=False):
+        """
+        Returns full path to the proper database. It will check if rescored. 
+        If rescored, it will return the rescored database. If not, it will return the original database."""
         if os.path.exists(self.rescoredMicroproteinsFasta):
             db = f'{self.rescoreDatabaseDir}/rescore_target_database.fasta'
             if decoy:
