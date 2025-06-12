@@ -175,6 +175,8 @@ class RP3:
 
 
     def __set_search_mode(self):
+        self.modeArguments.add_argument("--engine", help="Search engine to be used. Supports msfragger and comet.",
+                                        default='msfragger')
         self.modeArguments.add_argument("--proteinFDR", action='store_true')
         self.modeArguments.add_argument("--mzml")
         self.modeArguments.add_argument("--digest_max_length", default=7)
@@ -191,6 +193,13 @@ class RP3:
                                                                            "databases to be generated using the 'cat' "
                                                                            "flag.")
         self.modeArguments.add_argument("--searchMode")
+        
+        self.cometArguments = self.parser.add_argument_group("Comet arguments")
+        self.cometArguments.add_argument("--cometParams", help="Path to the comet parameters file. If this is not specified, it will " \
+        "use Rp3 standard params file (high-res).")
+        self.cometArguments.add_argument("--highRes", help="Sets Comet parameters to perform a high-resolution search.",
+                                         action="store_true")
+        
         self.modArguments = self.parser.add_argument_group("Post-translational Modifications (PTMs) arguments")
         self.modArguments.add_argument("--mod")
         self.modArguments.add_argument("--tmt_mod")
@@ -369,7 +378,7 @@ class RP3:
         self.modeArguments.add_argument("--externalFasta", help="In case you are using this mode in standalone mode (outside the pipeline), " \
         "provide a fasta file to process independently.")
         self.modeArguments.add_argument("--splitFasta", help="In case the provided fasta is too large, this parameter will split the file " \
-        "into smaller files with the specified number of sequences. ")
+        "into smaller files with the specified number of sequences. ", type=int)
         self.modeArguments.add_argument("--signalP", action="store_true")
         self.modeArguments.add_argument("--signalpMode", default='fast')
         self.modeArguments.add_argument("--organism", default='eukarya')
