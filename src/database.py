@@ -32,6 +32,14 @@ class Database(PipelineStructure):
             self.annotations = self.__get_annotation_levels()
         else:
             self.annotations = {}
+        
+        self.__save_ref_proteome()
+
+    def __save_ref_proteome(self):
+        cmd = f'cp {self.args.proteome} {self.databaseDir}/proteome.fasta'
+        os.system(cmd)
+        print(f"--Reference proteome saved to {self.databaseDir}/proteome.fasta")
+
 
     def __check_dir(self):
         if not os.path.exists(self.databaseDir):
@@ -114,7 +122,7 @@ class Database(PipelineStructure):
             for record in predicted:
                 if str(record.seq) not in added_seqs:
                     self.targetDatabases[assembly].append(f'>{str(record.description)}\n{str(record.seq)}\n')
-                    
+
 
     def save_target_dbs(self):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')

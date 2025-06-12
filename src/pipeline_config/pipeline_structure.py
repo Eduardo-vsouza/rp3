@@ -31,7 +31,7 @@ class PipelineStructure:
         self.homologyDBDir = f'{self.outdir}/homology_database'
         self.repeatsDBDir = f'{self.outdir}/repeats_database'
         self.repeatsProteogenomicsDBs = f'{self.outdir}/proteogenomics_databases'
-
+        self.refProteome = f'{self.databaseDir}/proteome.fasta'
         # folders
         self.resultsDir = f'{self.outdir}/results'
         self.searchDir = f'{self.outdir}/peptide_search'
