@@ -57,17 +57,16 @@ class MHCDetector(PipelineStructure):
         smorfs = df["sequence_name"].tolist()
 
         fasta = self.select_fasta()
-        records = SeqIO.parse(fasta, 'fasta')
-        out_fasta = []
-        seqs = []
-        for record in records:
-            entry = str(record.description)
-            if entry in smorfs:
-                seqs.append(str(record.seq))
-                out_fasta.append(f'>{entry}\n{str(record.seq)}\n')
+        smorfs_set = set(smorfs)
+        seqs_set = set()
         with open(self.mhcMicroproteins, 'w') as outfile:
-            outfile.writelines(out_fasta)
-        print(f"A total of {len(set(seqs))} containing immunogenic peptides with affinity <= {self.args.affinity} "
+            for record in SeqIO.parse(fasta, 'fasta'):
+                entry = record.description
+                if entry in smorfs_set:
+                    seq_str = str(record.seq)
+                    seqs_set.add(seq_str)
+                    outfile.write(f'>{entry}\n{seq_str}\n')
+        print(f"A total of {len(seqs_set)} containing immunogenic peptides with affinity <= {self.args.affinity} "
               f"and an affinity percentile <= {self.args.affinityPercentile} were identified.")
         self.__save_report()
 
