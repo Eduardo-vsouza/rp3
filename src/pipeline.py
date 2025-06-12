@@ -244,7 +244,7 @@ class Pipeline:
         if self.args.mhc:
             from .annotation import MHCDetector
             mhc = MHCDetector(args=self.args)
-            mhc.run_mhc_flurry()
+            # mhc.run_mhc_flurry()
             mhc.filter_results()
         if self.args.paralogy:
             from .annotation import Homologs
