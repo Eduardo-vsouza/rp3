@@ -5,6 +5,8 @@ import inspect
 import pandas as pd
 
 from ..pipeline_config import PipelineStructure
+from .comet import Comet
+from .fragger import MSFragger
 
 
 class PeptideSearch(PipelineStructure):
@@ -23,6 +25,13 @@ class PeptideSearch(PipelineStructure):
         self.threads = self.args.threads
         self.mode = 'search'
         self.params = []
+
+        if self.args.engine == 'comet':
+            self.engine = Comet(args=self.args, outdir=self.searchDir)
+        elif self.args.engine == 'msfragger':
+            self.engine = MSFragger(args=self.args, outdir=self.searchDir)  # MSFragger is a placeholder here
+        else:
+            raise ValueError(f"Unknown search engine: {self.args.engine}. Please use 'comet' or 'msfragger'.")
 
     def __check_dirs(self):
         out_search = f'{self.outdir}/peptide_search'
@@ -193,7 +202,7 @@ class PeptideSearch(PipelineStructure):
 
     def search_files(self):
         db = self.select_database(decoy=True)
-        tmt_mod, mod, amida, pyroglu = self.__check_ptms()
+        # tmt_mod, mod, amida, pyroglu = self.__check_ptms()
 
         if self.args.groupsFile is not None:
             groups = self.read_groups(groups_df=self.args.groupsFile)
@@ -210,30 +219,34 @@ class PeptideSearch(PipelineStructure):
                 if self.args.hlaPeptidomics:
                     self.__search_hla_peptidomics(db=db, search_files=filepaths, full_paths=True)
                 else:
-                    if self.args.engine == 'comet':
-                        self.__run_comet(files=filepaths)
-                    elif self.args.engine == 'msfragger':
-                        cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
-                        f'--database_name {db} --decoy_prefix rev ' \
-                        f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
-                        f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length}{filepaths}'
-                        os.system(cmd)
-                db_relative = db.split("/")[-1]
-                files = os.listdir(self.args.mzml)
-                for file in files:
-                    if file.endswith(".pin"):
-                        cmd_mv = (f'mv {self.args.mzml}/{file} '
-                        f'{self.outdir}/peptide_search/group/{db_relative}/{file.replace(f".pin", "_target.pin")}')
-                        # os.system(cmd_mv)
-                        self.exec(cmd_mv)
+                    # if self.args.engine == 'comet':
+                    self.engine.run(files=filepaths)
+                        # self.__run_comet(files=filepaths)
+                    # elif self.args.engine == 'msfragger':
+
+                        # cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
+                        # f'--database_name {db} --decoy_prefix rev ' \
+                        # f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
+                        # f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length}{filepaths}'
+                        # os.system(cmd)
+                # db_relative = db.split("/")[-1]
+                # files = os.listdir(self.args.mzml)
+                # for file in files:
+                #     if file.endswith(".pin"):
+                #         cmd_mv = (f'mv {self.args.mzml}/{file} '
+                #         f'{self.outdir}/peptide_search/group/{db_relative}/{file.replace(f".pin", "_target.pin")}')
+                #         # os.system(cmd_mv)
+                #         self.exec(cmd_mv)
 
         else:
             files = os.listdir(self.args.mzml)
 
             for file in files:
-                if self.args.engine == 'comet':
-                    self.__run_comet(files=file)
-                elif self.args.engine == 'msfragger':
+                # if self.args.engine == 'comet':
+                self.engine.run(files=f'{self.args.mzml}/{file}')
+                    # self.__run_comet(files=file)
+                # elif self.args.engine == 'msfragger':
+                #     ...
                     # if self.quantify: # --output_format tsv
                     #     cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format tsv ' \
                     #         f'--database_name {self.databaseDir}/{db} --decoy_prefix rev ' \
@@ -241,29 +254,17 @@ class PeptideSearch(PipelineStructure):
                     #         f'--use_all_mods_in_first_search 1 --digest_min_length {min_pep_len} {tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {max_pep_len}{search_files[db]}'
                     #     os.system(cmd)
 
-                    cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
-                            f'--database_name {db} --decoy_prefix rev ' \
-                            f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
-                            f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length} {self.args.mzml}/{file}'
-                    os.system(cmd)
-                    db_relative = db.split("/")[-1]
-                    cmd_mv = (f'mv {self.args.mzml}/{file.replace(f".mzML", ".pin")} '
-                    f'{self.outdir}/peptide_search/group/{db_relative}/{file.replace(f".mzML", "_target.pin")}')
-                    # os.system(cmd_mv)
-                    self.exec(cmd_mv)
-
-    def __run_comet(self, files):
-        params = self._generate_params()
-        db = self.select_database(decoy=True)
-        print(f"--Running comet on {self.args.mzml} with database {db}")
-
-        cmd = f'{self.toolPaths["comet"]} -D{db} -P{params} {files}'
-        print(cmd)
-
-        return cmd
-
-    def __define_comet_params(self):
-        ...
+                    # cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
+                    #         f'--database_name {db} --decoy_prefix rev ' \
+                    #         f'--num_threads {self.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
+                    #         f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length} {self.args.mzml}/{file}'
+                    # os.system(cmd)
+                    # db_relative = db.split("/")[-1]
+                    # cmd_mv = (f'mv {self.args.mzml}/{file.replace(f".mzML", ".pin")} '
+                    # f'{self.outdir}/peptide_search/group/{db_relative}/{file.replace(f".mzML", "_target.pin")}')
+                    # # os.system(cmd_mv)
+                    # self.exec(cmd_mv)
+   
 
     def iterate_searches_cat(self, min_pep_len=7, max_pep_len=50):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
