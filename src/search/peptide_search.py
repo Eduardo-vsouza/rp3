@@ -8,20 +8,19 @@ from ..pipeline_config import PipelineStructure
 
 
 class PeptideSearch(PipelineStructure):
-    def __init__(self, mzml_folder, outdir, threads, mod, args, quantify=False):
+    def __init__(self, args, quantify=False):
         super().__init__(args=args)
         self.args = args
-        self.mod = mod
+        self.mod = self.args.mod
         self.quantify = quantify
-        self.mzMLFolder = mzml_folder # this should be organized in subfolders, each containing mzML for each group
-        self.databaseDir = f'{outdir}/databases'
-        self.outdir = outdir
+        self.mzMLFolder = self.args.mzml # this should be organized in subfolders, each containing mzML for each group
+        self.databaseDir = self.databaseDir
+        self.outdir = self.args.outdir
         if self.args.groups is not None:
             self.groupsPerFile = self.read_groups(groups_df=self.args.groups)
         self.__check_dirs()
         self.MSFraggerPath = self.toolPaths["MSFragger"]
-        self.threads = threads
-        # It's been a while since the last time I had joy working on this shit. What am I doing with my life?
+        self.threads = self.args.threads
         self.mode = 'search'
         self.params = []
 
@@ -264,7 +263,7 @@ class PeptideSearch(PipelineStructure):
         return cmd
 
     def __define_comet_params(self):
-
+        ...
 
     def iterate_searches_cat(self, min_pep_len=7, max_pep_len=50):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')
