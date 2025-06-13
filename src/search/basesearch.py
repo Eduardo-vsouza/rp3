@@ -21,7 +21,7 @@ class BaseSearch(PipelineStructure):
         self.params = []
 
         if self.args.cascade:
-            self.check_dirs([self.cascadeDir, self.cascadeMzmlDir, self.cascadePinDir])
+            self.check_dirs([self.cascadeDir, self.cascadeMzmlDir, self.cascadeFirstPassDir, self.cascadeSecondPassDir])
 
     def check_files(self, files):
         checked = ''
@@ -38,10 +38,12 @@ class BaseSearch(PipelineStructure):
             output_dir = f'{self.searchDir}/group/{db_relative}'
         elif outdir == 'rescore':
             output_dir = f'{self.outdir}/rescore/peptide_search/group'
-        elif outdir == 'cascade_first':
-            output_dir = self.cascadeFirstPassDir
-        elif outdir == 'cascade_second':
-            output_dir = self.cascadeSecondPassDir
+        # elif outdir == 'cascade_first':
+        #     output_dir = self.cascadeFirstPassDir
+        # elif outdir == 'cascade_second':
+        #     output_dir = self.cascadeSecondPassDir
+        else:
+            output_dir = outdir
 
         files = os.listdir(self.args.mzml)
         for file in files:

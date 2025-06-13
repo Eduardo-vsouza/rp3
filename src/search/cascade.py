@@ -12,7 +12,7 @@ class Cascade(PipelineStructure):
 
         self.firstPassScans = {}
 
-    def get_first_pass_scans(self, cascade_dir=None):
+    def get_first_pass_scans(self):
         files = os.listdir(self.cascadeFirstPassDir)
         total_scans = 0
         for file in files:
@@ -42,7 +42,7 @@ class Cascade(PipelineStructure):
             if spec.ms_level == 2 and spec.scan_number not in self.firstPassScans.get(mzml_file, []):
                 filtered.append(spec)
         if filtered:
-            filtered_file = os.path.join(outdir, f'{mzml_file.replace('.mzML', '_filtered.mzML')}'.split("/")[-1])
+            filtered_file = os.path.join(outdir, f"{mzml_file.replace('.mzML', '_filtered.mzML')}".split("/")[-1])
             with run.Writer(filtered_file) as writer:
                 for spec in filtered:
                     writer.write(spec)

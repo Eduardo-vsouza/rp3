@@ -220,7 +220,7 @@ class PeptideSearch(PipelineStructure):
                     self.__search_hla_peptidomics(db=db, search_files=filepaths, full_paths=True)
                 else:
                     # if self.args.engine == 'comet':
-                    self.engine.run(files=filepaths)
+                    self.engine.run()
                         # self.__run_comet(files=filepaths)
                     # elif self.args.engine == 'msfragger':
 
@@ -239,11 +239,7 @@ class PeptideSearch(PipelineStructure):
                 #         self.exec(cmd_mv)
 
         else:
-            files = os.listdir(self.args.mzml)
-
-            for file in files:
-                # if self.args.engine == 'comet':
-                self.engine.run(files=f'{self.args.mzml}/{file}')
+            self.engine.run()
                     # self.__run_comet(files=file)
                 # elif self.args.engine == 'msfragger':
                 #     ...
