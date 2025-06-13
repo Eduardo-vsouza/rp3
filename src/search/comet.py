@@ -15,92 +15,77 @@ class Comet(BaseSearch):
         self.cometDir = f'{sys.path[0]}/dependencies/comet'
         self.searchOutdir = outdir
 
-    def run(self, files):
+    def run(self):
         """
         Step 1 of cascade search.
         """
-        checked = self.check_files(files)
-        if self.args.cascade:
-            self._run_cascade(files=checked)
-        else:
-            self._run_standard(files=checked)
+        self.params = self.__define_comet_params()
 
-    def _run_standard(self, files):
+        if self.args.cascade:
+            self._run_cascade()
+        else:
+            self._run_standard()
+
+    def _run_standard(self):
         """
         step 1.5, optional
         """
-        params = self.__define_comet_params()
+        # params = self.__define_comet_params()
         db = self.select_database(decoy=True)
         print(f"--Running Comet on {self.args.mzml} with database {db}")
+        self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+        self.move_pin_files(outdir='standard')
 
-        cmd = f'{self.toolPaths["comet"]} -D{db} -P{params}{files}'
-        print(cmd)
-        os.system(cmd)
-
-        self.move_pin_files()
-
-    def _run_cascade(self, files):
+    def _run_cascade(self):
         """
         Step 1.5, optional
         Private function
         To be called by self.run()
         """
-        self.params = self.__define_comet_params()
-        db = self.select_database(decoy=True, proteome=True)
 
         # FIRST PASS on reference proteome
+        db = self.select_database(decoy=True, proteome=True)
         print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
-        cmd = f'{self.toolPaths["comet"]} -D{db} -P{self.params}{files}'
-        print(cmd)
-        os.system(cmd)
-        self.move_pin_files(outdir='cascade_first')
+        self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+        self.move_pin_files(outdir=self.cascadeFirstPassDir)
 
         # SECOND PASS on proteogenomics database
-        db = self.select_database(decoy=True)
+        db = self.select_database(decoy=True, proteome=False)
         print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with proteogenomics database")
 
         # implement Cascade() to filter mzml here
         cascade = Cascade(args=self.args)
-        cascade.get_first_pass_scans(cascade_dir=self.cascadeFirstPassDir)
-        cascade.filter_mzml(mzml_dir=self.cascadeMzmlDir)
+        # get scans from reference proteome that passed the first search
+        cascade.get_first_pass_scans()
+        # remove ref proteome scans from mzml files and store them in cascadeMzmlDir
+        cascade.filter_mzml(mzml_dir=self.args.mzml,
+                            outdir=self.cascadeMzmlDir)
+        # run comet on filtered mzML; files will be stored in the same directory
+        self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern='_filtered.mzML')
 
-        self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir)
+        self.move_pin_files(outdir=self.cascadeSecondPassDir) 
 
-        # mzml = os.listdir(self.cascadeMzmlDir)
-        # files = ''
-        # for file in mzml:
-        #     if file.endswith('_filtered.mzML'):
-        #         files += f' {self.cascadeMzmlDir}/{file}'
-        # cmd = f'{self.toolPaths["comet"]} -D{db} -P{params}{files}'
-        # os.system(cmd)
 
-        self.move_pin_files(outdir='standard')
-
-    def shower_comets(self, db, params, mzml_dir, pattern='.mzML'):
+    def shower_comets(self, db, mzml_dir, pattern='.mzML'):
         """
         Iterate comet on the provided folder with mzml files.
         """
+        print(f"--Running Comet on {mzml_dir} with database {db}")
         mzml = os.listdir(mzml_dir)
         files = ''
         for file in mzml:
             if file.endswith(pattern):
                 files += f' {mzml_dir}/{file}'
-        cmd = f'{self.toolPaths["comet"]} -D{db} -P{params}{files}'
+        cmd = f'{self.toolPaths["comet"]} -D{db} -P{self.params}{files}'
+        os.system(cmd)
+       
+    def concatenate_pin_files(self):
+        print(f"--Concatenating pin files from first and second pass of cascade search...")
+        cmd = f'cat {self.cascadeFirstPassDir}/*pin {self.cascadeSecondPassDir}/*pin > {self.searchOutdir}/cascade_search.pin'
         os.system(cmd)
 
-    def __remove_reference_scans(self):
-        """
-        Step 1.6, following the end of both cascade searches (reference proteome and proteogenomics database)
-        Remove scans from the first-pass search that were already identified in the reference proteome.
-        """
-        
-
-
-    def concatenate_pin_files(self):
-        # cmd = f'cat {self.cascade}'
-        ...
-
     def __define_comet_params(self):
+        print(f"--Defining Comet params...")
         if self.args.highRes:
             params = f'{self.cometDir}/cometParams_highRes_rp3.txt'
         elif self.args.lowRes:
