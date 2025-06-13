@@ -216,7 +216,7 @@ class PeptideSearch(PipelineStructure):
                 for file in groups[group]:
                     filepaths += f' {self.args.mzml}/{file}'
                 print(filepaths)                
-                if self.args.hlaPeptidomics:
+                if self.args.hlaPeptidomics and self.args.engine != 'comet':
                     self.__search_hla_peptidomics(db=db, search_files=filepaths, full_paths=True)
                 else:
                     # if self.args.engine == 'comet':

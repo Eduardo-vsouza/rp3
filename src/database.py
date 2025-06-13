@@ -99,29 +99,28 @@ class Database(PipelineStructure):
                 self.targetDatabases[assembly] = []
             pep = f'{folder}/{assembly}/{assembly}.pep'
             predicted = SeqIO.parse(pep, 'fasta')
-
-            reference = SeqIO.parse(self.proteome, 'fasta')
-            for record in reference:
-
-                # check if including uncharacterized microproteins or not
-                # only MPs below the length threshold and annotation level will be considered
-                if self.args.uniprotAnnotation is not None:
-                    seq = str(record.seq)
-                    if seq in self.annotations:
-                        if int(self.annotations[seq]) <= int(self.args.annotationLevel):
-                            self.targetDatabases[assembly].append(
-                                f'>{str(record.description).replace(" ", "_").replace(",", "_")}_UNCH\n{str(record.seq)}\n')
+            if not self.args.cascade:
+                reference = SeqIO.parse(self.proteome, 'fasta')
+                for record in reference:
+                    # check if including uncharacterized microproteins or not
+                    # only MPs below the length threshold and annotation level will be considered
+                    if self.args.uniprotAnnotation is not None:
+                        seq = str(record.seq)
+                        if seq in self.annotations:
+                            if int(self.annotations[seq]) <= int(self.args.annotationLevel):
+                                self.targetDatabases[assembly].append(
+                                    f'>{str(record.description).replace(" ", "_").replace(",", "_")}_UNCH\n{str(record.seq)}\n')
+                            else:
+                                self.targetDatabases[assembly].append(
+                                    f'>{str(record.description).replace(" ", "_").replace(",", "_")}_ANNO\n{str(record.seq)}\n')
                         else:
                             self.targetDatabases[assembly].append(
                                 f'>{str(record.description).replace(" ", "_").replace(",", "_")}_ANNO\n{str(record.seq)}\n')
+                            
                     else:
-                        self.targetDatabases[assembly].append(
-                            f'>{str(record.description).replace(" ", "_").replace(",", "_")}_ANNO\n{str(record.seq)}\n')
-                        
-                else:
-                    if str(record.seq) not in added_seqs:
-                        added_seqs.append(str(record.seq))
-                    self.targetDatabases[assembly].append(f'>{str(record.description).replace(" ", "_").replace(",", "_")}_ANNO\n{str(record.seq)}\n')
+                        if str(record.seq) not in added_seqs:
+                            added_seqs.append(str(record.seq))
+                        self.targetDatabases[assembly].append(f'>{str(record.description).replace(" ", "_").replace(",", "_")}_ANNO\n{str(record.seq)}\n')
 
             for record in predicted:
                 if str(record.seq) not in added_seqs:

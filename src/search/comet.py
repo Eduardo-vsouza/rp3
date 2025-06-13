@@ -45,27 +45,27 @@ class Comet(BaseSearch):
         To be called by self.run()
         """
 
-        # # FIRST PASS on reference proteome
-        # db = self.select_database(decoy=True, proteome=True)
-        # print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
-        # self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
-        # self.move_pin_files(outdir=self.cascadeFirstPassDir)
+        # FIRST PASS on reference proteome
+        db = self.select_database(decoy=True, proteome=True)
+        print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
+        self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+        self.move_pin_files(outdir=self.cascadeFirstPassDir)
 
-        # # SECOND PASS on proteogenomics database
-        # db = self.select_database(decoy=True, proteome=False)
-        # print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with proteogenomics database")
+        # SECOND PASS on proteogenomics database
+        db = self.select_database(decoy=True, proteome=False)
+        print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with proteogenomics database")
 
-        # # implement Cascade() to filter mzml here
-        # cascade = Cascade(args=self.args)
-        # # get scans from reference proteome that passed the first search
-        # cascade.get_first_pass_scans()
-        # # remove ref proteome scans from mzml files and store them in cascadeMzmlDir
-        # cascade.filter_mzml(mzml_dir=self.args.mzml,
-        #                     outdir=self.cascadeMzmlDir)
-        # # run comet on filtered mzML; files will be stored in the same directory
-        # self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern='_filtered.mzML')
+        # implement Cascade() to filter mzml here
+        cascade = Cascade(args=self.args)
+        # get scans from reference proteome that passed the first search
+        cascade.get_first_pass_scans()
+        # remove ref proteome scans from mzml files and store them in cascadeMzmlDir
+        cascade.filter_mzml(mzml_dir=self.args.mzml,
+                            outdir=self.cascadeMzmlDir)
+        # run comet on filtered mzML; files will be stored in the same directory
+        self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern='_filtered.mzML')
 
-        # self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir) 
+        self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir) 
         self.concatenate_pin_files()
 
     def shower_comets(self, db, mzml_dir, pattern='.mzML'):
@@ -96,14 +96,7 @@ class Comet(BaseSearch):
 
         cmd = f"awk 'FNR<2' {self.searchOutdir}/cascade_search_unfixed.pin | cat - {self.searchOutdir}/cascade_search_filtered.pin > {self.searchOutdir}/cascade_search.pin"
         os.system(cmd)
-        # df = pd.read_csv(
-        #     f'{self.searchOutdir}/cascade_search.pin',
-        #     sep='\t',
-        #     comment='#',
-        #     index_col=False
-        # )
-        # df = df[df["SpecId"] != 'SpecId']
-        # df.to_csv(f'{self.searchOutdir}/cascade_search.pin', sep='\t', index=False)
+
 
     def __define_comet_params(self):
         print(f"--Defining Comet params...")
