@@ -1,48 +1,72 @@
 import os
-import sys
-
 import pandas as pd
-from pymzml import run
+from pyopenms import MzMLFile, MSExperiment
 
 from ..pipeline_config import PipelineStructure
 
 class Cascade(PipelineStructure):
     def __init__(self, args):
         super().__init__(args)
-
         self.firstPassScans = {}
 
     def get_first_pass_scans(self):
+        print("--Gathering first pass scans")
         files = os.listdir(self.cascadeFirstPassDir)
         total_scans = 0
         for file in files:
-            df = pd.read_csv(os.path.join(self.cascadeFirstPassDir, file), sep='\t')
+            if not file.endswith(".pin"):
+                continue
+            df = pd.read_csv(
+                os.path.join(self.cascadeFirstPassDir, file),
+                sep='\t',
+                usecols=range(10),
+                comment='#',
+                index_col=False
+            )
+            df["deltCn"] = pd.to_numeric(df["deltCn"], errors="coerce")
             df = df[df["deltCn"] >= 0.1]
-            mzml_files = df["SpecId"].tolist()
-            scans = df["ScanNr"].tolist()
-            for mzml, scan in zip(mzml_files, scans):
-                renamed = '_'.join(mzml.split("_")[:-3])
-                if renamed not in self.firstPassScans:
-                    self.firstPassScans[renamed] = []
-                self.firstPassScans[renamed].append(scan)
+            for mzml_id, scan in zip(df["SpecId"], df["ScanNr"]):
+                if not isinstance(mzml_id, str):
+                    continue
+                key = '_'.join(mzml_id.split("_")[:-3])
+                self.firstPassScans.setdefault(key, []).append(int(scan))
                 total_scans += 1
-        print(f"--Found {total_scans} from the reference proteome in the first-pass Comet search.")
+        print(f"--Found {total_scans} scans from the first pass.")
 
     def filter_mzml(self, mzml_dir=None, outdir=None):
-        files = os.listdir(mzml_dir)
-        for file in files:
-            if file.endswith(self.args.fileFormat):
-                self._filter_single_mzml(mzml_file=os.path.join(mzml_dir, file),
-                                         outdir=outdir)
+        os.makedirs(outdir, exist_ok=True)
+        for fname in os.listdir(mzml_dir):
+            if not fname.endswith(self.args.fileFormat):
+                continue
+            mzml_path = os.path.join(mzml_dir, fname)
+            self._filter_single_mzml(mzml_path, outdir)
 
     def _filter_single_mzml(self, mzml_file, outdir):
-        mzml = run.Reader(mzml_file)
-        filtered = []   
-        for spec in mzml:
-            if spec.ms_level == 2 and spec.scan_number not in self.firstPassScans.get(mzml_file, []):
-                filtered.append(spec)
-        if filtered:
-            filtered_file = os.path.join(outdir, f"{mzml_file.replace('.mzML', '_filtered.mzML')}".split("/")[-1])
-            with run.Writer(filtered_file) as writer:
-                for spec in filtered:
-                    writer.write(spec)
+        base = os.path.splitext(os.path.basename(mzml_file))[0]
+        key = base.rsplit('_', 3)[0]
+
+        # Load full experiment
+        exp = MSExperiment()
+        MzMLFile().load(mzml_file, exp)
+
+        # Build set of scans to remove
+        remove_scans = set(self.firstPassScans.get(key, []))
+
+        # Filter spectra
+        out_exp = MSExperiment()
+        for spec in exp.getSpectra():
+            if spec.getMSLevel() == 2:
+                native = spec.getNativeID()
+                try:
+                    scan = int(native.split('scan=')[-1].split()[0])
+                except Exception:
+                    # fallback to index-based positioning
+                    continue
+                if scan in remove_scans:
+                    continue
+            out_exp.addSpectrum(spec)
+
+        # Write filtered experiment
+        filtered_file = os.path.join(outdir, f"{base}_filtered.mzML")
+        MzMLFile().store(filtered_file, out_exp)
+        print(f"--Wrote filtered mzML via pyOpenMS to {filtered_file}")

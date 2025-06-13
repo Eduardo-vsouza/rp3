@@ -46,8 +46,8 @@ class Comet(BaseSearch):
         # FIRST PASS on reference proteome
         db = self.select_database(decoy=True, proteome=True)
         print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
-        self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
-        self.move_pin_files(outdir=self.cascadeFirstPassDir)
+        # self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+        # self.move_pin_files(outdir=self.cascadeFirstPassDir)
 
         # SECOND PASS on proteogenomics database
         db = self.select_database(decoy=True, proteome=False)
@@ -75,9 +75,14 @@ class Comet(BaseSearch):
         files = ''
         for file in mzml:
             if file.endswith(pattern):
+                # run = self.verify_checkpoint(outfile=os.path.join(mzml_dir, file), step="comet")
+                # if run:
                 files += f' {mzml_dir}/{file}'
-        cmd = f'{self.toolPaths["comet"]} -D{db} -P{self.params}{files}'
-        os.system(cmd)
+        if not files:
+            print(f"--No mzML files found in {mzml_dir} with pattern {pattern}.")
+        else:
+            cmd = f'{self.toolPaths["comet"]} -D{db} -P{self.params}{files}'
+            os.system(cmd)
        
     def concatenate_pin_files(self):
         print(f"--Concatenating pin files from first and second pass of cascade search...")
