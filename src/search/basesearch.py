@@ -31,7 +31,6 @@ class BaseSearch(PipelineStructure):
                 checked += f' {file}'
         return checked
 
-
     def move_pin_files(self, outdir="standard"):
         # outdirs = {"standard": }
         if outdir == 'standard':
@@ -39,8 +38,10 @@ class BaseSearch(PipelineStructure):
             output_dir = f'{self.searchDir}/group/{db_relative}'
         elif outdir == 'rescore':
             output_dir = f'{self.outdir}/rescore/peptide_search/group'
-        elif outdir == 'cascade':
-            output_dir = self.cascadeDir
+        elif outdir == 'cascade_first':
+            output_dir = self.cascadeFirstPassDir
+        elif outdir == 'cascade_second':
+            output_dir = self.cascadeSecondPassDir
 
         files = os.listdir(self.args.mzml)
         for file in files:
@@ -51,3 +52,5 @@ class BaseSearch(PipelineStructure):
             elif file.endswith(".txt") or file.endswith(".xml"):
                 cmd_mv = (f'mv {self.args.mzml}/{file} {output_dir}/{file}')
                 os.system(cmd_mv)
+
+        

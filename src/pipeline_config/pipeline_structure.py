@@ -68,7 +68,8 @@ class PipelineStructure:
         self.annoPinFile = f'{self.rescoreGroupFDRDir}/anno.pin'
 
         self.cascadeDir = f'{self.outdir}/cascade'
-        self.cascadePinDir = f'{self.cascadeDir}/pin_files'
+        self.cascadeFirstPassDir = f'{self.cascadeDir}/first_pass'
+        self.cascadeSecondPassDir = f'{self.cascadeDir}/second_pass'
         self.cascadeMzmlDir = f'{self.cascadeDir}/mzml_files'
 
         # counts directories
