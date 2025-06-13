@@ -258,6 +258,8 @@ class PercolatorPostProcessing(PipelineStructure):
 
     def percolate_all_pins(self):
         pin = f'{self.outdir}/all_pins.pin'
+        if self.args.cascade:
+            pin = os.path.join(self.peptideSearchDir, 'cascade_search.pin')
         # self.flatten_orf_duplicates_pin(pin=pin, output=f'{self.outdir}/all_pins_flattened.pin')
         g_outdir = f'{self.postProcessDir}/group'
         dbs = os.listdir(self.databaseDir)

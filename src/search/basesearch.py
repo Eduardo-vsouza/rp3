@@ -31,7 +31,7 @@ class BaseSearch(PipelineStructure):
                 checked += f' {file}'
         return checked
 
-    def move_pin_files(self, outdir="standard"):
+    def move_pin_files(self, mzml_dir=None, outdir="standard"):
         # outdirs = {"standard": }
         if outdir == 'standard':
             db_relative = self.select_database(decoy=True).split("/")[-1]
@@ -44,15 +44,16 @@ class BaseSearch(PipelineStructure):
         #     output_dir = self.cascadeSecondPassDir
         else:
             output_dir = outdir
-
-        files = os.listdir(self.args.mzml)
+        if mzml_dir is None:
+            mzml_dir = self.args.mzml
+        files = os.listdir(mzml_dir)
         for file in files:
             if file.endswith(".pin"):
-                cmd_mv = (f'mv {self.args.mzml}/{file} '
+                cmd_mv = (f'mv {mzml_dir}/{file} '
                           f'{output_dir}/{file.replace(".pin", "_target.pin")}')
                 os.system(cmd_mv)
             elif file.endswith(".txt") or file.endswith(".xml"):
-                cmd_mv = (f'mv {self.args.mzml}/{file} {output_dir}/{file}')
+                cmd_mv = (f'mv {mzml_dir}/{file} {output_dir}/{file}')
                 os.system(cmd_mv)
 
         
