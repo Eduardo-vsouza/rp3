@@ -82,6 +82,22 @@ class Conservation(PipelineStructure):
         with open(f'{self.phyloDir}/homologs_per_species_evolview.txt', 'w') as outfile:
             outfile.writelines(evol_lines)
 
+    def generate_data_frame(self):
+        df = pd.read_csv(f'{self.phyloDir}/smorfs_entries_per_species.xls', sep='\t')
+
+
+        species, smorfs = df["species"].tolist(), df["smorf"].tolist()
+        # Create a pivot table with smorf as rows and species as columns
+        df_pivot = pd.crosstab(df['smorf'], df['species'])
+        # Convert counts to boolean values (True when a species is present, False otherwise)
+        df_boolean = df_pivot.applymap(lambda x: True if x > 0 else False)
+        sp = self.args.spOrigin.replace("_", " ").capitalize()
+        if sp in df_boolean.columns:
+            df_boolean.drop(columns=[sp], inplace=True)
+        df_boolean.to_csv(f'{self.phyloDir}/smorfs_entries_per_species_boolean.csv', sep='\t')
+
+
+
     def classify_conservation_by_mapping_groups(self):
         groups_df = pd.read_csv(f'{self.microproteinMappingGroupsForPlotsUnion}', sep='\t')
         classification = {}
