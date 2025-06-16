@@ -104,11 +104,12 @@ class Pipeline:
         if not self.args.quantifyOnly:
             postms = PercolatorPostProcessing(args=self.args)
 
-            if not self.args.recalculateFDR:
+            if not self.args.recalculateFDR:  # this arg will re-do the post-processing after the percolator step
                 if self.postMSMode == 'sep':
                     postms.percolate_single()
                 else:
                     postms.merge_all_pins()
+                     
                     postms.percolate_all_pins()
 
             postms.fix_multiple_columns()
@@ -217,10 +218,11 @@ class Pipeline:
         if self.args.conservation:
             from .annotation import Conservation
             conserv = Conservation(args=self.args)
-            conserv.generate_non_redundant_fasta()
-            conserv.blast_microproteins()
-            conserv.parse_blast_results()
-            conserv.create_evolview_input()
+            # conserv.generate_non_redundant_fasta()
+            # conserv.blast_microproteins()
+            # conserv.parse_blast_results()
+            # conserv.create_evolview_input()
+            conserv.generate_data_frame()
             # conserv.classify_conservation_by_mapping_groups()
         if self.args.uniprotTable:
             from .annotation import UniprotAnnotation
