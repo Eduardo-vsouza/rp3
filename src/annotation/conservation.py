@@ -84,9 +84,6 @@ class Conservation(PipelineStructure):
 
     def generate_data_frame(self):
         df = pd.read_csv(f'{self.phyloDir}/smorfs_entries_per_species.xls', sep='\t')
-
-
-        species, smorfs = df["species"].tolist(), df["smorf"].tolist()
         # Create a pivot table with smorf as rows and species as columns
         df_pivot = pd.crosstab(df['smorf'], df['species'])
         # Convert counts to boolean values (True when a species is present, False otherwise)
