@@ -2,6 +2,7 @@ import os
 import sys
 
 from .basesearch import BaseSearch
+from .cascade import Cascade
 
 
 class MSFragger(BaseSearch):
@@ -13,48 +14,75 @@ class MSFragger(BaseSearch):
         # self.cometDir = f'{sys.path[0]}/dependencies/comet'
         self.searchOutdir = outdir
     
-    def run(self, filepaths):
+    def run(self):
         
         if self.args.cascade:
-            ...
+            self.__run_cascade()
         else:
-            self.__run_standard(filepaths)
+            self.__run_standard()
 
     def __run_cascade(self):
-        tmt_mod, mod, amida, pyroglu = self.__check_ptms()
-        db = self.select_database(decoy=True)
+        db = self.select_database(decoy=True, proteome=True)
+        print(f"--Running first-pass MSFragger on {self.args.mzml} with reference proteome")
+        # self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+        if self.args.hlaPeptidomics:        
+            cmd = self.__hla_command(db=db, files=self.get_mzml(mzml_dir=self.args.mzml))
+        else:
+            cmd = self.__std_command(db=db, files=self.get_mzml(mzml_dir=self.args.mzml))
+        os.system(cmd)
 
+        self.move_pin_files(outdir=self.cascadeFirstPassDir)
+
+        # SECOND PASS on proteogenomics database
+        db = self.select_database(decoy=True, proteome=False)
+        print(f"--Running second-pass MSFragger on {self.cascadeMzmlDir} with proteogenomics database")
+
+        # implement Cascade() to filter mzml here
+        cascade = Cascade(args=self.args)
+        # get scans from reference proteome that passed the first search
+        cascade.get_first_pass_scans()
+        # remove ref proteome scans from mzml files and store them in cascadeMzmlDir
+        cascade.filter_mzml(mzml_dir=self.args.mzml,
+                            outdir=self.cascadeMzmlDir)
+        # run comet on filtered mzML; files will be stored in the same directory
+        if self.args.hlaPeptidomics:        
+            cmd = self.__hla_command(db=db, files=self.get_mzml(mzml_dir=self.args.mzml))
+        else:
+            cmd = self.__std_command(db=db, files=self.get_mzml(mzml_dir=self.args.mzml))
+        os.system(cmd)
+        
+        self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir) 
+        cascade.concatenate_pin_files()
 
     def __run_standard(self):
 
         db = self.select_database(decoy=True)
 
         if self.args.hlaPeptidomics:        
-
+            cmd = self.__hla_command(db=db, files=self.get_mzml(mzml_dir=self.args.mzml))
         else:
+            cmd = self.__std_command(db=db, files=self.get_mzml(mzml_dir=self.args.mzml))
             
         os.system(cmd)
         db_relative = db.split("/")[-1]
-        # files = os.listdir(self.args.mzml)
         self.move_pin_files(mzml_dir=self.args.mzml, outdir=f'{self.outdir}/peptide_search/group/{db_relative}')
 
-        # for file in files:
-        #     if file.endswith(".pin"):
-        #         cmd_mv = (f'mv {self.args.mzml}/{file} '
-        #         f'{self.outdir}/peptide_search/group/{db_relative}/{file.replace(f".pin", "_target.pin")}')
-        #         os.system(cmd_mv)
-        #         # self.exec(cmd_mv)
+
 
     def __hla_command(self, db, files):
+        """
+        return: command to run MSFragger with parameters optimized for HLA peptidomics searches.
+        """
         print(f"--Running MSFragger with parameters optimized for HLA peptidomics searches")
 
         cmd = f'java -Xmx256g -jar {self.toolPaths["MSFragger"]} --output_format pin ' \
         f'--database_name {db} --decoy_prefix rev_ --search_enzyme_name nonspecific ' \
         f'--num_threads {self.threads} --fragment_mass_tolerance 20 --num_enzyme_termini 0 ' \
-        f'--precursor_true_tolerance 20 --digest_mass_range 600.0_1500.0 ' \
+        f'--precursor_true_tolerance 20 --digest_mass_range 600.0_1500.0 --allowed_missed_cleavage_1 0 ' \
         f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
         f'--digest_min_length 8 --digest_max_length 12 {files}'
-        os.system(cmd)
+        # os.system(cmd)
+        return cmd
 
     def __std_command(self, db, files):
         tmt_mod, mod, amida, pyroglu = self.__check_ptms()
