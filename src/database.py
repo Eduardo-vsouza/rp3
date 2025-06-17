@@ -160,3 +160,37 @@ class Database(PipelineStructure):
                     if int(anno) > int(annotations[seq]):
                         annotations[seq] = int(anno)
         return annotations
+
+
+    def split_databases(self):
+
+        def split_db(db, outdir):
+            out_fastas = {0: []}
+            records = SeqIO.parse(db, 'fasta')
+            i = 0
+            split = 0
+            for record in records:
+                i += 1
+                if i == self.args.splitDatabase + 1:
+                    i = 0
+                    split += 1
+                    if split not in out_fastas:
+                        out_fastas[split] = []
+                out_fastas[split].append(f'>{str(record.description)}\n{str(record.seq)}\n')
+            for key in out_fastas:
+                with open(f'{outdir}/db_{key}.fasta', 'w') as out:
+                    out.writelines(out_fastas[key])
+
+        if self.args.splitDatabase is not None:
+            self.check_dirs([self.splitDbDir, self.splitDbProteogenomicsDir, self.splitDbProteomeDir])
+            # print(f"--Splitting databases into {self.args.splitDatabase} parts")
+            print(f"--Splitting reference proteome")
+            db = self.select_database(decoy=True, proteome=True)
+            split_db(db=db, outdir=self.splitDbProteomeDir)
+
+            db = self.select_database(decoy=True, proteome=False)
+            print(f"--Splitting proteogenomics database")
+            split_db(db=db, outdir=self.splitDbProteogenomicsDir)
+
+
+        
