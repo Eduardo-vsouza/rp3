@@ -70,3 +70,15 @@ class Cascade(PipelineStructure):
         filtered_file = os.path.join(outdir, f"{base}_filtered.mzML")
         MzMLFile().store(filtered_file, out_exp)
         print(f"--Wrote filtered mzML via pyOpenMS to {filtered_file}")
+
+
+    def concatenate_pin_files(self):
+        print(f"--Concatenating pin files from first and second pass of cascade search...")
+        cmd = f'cat {self.cascadeFirstPassDir}/*pin {self.cascadeSecondPassDir}/*pin > {self.searchOutdir}/cascade_search_unfixed.pin'
+        os.system(cmd)
+
+        cmd = f"grep -v 'SpecId' {self.searchOutdir}/cascade_search_unfixed.pin > {self.searchOutdir}/cascade_search_filtered.pin"
+        os.system(cmd)
+
+        cmd = f"awk 'FNR<2' {self.searchOutdir}/cascade_search_unfixed.pin | cat - {self.searchOutdir}/cascade_search_filtered.pin > {self.searchOutdir}/cascade_search.pin"
+        os.system(cmd)

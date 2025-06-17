@@ -17,10 +17,18 @@ class MSFragger(BaseSearch):
         tmt_mod, mod, amida, pyroglu = self.__check_ptms()
 
         db = self.select_database(decoy=True)
-        cmd = f'java -Xmx{self.args.memory}g -jar {self.toolPaths["MSFragger"]} --output_format pin ' \
-        f'--database_name {db} --decoy_prefix rev ' \
-        f'--num_threads {self.args.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
-        f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length} {filepaths}'
+        if self.args.hlaPeptidomics:        
+            cmd = f'java -Xmx256g -jar {self.toolPaths["MSFragger"]} --output_format pin ' \
+            f'--database_name {db} --decoy_prefix rev_ --search_enzyme_name nonspecific ' \
+            f'--num_threads {self.threads} --fragment_mass_tolerance 20 --num_enzyme_termini 0 ' \
+            f'--precursor_true_tolerance 20 --digest_mass_range 600.0_1500.0 ' \
+            f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
+            f'--digest_min_length 8 --digest_max_length 12 {files}'
+        else:
+            cmd = f'java -Xmx{self.args.memory}g -jar {self.toolPaths["MSFragger"]} --output_format pin ' \
+            f'--database_name {db} --decoy_prefix rev ' \
+            f'--num_threads {self.args.threads} --fragment_mass_tolerance {self.args.fragment_mass_tolerance} ' \
+            f'--use_all_mods_in_first_search 1 --digest_min_length {self.args.digest_min_length}{tmt_mod}{mod}{amida}{pyroglu} --digest_max_length {self.args.digest_min_length} {filepaths}'
         os.system(cmd)
         db_relative = db.split("/")[-1]
         files = os.listdir(self.args.mzml)
