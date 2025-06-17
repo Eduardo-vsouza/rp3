@@ -3,7 +3,7 @@
 # Everything following the '#' symbol is treated as a comment.
 #
 database_name = /some/path/db.fasta
-decoy_search = 1                       # 0=no (default), 1=internal decoy concatenated, 2=internal decoy separate
+decoy_search = 0                       # 0=no (default), 1=internal decoy concatenated, 2=internal decoy separate
 
 num_threads = 0                        # 0=poll CPU to set num threads; else specify num threads directly (max 128)
 
@@ -42,7 +42,7 @@ search_enzyme2_number = 0              # second enzyme; set to 0 if no second en
 sample_enzyme_number = 0               # specifies the sample enzyme which is possibly different than the one applied to the search;
                                        # used by PeptideProphet to calculate NTT & NMC in pepXML output (default=1 for trypsin).
 num_enzyme_termini = 0                 # 1 (semi-digested), 2 (fully digested, default), 8 C-term unspecific , 9 N-term unspecific
-allowed_missed_cleavage = 2            # maximum value is 5; for enzyme search
+allowed_missed_cleavage = 0            # maximum value is 5; for enzyme search
 
 #
 # Up to 15 variable_mod entries are supported for a standard search; manually add additional entries as needed
