@@ -33,6 +33,9 @@ class PipelineStructure:
         self.repeatsProteogenomicsDBs = f'{self.outdir}/proteogenomics_databases'
         self.refProteome = f'{self.databaseDir}/proteome.fasta'
         self.refProteomeWithDecoy = f'{self.databaseDir}/decoy_proteome.fasta'
+        self.splitDbDir = f'{self.databaseDir}/split_databases'
+        self.splitDbProteomeDir = f'{self.splitDbDir}/proteome'
+        self.splitDbProteogenomicsDir = f'{self.splitDbDir}/proteogenomics'
 
         # folders
         self.resultsDir = f'{self.outdir}/results'
@@ -428,19 +431,36 @@ class PipelineStructure:
             pep = f'{self.postProcessDir}/group/db/peptides_fixed.txt'
         return pep
     
-    def select_database(self, decoy=False, proteome=False):
+    def select_database(self, decoy=False, proteome=False, split_db=False):
         """
         Returns full path to the proper database. It will check if rescored. 
-        If rescored, it will return the rescored database. If not, it will return the original database."""
+        If rescored, it will return the rescored database. If not, it will return the original database.
+        if split_db, it will return a list with the paths to every db in the split databases folder."""
+
+        if split_db:
+            dbs = []
+            if proteome:
+                files = os.listdir(self.splitDbProteomeDir)
+                for file in files:
+                    dbs.append(os.path.join(self.splitDbProteomeDir, file))
+            else:
+                files = os.listdir(self.splitDbProteogenomicsDir)
+                for file in files:
+                    dbs.append(os.path.join(self.splitDbProteogenomicsDir, file))
+            return dbs
+
         if proteome:
+            # if self.args.splitDatabase is not None:
             db = self.refProteome
             if decoy:
                 db = self.refProteomeWithDecoy
             return db
+        
         if os.path.exists(self.rescoredMicroproteinsFasta):
             db = f'{self.rescoreDatabaseDir}/rescore_target_database.fasta'
             if decoy:
                 db = f'{self.rescoreDatabaseDir}/rescore_target_decoy_database.fasta'
+
         else:
             dbs = os.listdir(self.databaseDir)
             db = None
