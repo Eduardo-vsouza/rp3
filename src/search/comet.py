@@ -47,6 +47,7 @@ class Comet(BaseSearch):
 
         # FIRST PASS on reference proteome
         db = self.select_database(decoy=True, proteome=True)
+        self.index_database(db=db)
         print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
         self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
         self.move_pin_files(outdir=self.cascadeFirstPassDir)
@@ -63,10 +64,24 @@ class Comet(BaseSearch):
         cascade.filter_mzml(mzml_dir=self.args.mzml,
                             outdir=self.cascadeMzmlDir)
         # run comet on filtered mzML; files will be stored in the same directory
+        self.index_database(db=db)
         self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern='_filtered.mzML')
 
         self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir) 
         self.concatenate_pin_files()
+
+    def index_database(self, db):
+        """
+        Index the database for comet search.
+        """
+        # db = self.select_database(decoy=True)
+        print(f"--Indexing database {db} for Comet search.")
+        if not os.path.exists(f'{db}.idx'):
+            cmd = f'{self.toolPaths["comet"]} -D{db} -i -P{self.params}'
+            os.system(cmd)
+            print(f"--Database {db} indexed successfully.")
+        else:
+            print(f"--Database {db} already indexed. Skipping indexing step.")
 
     def shower_comets(self, db, mzml_dir, pattern='.mzML'):
         """
@@ -83,7 +98,7 @@ class Comet(BaseSearch):
         if not files:
             print(f"--No mzML files found in {mzml_dir} with pattern {pattern}.")
         else:
-            cmd = f'{self.toolPaths["comet"]} -D{db} -P{self.params}{files}'
+            cmd = f'{self.toolPaths["comet"]} -D{db}.idx -P{self.params}{files}'
             os.system(cmd)
        
     def concatenate_pin_files(self):

@@ -218,10 +218,10 @@ class Pipeline:
         if self.args.conservation:
             from .annotation import Conservation
             conserv = Conservation(args=self.args)
-            # conserv.generate_non_redundant_fasta()
-            # conserv.blast_microproteins()
-            # conserv.parse_blast_results()
-            # conserv.create_evolview_input()
+            conserv.generate_non_redundant_fasta()
+            conserv.blast_microproteins()
+            conserv.parse_blast_results()
+            conserv.create_evolview_input()
             conserv.generate_data_frame()
             # conserv.classify_conservation_by_mapping_groups()
         if self.args.uniprotTable:
