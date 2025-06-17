@@ -81,6 +81,7 @@ class MSFragger(BaseSearch):
         f'--precursor_true_tolerance 20 --digest_mass_range 600.0_1500.0 --allowed_missed_cleavage_1 0 ' \
         f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
         f'--digest_min_length 8 --digest_max_length 12 {files}'
+        print(cmd)
         # os.system(cmd)
         return cmd
 
