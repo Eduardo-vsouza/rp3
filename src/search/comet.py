@@ -75,13 +75,18 @@ class Comet(BaseSearch):
         Index the database for comet search.
         """
         # db = self.select_database(decoy=True)
-        print(f"--Indexing database {db} for Comet search.")
-        if not os.path.exists(f'{db}.idx'):
-            cmd = f'{self.toolPaths["comet"]} -D{db} -i -P{self.params}'
-            os.system(cmd)
-            print(f"--Database {db} indexed successfully.")
+        if not self.args.noCometIndex:
+            print(f"--Indexing database {db} for Comet search.")
+            if not os.path.exists(f'{db}.idx'):
+                cmd = f'{self.toolPaths["comet"]} -D{db} -i -P{self.params}'
+                os.system(cmd)
+                print(f"--Database {db} indexed successfully.")
+            else:
+                print(f"--Database {db} already indexed. Skipping indexing step.")
         else:
-            print(f"--Database {db} already indexed. Skipping indexing step.")
+            print(f"--Skipping database indexing for Comet search as per user request.")
+            # if not os.path.exists(f'{db}.idx'):
+            #     print(f"--Warning: Database {db} is not indexed. This may affect search performance.")
 
     def shower_comets(self, db, mzml_dir, pattern='.mzML'):
         """
@@ -98,7 +103,11 @@ class Comet(BaseSearch):
         if not files:
             print(f"--No mzML files found in {mzml_dir} with pattern {pattern}.")
         else:
-            cmd = f'{self.toolPaths["comet"]} -D{db}.idx -P{self.params}{files}'
+            if not self.args.noCometIndex:
+                database = f'{db}.idx'
+            else:
+                database = db
+            cmd = f'{self.toolPaths["comet"]} -D{database} -P{self.params}{files}'
             os.system(cmd)
        
     def concatenate_pin_files(self):
