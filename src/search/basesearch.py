@@ -56,4 +56,12 @@ class BaseSearch(PipelineStructure):
                 cmd_mv = (f'mv {mzml_dir}/{file} {output_dir}/{file}')
                 os.system(cmd_mv)
 
-        
+    
+    def get_mzml(self, mzml_dir):
+        files = ''
+        mzml = os.listdir(mzml_dir)
+        files = ''
+        for file in mzml:
+            if file.endswith(self.args.fileFormat):
+                files += f' {mzml_dir}/{file}'
+        return files

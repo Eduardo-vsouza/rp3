@@ -68,7 +68,7 @@ class Comet(BaseSearch):
         self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern='_filtered.mzML')
 
         self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir) 
-        self.concatenate_pin_files()
+        cascade.concatenate_pin_files()
 
     def index_database(self, db):
         """
@@ -109,17 +109,7 @@ class Comet(BaseSearch):
                 database = db
             cmd = f'{self.toolPaths["comet"]} -D{database} -P{self.params}{files}'
             os.system(cmd)
-       
-    def concatenate_pin_files(self):
-        print(f"--Concatenating pin files from first and second pass of cascade search...")
-        cmd = f'cat {self.cascadeFirstPassDir}/*pin {self.cascadeSecondPassDir}/*pin > {self.searchOutdir}/cascade_search_unfixed.pin'
-        os.system(cmd)
-
-        cmd = f"grep -v 'SpecId' {self.searchOutdir}/cascade_search_unfixed.pin > {self.searchOutdir}/cascade_search_filtered.pin"
-        os.system(cmd)
-
-        cmd = f"awk 'FNR<2' {self.searchOutdir}/cascade_search_unfixed.pin | cat - {self.searchOutdir}/cascade_search_filtered.pin > {self.searchOutdir}/cascade_search.pin"
-        os.system(cmd)
+    
 
 
     def __define_comet_params(self):
