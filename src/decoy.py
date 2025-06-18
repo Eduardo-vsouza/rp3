@@ -46,17 +46,18 @@ class Decoy(object):
 
         return seqs
 
-    def to_fasta(self, output, pattern='rev', merge=True):
+    def to_fasta(self, output, pattern='rev', contaminants=True, merge=True):
         out = []
         for i in range(len(self.reversed)):
             string = f">{pattern}_{self.entries[i]}\n{self.reversed[i]}\n"
             out.append(string)
-        seqs = self.add_contaminants()
-        for seq in seqs:
-            to_add = seq.replace("B", "")
-            to_add = to_add.replace("X", "")
-            to_add = to_add.replace("Z", "")
-            out.append(to_add)
+        if contaminants:
+            seqs = self.add_contaminants()
+            for seq in seqs:
+                to_add = seq.replace("B", "")
+                to_add = to_add.replace("X", "")
+                to_add = to_add.replace("Z", "")
+                out.append(to_add)
         if merge:
             with open(output, 'w') as fa:
                 fa.writelines(self.target)

@@ -184,7 +184,7 @@ class Database(PipelineStructure):
                     out.writelines(out_fastas[key])
                 decoy = Decoy(db=f'{outdir}/db_{key}.fasta')
                 decoy.reverse_sequences().to_fasta(output=f"{outdir}/db_{key}_decoy.fasta",
-                                                   pattern='rev', merge=True)
+                                                   pattern='rev', merge=True, contaminants=False)
                 cmd = f'rm {outdir}/db_{key}.fasta'
                 os.system(cmd)
 
