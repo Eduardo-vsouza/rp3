@@ -139,6 +139,8 @@ class Database(PipelineStructure):
         for target in targets:
             if os.path.isdir(f'{self.databaseDir}/{target}'):
                 continue
+            if not target.endswith("_target_database.fasta"):
+                continue
             decoy = Decoy(db=f'{self.databaseDir}/{target}')
             # if self.args.cat:
             decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_target_decoy_"),

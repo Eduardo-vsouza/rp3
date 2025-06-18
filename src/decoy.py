@@ -27,7 +27,6 @@ class Decoy(object):
         return seqs, entries
 
     def reverse_sequences(self):
-        """ Reverses the amino acid sequence of a protein, except for the aa in the c-terminal. """
         for seq in self.seqs:
             # cterminus = seq[len(seq)-1]
             # to_reverse = seq[:-1]
