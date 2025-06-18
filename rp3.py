@@ -154,6 +154,10 @@ class RP3:
         self.modeArguments.add_argument("--ssh_folder")
         self.modeArguments.add_argument("--external_database")
         self.modeArguments.add_argument("--skip_translation", action='store_true')
+        self.modeArguments.add_argument("--cascade", action="store_true", help="If performing cascade searches, " \
+        "it will generate a decoy db for the reference proteome as well, as it will be searched alone in the first pass, " \
+        "without the proteogenomics database. See documentation for more details.")
+
         self.modeArguments.add_argument("--cat", action="store_true", help="Generate concatenated target and decoy "
                                                                            "databases.")
         self.modeArguments.add_argument("--uniprotAnnotation", help="table containing uniprot entry, "
@@ -177,8 +181,11 @@ class RP3:
     def __set_search_mode(self):
         self.modeArguments.add_argument("--engine", help="Search engine to be used. Supports msfragger and comet.",
                                         default='msfragger')
+        self.modeArguments.add_argument("--splitDatabase", help="If the database is too large, it will be split into smaller databases with the specified number of sequences. ",
+                                        type=int, default=None)
         self.modeArguments.add_argument("--proteinFDR", action='store_true')
         self.modeArguments.add_argument("--mzml")
+        self.modeArguments.add_argument("--fileFormat", default='mzML')
         self.modeArguments.add_argument("--digest_max_length", default=7)
         self.modeArguments.add_argument("--digest_min_length", default=50)
         self.modeArguments.add_argument("--std_proteomics", action='store_true')
@@ -192,13 +199,15 @@ class RP3:
                                                                            "target and decoy database. Requires the "
                                                                            "databases to be generated using the 'cat' "
                                                                            "flag.")
-        self.modeArguments.add_argument("--searchMode")
+        self.modeArguments.add_argument("--searchMode", default='sep')
         
         self.cometArguments = self.parser.add_argument_group("Comet arguments")
         self.cometArguments.add_argument("--cometParams", help="Path to the comet parameters file. If this is not specified, it will " \
         "use Rp3 standard params file (high-res).")
         self.cometArguments.add_argument("--highRes", help="Sets Comet parameters to perform a high-resolution search.",
                                          action="store_true")
+        self.cometArguments.add_argument("--lowRes", action="store_true")
+        self.cometArguments.add_argument("--noCometIndex", action="store_true")
         
         self.modArguments = self.parser.add_argument_group("Post-translational Modifications (PTMs) arguments")
         self.modArguments.add_argument("--mod")
@@ -222,8 +231,9 @@ class RP3:
         self.modeArguments.add_argument("--hlaPeptidomics", help="Sets parameters in the peptide search that are "
                                                                  "adequate for HLA peptidomics datasets.",
                                         action="store_true")
-        # testing this commit
+
         self.modeArguments.add_argument("--rescore", action="store_true")
+        self.modeArguments.add_argument("--cascade", action="store_true")
         self.modeArguments.add_argument("--msBooster", action="store_true", help="Run MSBooster on "
                                                                                  "MSFragger pin files to predict "
                                                                                  "retention times before running "
@@ -382,6 +392,8 @@ class RP3:
         self.modeArguments.add_argument("--signalP", action="store_true")
         self.modeArguments.add_argument("--signalpMode", default='fast')
         self.modeArguments.add_argument("--organism", default='eukarya')
+        self.modeArguments.add_argument("--spOrigin", default='Homo_sapiens', help="Define the species from which the sequences originate. They will be " \
+        "discarded during homology searching.")
         self.modeArguments.add_argument("--conservation", action='store_true')
         self.modeArguments.add_argument("--blastType", default='tblastn', help="tblastn or diamond")
         self.modeArguments.add_argument("--blast_db", default='/home/microway/blast_databases/archita/homo_pan_mus_rat_equus_ovis_bos_sus_canis_macaca_loxodonta_balaenoptera_danio_drosophila_database')
