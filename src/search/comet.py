@@ -85,7 +85,7 @@ class Comet(BaseSearch):
         # remove ref proteome scans from mzml files and store them in cascadeMzmlDir
         # cascade.filter_mzml(mzml_dir=self.args.mzml,
         #                     outdir=self.cascadeMzmlDir)  # this function is now called within the Cascade() class
-        
+        self.print_row(word="Second-pass Search")
         if self.args.splitDatabase is not None:
             dbs = self.select_database(decoy=True, proteome=False, split_db=True)
             for i, db in enumerate(dbs):

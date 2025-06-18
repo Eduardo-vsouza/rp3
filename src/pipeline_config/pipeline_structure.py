@@ -197,6 +197,12 @@ class PipelineStructure:
         self.wgsRecalDir = f'{self.variantsDir}/recalibration'
         self.wgsMutectDir = f'{self.variantsDir}/mutect2'
 
+        self.__check_ref_proteome()
+
+    def __check_ref_proteome(self):
+        if os.path.exists(self.refProteome):
+            self.args.proteome = self.refProteome
+
     def check_wgs_dirs(self):
         self.check_dirs([self.wgsDir, self.variantsDir, self.wgsTrimmeddir,
                          self.wgsAlignDir, self.wgsSamDir, self.wgsBamDir, self.wgsDeduplicatedBamDir,

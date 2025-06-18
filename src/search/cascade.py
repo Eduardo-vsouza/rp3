@@ -7,6 +7,7 @@ from ..pipeline_config import PipelineStructure
 class Cascade(PipelineStructure):
     def __init__(self, args):
         super().__init__(args)
+        self.print_row(word="Cascade Search")
         self.firstPassScans = {}
         self.zeroPassScans = {}
 
@@ -14,6 +15,7 @@ class Cascade(PipelineStructure):
         """
         This will remove scans coming from contaminant sequences.
         """
+        self.print_row(word="Zero-pass Search")
         self.check_dirs([self.cascadeZeroPassDir, self.cascadeZeroPassMzmlDir])
         self.__retrieve_scans(scan_dict=self.zeroPassScans, pin_dir=self.cascadeZeroPassDir)        
         self.filter_mzml(scan_dict=self.zeroPassScans,
@@ -21,6 +23,7 @@ class Cascade(PipelineStructure):
                          outdir=self.cascadeZeroPassMzmlDir)  # first pass should start here
 
     def get_first_pass_scans(self):
+        self.print_row(word="First-pass Search")
         print("--Gathering first pass scans")
         self.__retrieve_scans(scan_dict=self.firstPassScans, pin_dir=self.cascadeFirstPassDir)
         self.filter_mzml(scan_dict=self.firstPassScans,
