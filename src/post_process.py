@@ -272,11 +272,13 @@ class PercolatorPostProcessing(PipelineStructure):
             if db.endswith("target_database.fasta"):
                 dbss = db
         # print(dbss)
-
+        best_positive = ''
+        if self.args.splitDatabase is not None:
+            best_positive = '--train-best-positive'
         cmd_percolator = f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ ' \
                          f'--post-processing-tdc --results-psms {outdir}/_psm.txt --results-peptides ' \
                          f'{outdir}/_peptides.txt --no-terminate --picked-protein {self.databaseDir}/{dbss} --results-proteins' \
-                         f' {outdir}/proteins.txt --num-threads {self.threads} ' \
+                         f' {outdir}/proteins.txt --num-threads {self.threads} {best_positive} ' \
                          f'-X {outdir}/pout.xml {pin}'
         os.system(cmd_percolator)
 
