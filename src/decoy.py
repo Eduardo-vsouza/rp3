@@ -7,11 +7,11 @@ from Bio import SeqIO
 
 
 class Decoy(object):
-    def __init__(self, db):
+    def __init__(self, db=None):
         self.df = db
         self.target = []
-
-        self.seqs, self.entries = self.__get_seqs()
+        if db is not None:
+            self.seqs, self.entries = self.__get_seqs()
         self.reversed = []
         self.path = sys.path[0]
 

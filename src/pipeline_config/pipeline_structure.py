@@ -33,9 +33,12 @@ class PipelineStructure:
         self.repeatsProteogenomicsDBs = f'{self.outdir}/proteogenomics_databases'
         self.refProteome = f'{self.databaseDir}/proteome.fasta'
         self.refProteomeWithDecoy = f'{self.databaseDir}/decoy_proteome.fasta'
+
+        # split db
         self.splitDbDir = f'{self.databaseDir}/split_databases'
         self.splitDbProteomeDir = f'{self.splitDbDir}/proteome'
         self.splitDbProteogenomicsDir = f'{self.splitDbDir}/proteogenomics'
+        self.fullContaminantsDb = f'{self.splitDbDir}/contaminants.fasta'
 
         # folders
         self.resultsDir = f'{self.outdir}/results'
@@ -71,6 +74,8 @@ class PipelineStructure:
         self.annoPinFile = f'{self.rescoreGroupFDRDir}/anno.pin'
 
         self.cascadeDir = f'{self.outdir}/cascade'
+        self.cascadeZeroPassDir = f'{self.cascadeDir}/zero_pass'
+        self.cascadeZeroPassMzmlDir = f'{self.cascadeZeroPassDir}/mzml_files'
         self.cascadeFirstPassDir = f'{self.cascadeDir}/first_pass'
         self.cascadeSecondPassDir = f'{self.cascadeDir}/second_pass'
         self.cascadeMzmlDir = f'{self.cascadeDir}/mzml_files'

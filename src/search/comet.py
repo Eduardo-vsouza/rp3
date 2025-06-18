@@ -44,32 +44,47 @@ class Comet(BaseSearch):
         Private function
         To be called by self.run()
         """
+        self.check_dirs([self.cascadeZeroPassDir, self.cascadeZeroPassMzmlDir])
+        # ZERO PASS to remove contaminant sequences
+        db = self.fullContaminantsDb
+        print(f"--Running Comet on {self.args.mzml} with contaminant database {db}")
+        self.index_database(db=db)
+        self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+        self.move_pin_files(outdir=self.cascadeZeroPassDir)  # copies from self.args.mzml by default
+        
+        cascade = Cascade(args=self.args)
+        cascade.get_zero_pass_scans()  # remove contaminant scans from self.args.mzml
+        
 
-        # # FIRST PASS on reference proteome
-        # if self.args.splitDatabase is not None:
-        #     dbs = self.select_database(decoy=True, proteome=True, split_db=True)
-        #     for i, db in enumerate(dbs):
-        #         print(f"--Db {i}/{len(dbs)}")
 
-        #         self.index_database(db=db)
-        #         print(f"--Running first-pass Comet on {self.args.mzml} with {db}")
-        #         self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
-        #         self.move_pin_files(outdir=self.cascadeFirstPassDir, split_i=i)
+        # FIRST PASS on reference proteome
+        if self.args.splitDatabase is not None:
+            dbs = self.select_database(decoy=True, proteome=True, split_db=True)
+            for i, db in enumerate(dbs):
+                print(f"--Db {i}/{len(dbs)}")
 
-        # else:
-        #     db = self.select_database(decoy=True, proteome=True)
-        #     self.index_database(db=db)
-        #     print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
-        #     self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
-        #     self.move_pin_files(outdir=self.cascadeFirstPassDir)
+                self.index_database(db=db)
+                print(f"--Running first-pass Comet on {self.cascadeZeroPassMzmlDir} with {db}")
+                self.shower_comets(db=db, mzml_dir=self.cascadeZeroPassMzmlDir, pattern=self.args.fileFormat)
+                self.move_pin_files(mzml_dir=self.cascadeZeroPassMzmlDir,  # move from zeroPass
+                                    outdir=self.cascadeFirstPassDir, split_i=i)  
+
+        else:
+            db = self.select_database(decoy=True, proteome=True)
+            self.index_database(db=db)
+            print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
+            self.shower_comets(db=db, mzml_dir=self.cascadeZeroPassMzmlDir,
+                                pattern=self.args.fileFormat)
+            self.move_pin_files(mzml_dir=self.cascadeZeroPassMzmlDir,
+                                outdir=self.cascadeFirstPassDir)
 
         # SECOND PASS on proteogenomics database
-        cascade = Cascade(args=self.args)
+        # cascade = Cascade(args=self.args)
         # get scans from reference proteome that passed the first search
         cascade.get_first_pass_scans()
         # remove ref proteome scans from mzml files and store them in cascadeMzmlDir
-        cascade.filter_mzml(mzml_dir=self.args.mzml,
-                            outdir=self.cascadeMzmlDir)
+        # cascade.filter_mzml(mzml_dir=self.args.mzml,
+        #                     outdir=self.cascadeMzmlDir)  # this function is now called within the Cascade() class
         
         if self.args.splitDatabase is not None:
             dbs = self.select_database(decoy=True, proteome=False, split_db=True)
