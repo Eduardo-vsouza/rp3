@@ -46,28 +46,52 @@ class Comet(BaseSearch):
         """
 
         # FIRST PASS on reference proteome
-        db = self.select_database(decoy=True, proteome=True)
-        self.index_database(db=db)
-        print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
-        self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
-        self.move_pin_files(outdir=self.cascadeFirstPassDir)
+        if self.args.splitDatabase is not None:
+            dbs = self.select_database(decoy=True, proteome=True, split_db=True)
+            for i, db in enumerate(dbs):
+                print(f"--Db {i}/{len(dbs)}")
+
+                self.index_database(db=db)
+                print(f"--Running first-pass Comet on {self.args.mzml} with {db}")
+                self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+                self.move_pin_files(outdir=self.cascadeFirstPassDir, split_i=i)
+
+        else:
+            db = self.select_database(decoy=True, proteome=True)
+            self.index_database(db=db)
+            print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
+            self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+            self.move_pin_files(outdir=self.cascadeFirstPassDir)
 
         # SECOND PASS on proteogenomics database
-        db = self.select_database(decoy=True, proteome=False)
-        print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with proteogenomics database")
-
-        # implement Cascade() to filter mzml here
         cascade = Cascade(args=self.args)
         # get scans from reference proteome that passed the first search
         cascade.get_first_pass_scans()
         # remove ref proteome scans from mzml files and store them in cascadeMzmlDir
         cascade.filter_mzml(mzml_dir=self.args.mzml,
                             outdir=self.cascadeMzmlDir)
-        # run comet on filtered mzML; files will be stored in the same directory
-        self.index_database(db=db)
-        self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern='_filtered.mzML')
+        
+        if self.args.splitDatabase is not None:
+            dbs = self.select_database(decoy=True, proteome=False, split_db=True)
+            for i, db in enumerate(dbs):
+                print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with {db}")
+                print(f"--Db {i}/{len(dbs)}")
+                self.index_database(db=db)
+                self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+                self.move_pin_files(outdir=self.cascadeFirstPassDir, split_i=i)
 
-        self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir) 
+        else:
+            db = self.select_database(decoy=True, proteome=False)
+            self.index_database(db=db)
+            self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern='_filtered.mzML')
+            self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir) 
+
+            print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with proteogenomics database")
+
+        # implement Cascade() to filter mzml here
+
+        # run comet on filtered mzML; files will be stored in the same directory
+
         cascade.concatenate_pin_files()
 
     def index_database(self, db):
