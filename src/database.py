@@ -138,13 +138,13 @@ class Database(PipelineStructure):
         targets = os.listdir(self.databaseDir)
         for target in targets:
             decoy = Decoy(db=f'{self.databaseDir}/{target}')
-            if self.args.cat:
-                decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_target_decoy_"),
-                                                   pattern='rev', merge=True)
+            # if self.args.cat:
+            decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_target_decoy_"),
+                                                pattern='rev', merge=True)
             # decoy.add_contaminants()
-            else:
-                decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_decoy_"),
-                                                   pattern='rev', merge=False)
+            # else:
+            #     decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_decoy_"),
+                                                #    pattern='rev', merge=False)
         print(f"--Finished generating databases. You can safely ignore the numpy warning.")
         self.print_row()
 
@@ -180,15 +180,20 @@ class Database(PipelineStructure):
             for key in out_fastas:
                 with open(f'{outdir}/db_{key}.fasta', 'w') as out:
                     out.writelines(out_fastas[key])
+                decoy = Decoy(db=f'{outdir}/db_{key}.fasta')
+                decoy.reverse_sequences().to_fasta(output=f"{outdir}/db_{key}_decoy.fasta",
+                                                   pattern='rev', merge=True)
+                cmd = f'rm {outdir}/db_{key}.fasta'
+                os.system(cmd)
 
         if self.args.splitDatabase is not None:
             self.check_dirs([self.splitDbDir, self.splitDbProteogenomicsDir, self.splitDbProteomeDir])
             # print(f"--Splitting databases into {self.args.splitDatabase} parts")
             print(f"--Splitting reference proteome")
-            db = self.select_database(decoy=True, proteome=True)
+            db = self.select_database(decoy=False, proteome=True)
             split_db(db=db, outdir=self.splitDbProteomeDir)
 
-            db = self.select_database(decoy=True, proteome=False)
+            db = self.select_database(decoy=False, proteome=False)
             print(f"--Splitting proteogenomics database")
             split_db(db=db, outdir=self.splitDbProteogenomicsDir)
 

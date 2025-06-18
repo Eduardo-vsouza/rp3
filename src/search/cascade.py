@@ -74,11 +74,11 @@ class Cascade(PipelineStructure):
 
     def concatenate_pin_files(self):
         print(f"--Concatenating pin files from first and second pass of cascade search...")
-        cmd = f'cat {self.cascadeFirstPassDir}/*pin {self.cascadeSecondPassDir}/*pin > {self.searchOutdir}/cascade_search_unfixed.pin'
+        cmd = f'cat {self.cascadeFirstPassDir}/*pin {self.cascadeSecondPassDir}/*pin > {self.searchDir}/cascade_search_unfixed.pin'
         os.system(cmd)
 
-        cmd = f"grep -v 'SpecId' {self.searchOutdir}/cascade_search_unfixed.pin > {self.searchOutdir}/cascade_search_filtered.pin"
+        cmd = f"grep -v 'SpecId' {self.searchDir}/cascade_search_unfixed.pin > {self.searchDir}/cascade_search_filtered.pin"
         os.system(cmd)
 
-        cmd = f"awk 'FNR<2' {self.searchOutdir}/cascade_search_unfixed.pin | cat - {self.searchOutdir}/cascade_search_filtered.pin > {self.searchOutdir}/cascade_search.pin"
+        cmd = f"awk 'FNR<2' {self.searchDir}/cascade_search_unfixed.pin | cat - {self.searchDir}/cascade_search_filtered.pin > {self.searchDir}/cascade_search.pin"
         os.system(cmd)

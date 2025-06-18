@@ -442,11 +442,13 @@ class PipelineStructure:
             if proteome:
                 files = os.listdir(self.splitDbProteomeDir)
                 for file in files:
-                    dbs.append(os.path.join(self.splitDbProteomeDir, file))
+                    if not file.endswith(".idx"):
+                        dbs.append(os.path.join(self.splitDbProteomeDir, file))
             else:
                 files = os.listdir(self.splitDbProteogenomicsDir)
                 for file in files:
-                    dbs.append(os.path.join(self.splitDbProteogenomicsDir, file))
+                    if not file.endswith(".idx"):
+                        dbs.append(os.path.join(self.splitDbProteogenomicsDir, file))
             return dbs
 
         if proteome:

@@ -45,23 +45,23 @@ class Comet(BaseSearch):
         To be called by self.run()
         """
 
-        # FIRST PASS on reference proteome
-        if self.args.splitDatabase is not None:
-            dbs = self.select_database(decoy=True, proteome=True, split_db=True)
-            for i, db in enumerate(dbs):
-                print(f"--Db {i}/{len(dbs)}")
+        # # FIRST PASS on reference proteome
+        # if self.args.splitDatabase is not None:
+        #     dbs = self.select_database(decoy=True, proteome=True, split_db=True)
+        #     for i, db in enumerate(dbs):
+        #         print(f"--Db {i}/{len(dbs)}")
 
-                self.index_database(db=db)
-                print(f"--Running first-pass Comet on {self.args.mzml} with {db}")
-                self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
-                self.move_pin_files(outdir=self.cascadeFirstPassDir, split_i=i)
+        #         self.index_database(db=db)
+        #         print(f"--Running first-pass Comet on {self.args.mzml} with {db}")
+        #         self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+        #         self.move_pin_files(outdir=self.cascadeFirstPassDir, split_i=i)
 
-        else:
-            db = self.select_database(decoy=True, proteome=True)
-            self.index_database(db=db)
-            print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
-            self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
-            self.move_pin_files(outdir=self.cascadeFirstPassDir)
+        # else:
+        #     db = self.select_database(decoy=True, proteome=True)
+        #     self.index_database(db=db)
+        #     print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
+        #     self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
+        #     self.move_pin_files(outdir=self.cascadeFirstPassDir)
 
         # SECOND PASS on proteogenomics database
         cascade = Cascade(args=self.args)
@@ -77,8 +77,8 @@ class Comet(BaseSearch):
                 print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with {db}")
                 print(f"--Db {i}/{len(dbs)}")
                 self.index_database(db=db)
-                self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
-                self.move_pin_files(outdir=self.cascadeFirstPassDir, split_i=i)
+                self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern=self.args.fileFormat)
+                self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir, split_i=i)
 
         else:
             db = self.select_database(decoy=True, proteome=False)
@@ -101,7 +101,7 @@ class Comet(BaseSearch):
         # db = self.select_database(decoy=True)
         if not self.args.noCometIndex:
             print(f"--Indexing database {db} for Comet search.")
-            if not os.path.exists(f'{db}.idx'):
+            if not os.path.exists(f'{db}.idx') and not db.endswith(".idx"):
                 cmd = f'{self.toolPaths["comet"]} -D{db} -i -P{self.params}'
                 os.system(cmd)
                 print(f"--Database {db} indexed successfully.")
@@ -127,12 +127,13 @@ class Comet(BaseSearch):
         if not files:
             print(f"--No mzML files found in {mzml_dir} with pattern {pattern}.")
         else:
-            if not self.args.noCometIndex:
-                database = f'{db}.idx'
-            else:
-                database = db
-            cmd = f'{self.toolPaths["comet"]} -D{database} -P{self.params}{files}'
-            os.system(cmd)
+            if not db.endswith(".idx"):
+                if not self.args.noCometIndex:
+                    database = f'{db}.idx'
+                else:
+                    database = db
+                cmd = f'{self.toolPaths["comet"]} -D{database} -P{self.params}{files}'
+                os.system(cmd)
     
 
 

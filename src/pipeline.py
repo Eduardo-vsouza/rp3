@@ -65,6 +65,7 @@ class Pipeline:
         database.append_reference()
         database.save_target_dbs()
         database.create_decoy_dbs()
+        database.split_databases()
         self.parameters.add_mode_parameters(database, self.args)
         self.parameters.update_params_file()
 
