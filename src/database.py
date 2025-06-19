@@ -36,14 +36,28 @@ class Database(PipelineStructure):
         self.__save_ref_proteome()
 
     def __save_ref_proteome(self):
-        cmd = f'cp {self.args.proteome} {self.refProteome}'
-        os.system(cmd)
-        print(f"--Reference proteome saved to {self.databaseDir}/proteome.fasta")
+        self.print_state(message='Saving reference proteome to the database directory', level=1, color='yellow')
+        ref_proteome = []
+        records = SeqIO.parse(self.args.proteome, 'fasta')
+        for record in records:
+            seq = str(record.seq)
+            entry = str(record.description).replace(" ", "_").replace(",", "_")
+            ref_proteome.append(f'>{entry}\n{seq}\n')
+        with open(self.refProteome, 'w') as out:
+            out.writelines(ref_proteome)
+        # print(f"--Reference proteome saved to {self.databaseDir}/proteome.fasta")
+        self.print_state(message=f"Reference proteome saved to {self.refProteome}", level=2,
+                         color='green')
+
         if self.args.cascade:
-            print(f"--Cascade mode detected. Generating decoy sequences for the reference proteome.")
+            # print(f"--Cascade mode detected. Generating decoy sequences for the reference proteome.")
+            self.print_state(message='Cascade mode detected. Generating decoy sequences for the reference proteome.',
+                             level=1, color='yellow')
             decoy = Decoy(db=self.refProteome)
             decoy.reverse_sequences().to_fasta(output=f'{self.refProteomeWithDecoy}',
                                                 pattern='rev', merge=True)
+            self.print_state(message=f"Reference proteome decoy sequences saved to {self.refProteomeWithDecoy} for using in Cascade mode",
+                             color='green', level=2)
 
     def __check_dir(self):
         if not os.path.exists(self.databaseDir):
@@ -150,7 +164,6 @@ class Database(PipelineStructure):
             #     decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_decoy_"),
                                                 #    pattern='rev', merge=False)
         print(f"--Finished generating databases. You can safely ignore the numpy warning.")
-        self.print_row()
 
     def __get_annotation_levels(self):
         annotations = {}
@@ -191,6 +204,7 @@ class Database(PipelineStructure):
                 os.system(cmd)
 
         if self.args.splitDatabase is not None:
+            self.print_row(word="database splitting", character='-')
             self.check_dirs([self.splitDbDir, self.splitDbProteogenomicsDir, self.splitDbProteomeDir])
             # print(f"--Splitting databases into {self.args.splitDatabase} parts")
             print(f"--Splitting reference proteome")
@@ -203,6 +217,7 @@ class Database(PipelineStructure):
 
             conta = Decoy()
             conta.to_fasta(self.fullContaminantsDb)
+        self.print_row(word="Finished")
 
 
         

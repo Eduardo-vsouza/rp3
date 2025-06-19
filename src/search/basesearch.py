@@ -8,6 +8,8 @@ class BaseSearch(PipelineStructure):
         super().__init__(args)
     
         self.args = args
+        self.print_row(word="Search", color='blue')
+        self.print_state(message=f"Engine: {self.args.engine}", color='blue', marker='')
         self.mod = self.args.mod
         self.quantify = self.args.quantify
         self.mzMLFolder = self.args.mzml

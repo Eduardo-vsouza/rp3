@@ -68,7 +68,7 @@ class Pipeline:
         database.split_databases()
         self.parameters.add_mode_parameters(database, self.args)
         self.parameters.update_params_file()
-
+        
 
     def search_mass_spec(self):
         self.postMSMode = self.args.postms_mode

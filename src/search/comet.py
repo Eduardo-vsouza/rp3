@@ -14,6 +14,7 @@ class Comet(BaseSearch):
         outdir: should be the search dir. 
         """
         super().__init__(args)
+
         self.cometDir = f'{sys.path[0]}/dependencies/comet'
         self.searchOutdir = outdir
 

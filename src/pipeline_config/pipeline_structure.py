@@ -537,10 +537,19 @@ class PipelineStructure:
             run = True
         return run
 
-    def print_row(self, n=80, word='', character='='):
+    def print_row(self, n=80, word='', character='=', color='default'):
         char_n = (n-(len(word))) / 2
         first = character * int(char_n)
         row = f'{first}{word}{first}'
+        colors = {
+            'default': '',
+            'red': '\033[91m',
+            'green': '\033[92m',
+            'yellow': '\033[93m',
+            'blue': '\033[94m'
+        }
+        if color != 'default':
+            row = f"{colors.get(color, '')}{row}\033[0m"
         print(row)
 
     def get_microprotein_mapping_groups(self):
@@ -561,6 +570,25 @@ class PipelineStructure:
             for group, file in zip(groups, files):
                 groups_dict[file.replace(".mzML", "")] = group
         return groups_dict
+    
+    def print_state(self, message, level=1, color='default', marker='-'):
+        markers = {1: marker*1, 
+                   2: marker*2,
+                   3: marker*3,
+                   4: marker*4,
+            }
+        colors = {
+            'green': '\033[92m',
+            'red': '\033[91m',
+            'yellow': '\033[93m',
+            'blue': '\033[94m',
+        }
+        if color == 'default':
+            message = f'{markers[level]} {message}'
+        else:
+            message = f'{colors[color]}{markers[level]} {message}\033[0m'
+        print(message)
+
 
 
 class Content:
