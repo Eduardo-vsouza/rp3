@@ -80,35 +80,44 @@ class Comet(BaseSearch):
                                 outdir=self.cascadeFirstPassDir)
 
         # SECOND PASS on proteogenomics database
-        # cascade = Cascade(args=self.args)
         # get scans from reference proteome that passed the first search
         cascade.get_first_pass_scans()
-        # remove ref proteome scans from mzml files and store them in cascadeMzmlDir
-        # cascade.filter_mzml(mzml_dir=self.args.mzml,
-        #                     outdir=self.cascadeMzmlDir)  # this function is now called within the Cascade() class
-        self.print_row(word="Second-pass Search")
+        self.print_row(word="Second-pass Search", color='blue')
         if self.args.splitDatabase is not None:
             dbs = self.select_database(decoy=True, proteome=False, split_db=True)
             for i, db in enumerate(dbs):
-                print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with {db}")
-                print(f"--Db {i}/{len(dbs)}")
+                self.print_state(message=f"Running second-pass Comet on {self.cascadeMzmlDir} with {db}",
+                                 color='yellow')
+                # print(f"")
+                self.print_state(message=f"Db {i}/{len(dbs)}", color='yellow')
+                # print(f"--Db {i}/{len(dbs)}")
                 self.index_database(db=db)
                 self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern=self.args.fileFormat)
                 self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir, split_i=i)
-
+                self.print_state(message=f"Second-pass Comet completed for {db}", color='green')
         else:
+            self.print_state(message=f"Running second-pass Comet on {self.cascadeMzmlDir} with {db}",
+                    color='yellow')
             db = self.select_database(decoy=True, proteome=False)
             self.index_database(db=db)
             self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern='_filtered.mzML')
             self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir) 
+            self.print_state(message=f"Second-pass Comet completed for {db}", color='green')
 
-            print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with proteogenomics database")
+            # print(f"--Running second-pass Comet on {self.cascadeMzmlDir} with proteogenomics database")
 
-        # implement Cascade() to filter mzml here
 
-        # run comet on filtered mzML; files will be stored in the same directory
 
         cascade.concatenate_pin_files()
+
+        if not self.args.keepIntermediate:
+            self.print_state(message=f"Removing intermediate mzML files...", color='yellow')
+            cmd = f'rm {self.cascadeMzmlDir}/*.mzML'
+            os.system(cmd)
+
+            cmd = f'rm {self.cascadeZeroPassMzmlDir}/*.mzML'
+            os.system(cmd)
+            self.print_state(message=f"Intermediate mzML files removed.", color='green')
 
     def index_database(self, db):
         """
@@ -116,15 +125,19 @@ class Comet(BaseSearch):
         """
         # db = self.select_database(decoy=True)
         if not self.args.noCometIndex:
-            print(f"--Indexing database {db} for Comet search.")
+            self.print_state(message=f"Indexing database {db} for Comet search.", color='yellow')
+            # print(f"--Indexing database {db} for Comet search.")
             if not os.path.exists(f'{db}.idx') and not db.endswith(".idx"):
                 cmd = f'{self.toolPaths["comet"]} -D{db} -i -P{self.params}'
                 os.system(cmd)
-                print(f"--Database {db} indexed successfully.")
+                self.print_state(message=f"Database {db} indexed successfully.", color='green')
+                # print(f"--Database {db} indexed successfully.")
             else:
-                print(f"--Database {db} already indexed. Skipping indexing step.")
+                self.print_state(message=f"Database {db} already indexed. Skipping indexing step.", color='red')
+                # print(f"--Database {db} already indexed. Skipping indexing step.")
         else:
-            print(f"--Skipping database indexing for Comet search as per user request.")
+            self.print_state(message=f"Skipping database indexing for Comet search as per user request.", color='red')
+            # print(f"--Skipping database indexing for Comet search as per user request.")
             # if not os.path.exists(f'{db}.idx'):
             #     print(f"--Warning: Database {db} is not indexed. This may affect search performance.")
 
@@ -132,7 +145,8 @@ class Comet(BaseSearch):
         """
         Iterate comet on the provided folder with mzml files.
         """
-        print(f"--Running Comet on {mzml_dir} with database {db}")
+        self.print_state(message=f"Running Comet on {mzml_dir} with database {db}", color='blue')
+        # print(f"--Running Comet on {mzml_dir} with database {db}")
         mzml = os.listdir(mzml_dir)
         files = ''
         for file in mzml:
@@ -141,7 +155,8 @@ class Comet(BaseSearch):
                 # if run:
                 files += f' {mzml_dir}/{file}'
         if not files:
-            print(f"--No mzML files found in {mzml_dir} with pattern {pattern}.")
+            self.print_state(message=f"No mzML files found in {mzml_dir} with pattern {pattern}.", color='red')
+            # print(f"--No mzML files found in {mzml_dir} with pattern {pattern}.")
         else:
             if not db.endswith(".idx"):
                 if not self.args.noCometIndex:
@@ -150,6 +165,7 @@ class Comet(BaseSearch):
                     database = db
                 cmd = f'{self.toolPaths["comet"]} -D{database} -P{self.params}{files}'
                 os.system(cmd)
+                self.print_state(message=f"Comet search completed for {len(mzml)} files.", color='green')
     
 
 

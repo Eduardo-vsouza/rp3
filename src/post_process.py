@@ -275,9 +275,13 @@ class PercolatorPostProcessing(PipelineStructure):
         best_positive = ''
         if self.args.splitDatabase is not None:
             best_positive = '--train-best-positive'
+        enzyme = self.args.enzyme
+        
+        if self.args.hlaPeptidomics:
+            enzyme = 'no_enzyme'
         cmd_percolator = f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ ' \
                          f'--post-processing-tdc --results-psms {outdir}/_psm.txt --results-peptides ' \
-                         f'{outdir}/_peptides.txt --no-terminate --picked-protein {self.databaseDir}/{dbss} --results-proteins' \
+                         f'{outdir}/_peptides.txt --protein-enzyme {enzyme} --no-terminate --picked-protein {self.databaseDir}/{dbss} --results-proteins' \
                          f' {outdir}/proteins.txt --num-threads {self.threads} {best_positive} ' \
                          f'-X {outdir}/pout.xml {pin}'
         os.system(cmd_percolator)

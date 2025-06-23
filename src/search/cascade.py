@@ -41,6 +41,16 @@ class Cascade(PipelineStructure):
         for file in files:
             if not file.endswith(".pin"):
                 continue
+            try:
+                full_pin_path = os.path.join(pin_dir, file)
+                if os.stat(full_pin_path).st_size == 0:
+                    self.print_state(message=f"Skipping empty pin file: {file}", color='red')
+                    # print(f"--Skipping empty pin file: {file}")
+                    continue
+            except Exception as e:
+                self.print_state(message=f"Error checking pin file {file}: {e}", color='red')
+                # print(f"--Error checking pin file {file}: {e}")
+                continue
             df = pd.read_csv(
                 os.path.join(pin_dir, file),
                 sep='\t',
