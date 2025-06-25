@@ -106,12 +106,15 @@ class Pipeline:
             postms = PercolatorPostProcessing(args=self.args)
 
             if not self.args.recalculateFDR:  # this arg will re-do the post-processing after the percolator step
-                if self.postMSMode == 'sep':
-                    postms.percolate_single()
+                if self.args.cascadeFDRmethod == 'sep':
+                    postms.percolate_cascade()
                 else:
-                    postms.merge_all_pins()
-                     
-                    postms.percolate_all_pins()
+                    if self.postMSMode == 'sep':
+                        postms.percolate_single()
+                    else:
+                        postms.merge_all_pins()
+                        
+                        postms.percolate_all_pins()
 
             postms.fix_multiple_columns()
             postms.remove_annotated()

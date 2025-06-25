@@ -253,13 +253,7 @@ class PercolatorPostProcessing(PipelineStructure):
         os.system(cmd)
         cmd = f'cat {self.cascadePostmsDir}/*_proteins.txt > {group_outdir}/proteins.txt'
         os.system(cmd)
-
-        # cmd = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
-        #         f'--post-processing-tdc --results-psms {group_outdir}/{pin}_psm.txt --results-peptides '
-        #         f'{group_outdir}/{pin}_peptides.txt --no-terminate --num-threads {self.args.threads} '
-        #         f'-X {group_outdir}/{pin}_pout.xml --picked-protein {self.databaseDir}/{dbss} '
-        #         f'--results-proteins {group_outdir}/{pin}_proteins.txt '
-        #         f'{self.searchDir}/group/{db}/{pin}')
+        
 
     def percolate_single(self):
         databases = os.listdir(self.databaseDir)
