@@ -107,13 +107,39 @@ class Cascade(PipelineStructure):
         print(f"--Wrote filtered mzML via pyOpenMS to {filtered_file}")
 
 
-    def concatenate_pin_files(self):
-        print(f"--Concatenating pin files from first and second pass of cascade search...")
-        cmd = f'cat {self.cascadeFirstPassDir}/*pin {self.cascadeSecondPassDir}/*pin > {self.searchDir}/cascade_search_unfixed.pin'
-        os.system(cmd)
+    def concatenate_pin_files(self, fdr='sep'):
+        """
+        fdr: sep or cat; sep will concatenate pin files from the first search to be assessed separated from the second pass. 
+        Will do the same for the second pass.
+        cat will concatenate both the first and second pass pin files and to run Percolator on them together.
+        """
+        if fdr == 'cat':
+            print(f"--Concatenating pin files from first and second pass of cascade search...")
+            cmd = f'cat {self.cascadeFirstPassDir}/*pin {self.cascadeSecondPassDir}/*pin > {self.searchDir}/cascade_search_unfixed.pin'
+            os.system(cmd)
 
-        cmd = f"grep -v 'SpecId' {self.searchDir}/cascade_search_unfixed.pin > {self.searchDir}/cascade_search_filtered.pin"
-        os.system(cmd)
+            cmd = f"grep -v 'SpecId' {self.searchDir}/cascade_search_unfixed.pin > {self.searchDir}/cascade_search_filtered.pin"
+            os.system(cmd)
 
-        cmd = f"awk 'FNR<2' {self.searchDir}/cascade_search_unfixed.pin | cat - {self.searchDir}/cascade_search_filtered.pin > {self.searchDir}/cascade_search.pin"
-        os.system(cmd)
+            cmd = f"awk 'FNR<2' {self.searchDir}/cascade_search_unfixed.pin | cat - {self.searchDir}/cascade_search_filtered.pin > {self.searchDir}/cascade_search.pin"
+            os.system(cmd)
+        elif fdr == 'sep':
+            print(f"--Concatenating pin files from first pass of cascade search...")
+            cmd = f'cat {self.cascadeFirstPassDir}/*pin > {self.searchDir}/cascade_first_pass.pin'
+            os.system(cmd)
+
+            cmd = f"grep -v 'SpecId' {self.searchDir}/cascade_first_pass.pin > {self.searchDir}/cascade_first_pass_filtered.pin"
+            os.system(cmd)
+
+            cmd = f"awk 'FNR<2' {self.searchDir}/cascade_first_pass.pin | cat - {self.searchDir}/cascade_first_pass_filtered.pin > {self.searchDir}/cascade_first_pass_final.pin"
+            os.system(cmd)
+
+            print(f"--Concatenating pin files from second pass of cascade search...")
+            cmd = f'cat {self.cascadeSecondPassDir}/*pin > {self.searchDir}/cascade_second_pass.pin'
+            os.system(cmd)
+
+            cmd = f"grep -v 'SpecId' {self.searchDir}/cascade_second_pass.pin > {self.searchDir}/cascade_second_pass_filtered.pin"
+            os.system(cmd)
+
+            cmd = f"awk 'FNR<2' {self.searchDir}/cascade_second_pass.pin | cat - {self.searchDir}/cascade_second_pass_filtered.pin > {self.searchDir}/cascade_second_pass_final.pin"
+            os.system(cmd)

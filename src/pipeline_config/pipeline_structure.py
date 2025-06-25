@@ -79,6 +79,8 @@ class PipelineStructure:
         self.cascadeFirstPassDir = f'{self.cascadeDir}/first_pass'
         self.cascadeSecondPassDir = f'{self.cascadeDir}/second_pass'
         self.cascadeMzmlDir = f'{self.cascadeDir}/mzml_files'
+        self.cascadePostmsDir = f'{self.cascadeDir}/postprocessing'
+        
 
         # counts directories
         self.countsDir = f'{self.outdir}/counts'

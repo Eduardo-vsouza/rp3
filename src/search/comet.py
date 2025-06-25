@@ -108,7 +108,7 @@ class Comet(BaseSearch):
 
 
 
-        cascade.concatenate_pin_files()
+        cascade.concatenate_pin_files(fdr=self.args.cascadeFDRmethod)
 
         if not self.args.keepIntermediate:
             self.print_state(message=f"Removing intermediate mzML files...", color='yellow')
