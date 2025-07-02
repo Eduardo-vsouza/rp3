@@ -154,6 +154,8 @@ class RP3:
         self.modeArguments.add_argument("--ssh_folder")
         self.modeArguments.add_argument("--external_database")
         self.modeArguments.add_argument("--skip_translation", action='store_true')
+        self.modeArguments.add_argument("--splitDatabase", help="If the database is too large, it will be split into smaller databases with the specified number of sequences. ",
+                                    type=int, default=None)
         self.modeArguments.add_argument("--cascade", action="store_true", help="If performing cascade searches, " \
         "it will generate a decoy db for the reference proteome as well, as it will be searched alone in the first pass, " \
         "without the proteogenomics database. See documentation for more details.")
@@ -200,6 +202,9 @@ class RP3:
                                                                            "databases to be generated using the 'cat' "
                                                                            "flag.")
         self.modeArguments.add_argument("--searchMode", default='sep')
+        self.modeArguments.add_argument("--keepIntermediate", action="store_true",
+                                        help="Turn this flag on if wishing to keep intermediate files, such as " \
+                                        "filtered mzML files during cascade mode. This will greatly increase disk spage usage")
         
         self.cometArguments = self.parser.add_argument_group("Comet arguments")
         self.cometArguments.add_argument("--cometParams", help="Path to the comet parameters file. If this is not specified, it will " \
@@ -234,6 +239,7 @@ class RP3:
 
         self.modeArguments.add_argument("--rescore", action="store_true")
         self.modeArguments.add_argument("--cascade", action="store_true")
+        self.modeArguments.add_argument("--cascadeFDRmethod", default='cat')
         self.modeArguments.add_argument("--msBooster", action="store_true", help="Run MSBooster on "
                                                                                  "MSFragger pin files to predict "
                                                                                  "retention times before running "
@@ -249,6 +255,7 @@ class RP3:
         "the peptide will be assigned as unique only if it's assigned to a single protein.", default='razor') 
         self.modeArguments.add_argument("--smorfUTPs", action="store_true")
         self.modeArguments.add_argument("--proteome", help="required if rescoring")
+        self.modeArguments.add_argument("--enzyme", default='trypsin')
         self.modeArguments.add_argument("--minReplicates", help="minimum number of replicates a peptide appear in "
                                                                 "for it to be considered. It considers all "
                                                                 "modifications for a peptide as the same peptide.",
@@ -718,13 +725,27 @@ class RP3:
             pipe.enter_rphub()
 
 if __name__ == '__main__':
-    print(" ____       _____\n"
-          "|  _ \ _ __|___ /\n"
-          "| |_) | '_ \ |_ \\\n"
-          "|  _ <| |_) |__) |\n"
-          "|_| \_\ .__/____/\n"
-          "      |_|  ")
-    print("RP3 v1.1.0")
+    RED   = "\033[31m"
+    BLUE  = "\033[34m"
+    RESET = "\033[0m"
+    # print(" ____       _____\n"
+    #       "|  _ \ _ __|___ /\n"
+    #       "| |_) | '_ \ |_ \\\n"
+    #       "|  _ <| |_) |__) |\n"
+    #       "|_| \_\ .__/____/\n"
+    #       "      |_|  ")
+    # print("RP3 v1.1.0")
+    print(
+    RED  + " ____"          + RESET + BLUE + "       _____"   + RESET + "\n"
+    + RED  + "|  _ \\ "        + RESET + BLUE + "_ __|___ /"     + RESET + "\n"
+    + RED  + "| |_) | "        + RESET + BLUE + "'_ \\ |_ \\"     + RESET + "\n"
+    + RED  + "|  _ <"         + RESET + BLUE + "| |_) |__) |"   + RESET + "\n"
+    + RED  + "|_| \\_\\"       + RESET + BLUE + " .__/____/"   + RESET + "\n"
+    +               "      "         + BLUE + "|_|"            + RESET
+    )
+    # keep the version line but color “R” red and “P3” blue
+    print(f"{RED}R{BLUE}P3{RESET} v1.1.0")
+    # print(f"")
     data = RP3()
     data.execute()
 
