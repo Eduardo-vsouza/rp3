@@ -222,31 +222,33 @@ class PercolatorPostProcessing(PipelineStructure):
 
     def percolate_cascade(self):
         # first pass FDR assessment
-        db = self.select_database(decoy=True, proteome=True)
-        pin = f'{self.searchDir}/cascade_first_pass_final.pin'
-        self.print_state(message=f"Running Percolator on {pin} with {db}", color='yellow')
-        cmd = f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ ' \
-                f'--post-processing-tdc --results-psms {self.cascadePostmsDir}/cascade_first_pass_psm.txt ' \
-                f'--results-peptides {self.cascadePostmsDir}/cascade_first_pass_peptides.txt --no-terminate ' \
-                f'--num-threads {self.args.threads} -X {self.cascadePostmsDir}/cascade_first_pass_pout.xml ' \
-                f'--picked-protein {db} --results-proteins {self.cascadePostmsDir}/cascade_first_pass_proteins.txt {pin}'
-        os.system(cmd)
-        self.print_state(message=f"Percolator completed for {pin}", color='green')
+        self.check_dirs([self.cascadePostmsDir, self.postProcessDir])
+        # db = self.select_database(decoy=True, proteome=True)
+        # pin = f'{self.searchDir}/cascade_first_pass_final.pin'
+        # self.print_state(message=f"Running Percolator on {pin} with {db}", color='yellow')
+        # cmd = f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ ' \
+        #         f'--post-processing-tdc --results-psms {self.cascadePostmsDir}/cascade_first_pass_psm.txt ' \
+        #         f'--results-peptides {self.cascadePostmsDir}/cascade_first_pass_peptides.txt --no-terminate ' \
+        #         f'--num-threads {self.args.threads} -X {self.cascadePostmsDir}/cascade_first_pass_pout.xml ' \
+        #         f'--picked-protein {db} --results-proteins {self.cascadePostmsDir}/cascade_first_pass_proteins.txt {pin}'
+        # os.system(cmd)
+        # self.print_state(message=f"Percolator completed for {pin}", color='green')
 
-        # second pass FDR assessment
-        db = self.select_database(decoy=True, proteome=False)
-        pin = f'{self.searchDir}/cascade_second_pass_final.pin'
-        self.print_state(message=f"Running Percolator on {pin} with {db}", color='yellow')
-        cmd = f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ ' \
-                f'--post-processing-tdc --results-psms {self.cascadePostmsDir}/cascade_second_pass_psm.txt ' \
-                f'--results-peptides {self.cascadePostmsDir}/cascade_second_pass_peptides.txt --no-terminate ' \
-                f'--num-threads {self.args.threads} -X {self.cascadePostmsDir}/cascade_second_pass_pout.xml ' \
-                f'--picked-protein {db} --results-proteins {self.cascadePostmsDir}/cascade_second_pass_proteins.txt {pin}'
-        os.system(cmd)
-        self.print_state(message=f"Percolator completed for {pin}", color='green')
+        # # second pass FDR assessment
+        # db = self.select_database(decoy=True, proteome=False)
+        # pin = f'{self.searchDir}/cascade_second_pass_final.pin'
+        # self.print_state(message=f"Running Percolator on {pin} with {db}", color='yellow')
+        # cmd = f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ ' \
+        #         f'--post-processing-tdc --results-psms {self.cascadePostmsDir}/cascade_second_pass_psm.txt ' \
+        #         f'--results-peptides {self.cascadePostmsDir}/cascade_second_pass_peptides.txt --no-terminate ' \
+        #         f'--num-threads {self.args.threads} -X {self.cascadePostmsDir}/cascade_second_pass_pout.xml ' \
+        #         f'--picked-protein {db} --results-proteins {self.cascadePostmsDir}/cascade_second_pass_proteins.txt {pin}'
+        # os.system(cmd)
+        # self.print_state(message=f"Percolator completed for {pin}", color='green')
 
         # concatenate results for filtering
         group_outdir = f'{self.postProcessDir}/group/db'
+        os.makedirs(group_outdir, exist_ok=True)
         cmd = f'cat {self.cascadePostmsDir}/*_peptides.txt > {group_outdir}/peptides.txt'
         os.system(cmd)
         cmd = f'cat {self.cascadePostmsDir}/*_psm.txt > {group_outdir}/psm.txt'
