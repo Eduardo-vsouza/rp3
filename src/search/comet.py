@@ -47,13 +47,15 @@ class Comet(BaseSearch):
         """
         self.check_dirs([self.cascadeZeroPassDir, self.cascadeZeroPassMzmlDir])
         # ZERO PASS to remove contaminant sequences
+        cascade = Cascade(args=self.args)
+
+        # if self.args.splitDatabase is not None:
         db = self.fullContaminantsDb
         print(f"--Running Comet on {self.args.mzml} with contaminant database {db}")
         self.index_database(db=db)
         self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
         self.move_pin_files(outdir=self.cascadeZeroPassDir)  # copies from self.args.mzml by default
         
-        cascade = Cascade(args=self.args)
         cascade.get_zero_pass_scans()  # remove contaminant scans from self.args.mzml
         
 
@@ -73,7 +75,7 @@ class Comet(BaseSearch):
         else:
             db = self.select_database(decoy=True, proteome=True)
             self.index_database(db=db)
-            print(f"--Running first-pass Comet on {self.args.mzml} with reference proteome")
+            print(f"--Running first-pass Comet on {self.cascadeZeroPassMzmlDir} with reference proteome")
             self.shower_comets(db=db, mzml_dir=self.cascadeZeroPassMzmlDir,
                                 pattern=self.args.fileFormat)
             self.move_pin_files(mzml_dir=self.cascadeZeroPassMzmlDir,
@@ -96,9 +98,9 @@ class Comet(BaseSearch):
                 self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir, split_i=i)
                 self.print_state(message=f"Second-pass Comet completed for {db}", color='green')
         else:
-            self.print_state(message=f"Running second-pass Comet on {self.cascadeMzmlDir} with {db}",
-                    color='yellow')
             db = self.select_database(decoy=True, proteome=False)
+            self.print_state(message=f"Running second-pass Comet on {self.cascadeMzmlDir} with {db}",
+                            color='yellow')
             self.index_database(db=db)
             self.shower_comets(db=db, mzml_dir=self.cascadeMzmlDir, pattern='_filtered.mzML')
             self.move_pin_files(mzml_dir=self.cascadeMzmlDir, outdir=self.cascadeSecondPassDir) 

@@ -215,8 +215,9 @@ class Database(PipelineStructure):
             print(f"--Splitting proteogenomics database")
             split_db(db=db, outdir=self.splitDbProteogenomicsDir)
 
-            conta = Decoy()
-            conta.to_fasta(self.fullContaminantsDb)
+        conta = Decoy()
+        self.check_dirs([self.splitDbDir])
+        conta.to_fasta(self.fullContaminantsDb)
         self.print_row(word="Finished")
 
 
