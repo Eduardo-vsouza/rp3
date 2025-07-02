@@ -191,6 +191,14 @@ class MS2Summ(PipelineStructure):
             entry = str(record.description)
             seq = str(record.seq)
             db_seqs[entry] = seq
+        if self.args.cascade:
+            db = self.select_database(proteome=True, decoy=False)
+            records = SeqIO.parse(db, 'fasta')
+            for record in records:
+                entry = str(record.description)
+                seq = str(record.seq)
+                if entry not in db_seqs:
+                    db_seqs[entry] = seq
         print(f"Total sequences in database: {len(db_seqs)}")
         added = 0
         print("--Inserting protein sequences into summary...")
