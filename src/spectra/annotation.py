@@ -43,11 +43,15 @@ class SpectrumAnnotator(PipelineStructure):
         if os.path.exists(f'{self.rescorePostProcessDir}/group/peptides_fixed.txt'):
             file = f'{self.rescorePostProcessDir}/group/peptides_fixed.txt'
         else:
-            file = f'{self.postProcessDir}/group/db/peptides_filtered.txt'
+            file = f'{self.postProcessDir}/group/db/peptides_fixed.txt'
         df = pd.read_csv(file, sep='\t')
+        # df = df[df["proteinIds"].str.contains(self.args.proteinId) == True]
+        # print(df)
         df = df[df["q-value"] != "q-value"]
-        df = df[df["q-value"] < self.args.qvalue]
+        # df = df[df["q-value"] < self.args.qvalue]
         if self.args.proteinId is not None:
+            self.print_state(message=f"--proteinId parameter provided; Filtering for protein {self.args.proteinId} and ignoring the rest of the dataset.", color='yellow')
+            # print(self.args.proteinId)
             df = df[df["proteinIds"].str.contains(self.args.proteinId) == True]
         else:
             df = df[df["proteinIds"].str.contains("ANNO") == False]
