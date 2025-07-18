@@ -76,7 +76,7 @@ class PeptideSearch(PipelineStructure):
         for file, group in zip(files, groups):
             # file_group = file.split("_")[1]
             if not file.endswith("mzML"):
-                file = f'{file}.mzML'
+                continue
             if filegroup:
                 groups_per_file[file].append(file)
             else:
@@ -214,10 +214,12 @@ class PeptideSearch(PipelineStructure):
             for group in groups:
                 filepaths = ''
                 for file in groups[group]:
-                    filepaths += f' {self.args.mzml}/{file}'
+                    if file.endswith("mzML"):
+                        filepaths += f' {self.args.mzml}/{group}/{file}'
                 print(filepaths)                
                 if self.args.hlaPeptidomics and self.args.engine != 'comet':
-                    self.__search_hla_peptidomics(db=db, search_files=filepaths, full_paths=True)
+                    self.__search_hla_peptidomics(db=db, search_files=filepaths, full_paths=True,
+                                                  mzml_dir=f'{self.args.mzml}/{group}')
                 else:
                     # if self.args.engine == 'comet':
                     self.engine.run()
@@ -392,7 +394,7 @@ class PeptideSearch(PipelineStructure):
             if single_group:
                 break
 
-    def __search_hla_peptidomics(self, db, search_files, full_paths=False):
+    def __search_hla_peptidomics(self, db, search_files, mzml_dir=None, full_paths=False):
         if full_paths:
             files = search_files
             database = db
@@ -404,10 +406,41 @@ class PeptideSearch(PipelineStructure):
               f'--num_threads {self.threads} --fragment_mass_tolerance 20 --num_enzyme_termini 0 ' \
               f'--precursor_true_tolerance 20 --digest_mass_range 600.0_1500.0 ' \
               f'--max_fragment_charge 3 --search_enzyme_cutafter ARNDCQEGHILKMFPSTWYV ' \
-              f'--digest_min_length 8 --digest_max_length 12 {files}'
+              f'--digest_min_length 6 --digest_max_length 12 {files}'
         # print(cmd)
         self.params.append(cmd)
-        os.system(cmd)
+        # os.system(cmd)
+        
+        self.move_pin_files(mzml_dir=mzml_dir)
+
+
+    def move_pin_files(self, mzml_dir=None, outdir="standard", split_i=None):
+        # outdirs = {"standard": }
+        if outdir == 'standard':
+            db_relative = self.select_database(decoy=True).split("/")[-1]
+            output_dir = f'{self.searchDir}/group/{db_relative}'
+        elif outdir == 'rescore':
+            output_dir = f'{self.outdir}/rescore/peptide_search/group'
+        # elif outdir == 'cascade_first':
+        #     output_dir = self.cascadeFirstPassDir
+        # elif outdir == 'cascade_second':
+        #     output_dir = self.cascadeSecondPassDir
+        else:
+            output_dir = outdir
+        if mzml_dir is None:
+            mzml_dir = self.args.mzml
+        files = os.listdir(mzml_dir)
+        for i, file in enumerate(files):
+            pattern = '_target.pin'
+            if split_i is not None:
+                pattern = f'_{split_i}_target.pin'
+            if file.endswith(".pin"):
+                cmd_mv = (f'mv {mzml_dir}/{file} '
+                          f'{output_dir}/{file.replace(".pin", pattern)}')
+                os.system(cmd_mv)
+            elif file.endswith(".txt") or file.endswith(".xml"):
+                cmd_mv = (f'mv {mzml_dir}/{file} {output_dir}/{file}')
+                os.system(cmd_mv)
 
     def iterate_searches_multi(self, min_pep_len=7, max_pep_len=50, database_dir='default'):
         self.params.append(f'## {self.__class__.__name__}.{inspect.currentframe().f_code.co_name}')

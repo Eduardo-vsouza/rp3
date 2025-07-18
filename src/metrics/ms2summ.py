@@ -182,11 +182,13 @@ class MS2Summ(PipelineStructure):
             return selected, False
         
     def gather_protein_sequences(self):
-        print(f"--Gathering protein sequences...")
+        # print(f"--Gathering protein sequences...")
+        self.print_state(message="Loading protein sequences from database...", color='yellow')
         db = self.select_database()
         records = SeqIO.parse(db, 'fasta')
         db_seqs = {}
-        print(f"--Loading database sequences...")
+        # print(f"--Loading database sequences...")
+        self.print_state(message=f"Loading database {db}...", color='yellow')
         for record in tqdm(records):
             entry = str(record.description)
             seq = str(record.seq)
@@ -199,7 +201,8 @@ class MS2Summ(PipelineStructure):
                 seq = str(record.seq)
                 if entry not in db_seqs:
                     db_seqs[entry] = seq
-        print(f"Total sequences in database: {len(db_seqs)}")
+        # print(f"Total sequences in database: {len(db_seqs)}")
+        self.print_state(message=f"Total sequences in database: {len(db_seqs)}...", color='green')
         added = 0
         print("--Inserting protein sequences into summary...")
         for protein in tqdm(self.masterDict):
@@ -208,7 +211,9 @@ class MS2Summ(PipelineStructure):
                 added += 1
             else:
                 self.masterDict[protein]['Sequence'] = ''
-                print(f"Warning: {protein} not found in database. This suggest an error when processing the pipeline.")
+                self.print_state(message=f"Warning: {protein} not found in database. This suggests an error when processing the pipeline.",
+                                 color='red')
+                # print(f"Warning: {protein} not found in database. This suggest an error when processing the pipeline.")
         print(f"--Total sequences added: {added}")
 
     def save(self):

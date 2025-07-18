@@ -196,6 +196,7 @@ class RpHub(PipelineStructure):
     def fetch_protein_seq(self):
         if self.args.proteinSeq is not None:
             protein = self.__fetch_protein(self.args.proteinSeq)
+        
 
     def __fetch_protein(self, protein):
         found = False
