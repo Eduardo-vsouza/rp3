@@ -186,16 +186,27 @@ class Pipeline:
         summ.save()
 
     def annotate_spectra(self):
-        from .spectra import SpectrumAnnotator, Booster
 
         if self.args.annotateSpectra:
+            from .spectra import SpectrumAnnotator, Booster
+
             data = SpectrumAnnotator(args=self.args)
             data.prepare_input_files()
             data.annotate_spectra_parallel()
 
         if self.args.msBooster:
+            from .spectra import SpectrumAnnotator, Booster
+
             msb = Booster(args=self.args)
             msb.prepare_pin_files()
+
+        if self.args.butterfly:
+
+            from .spectra import Butterfly
+            butterfly = Butterfly(args=self.args)
+            butterfly.fly()
+            # plotter = ButterflyPlotter(['a.pin'], 'run.mzML', 'Prosit_2020_intensity_HCD', 'koina.wilhelmlab.org:443')\# 
+            # df_pred = plotter.generate('AAAAAKAK', out_file='butterfly.png', annotate=True)
 
         # cov = ProteinCoverage(args=self.args)
         # cov.get_microprotein_sequences()
@@ -278,7 +289,7 @@ class Pipeline:
         if self.args.deepLoc:
             from .annotation import DeepLoc
             deep_loc = DeepLoc(args=self.args)
-            # deep_loc.run()
+            deep_loc.run()
             deep_loc.plot_results()
 
 

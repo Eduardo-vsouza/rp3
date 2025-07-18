@@ -5,3 +5,4 @@ from .blast_filter import BlastParser
 from .gtf_filter import GTFFilter
 from .cat_gtfs import GTFGatherer
 from .protsplit import ProtSplit
+from .printstate import print_state

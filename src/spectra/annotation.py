@@ -46,11 +46,14 @@ class SpectrumAnnotator(PipelineStructure):
             file = f'{self.postProcessDir}/group/db/peptides_filtered.txt'
         df = pd.read_csv(file, sep='\t')
         df = df[df["q-value"] != "q-value"]
-        df = df[df["q-value"] < 0.01]
-        df = df[df["proteinIds"].str.contains("ANNO") == False]
-        df = df[df["proteinIds"].str.contains("MOUSE") == False]
-        df = df[df["proteinIds"].str.contains("contaminant") == False]
-        df = df[df["proteinIds"].str.contains("rev_") == False]
+        df = df[df["q-value"] < self.args.qvalue]
+        if self.args.proteinId is not None:
+            df = df[df["proteinIds"].str.contains(self.args.proteinId) == True]
+        else:
+            df = df[df["proteinIds"].str.contains("ANNO") == False]
+            df = df[df["proteinIds"].str.contains("MOUSE") == False]
+            df = df[df["proteinIds"].str.contains("contaminant") == False]
+            df = df[df["proteinIds"].str.contains("rev_") == False]
         pattern = '|'.join(self.microproteins)
         # df = df[df["proteinIds"].str.contains('|'.join(self.microproteins))]
         # df = df[df["proteinIds"].str.contains(pattern)]
@@ -185,7 +188,16 @@ class SpectrumAnnotator(PipelineStructure):
             # files = os.listdir(f'{self.args.mzml}/{group}')
             # for f in files:
             # if file in files:
-            path = f'{self.args.mzml}/{file}'
+            if os.path.isdir(f'{self.args.mzml}/{file}'):
+                subfiles = os.listdir(f'{self.args.mzml}/{file}')
+                for subfile in subfiles:
+                    if subfile.endswith("mzML"):
+                        path = f'{self.args.mzml}/{file}/{subfile}'
+                        break
+            if file.endswith(".mzML"):
+                path = f'{self.args.mzml}/{file}'
+                break
+            
         return path
 
     # def annotate_spectra(self):

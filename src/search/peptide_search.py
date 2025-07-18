@@ -409,7 +409,7 @@ class PeptideSearch(PipelineStructure):
               f'--digest_min_length 6 --digest_max_length 12 {files}'
         # print(cmd)
         self.params.append(cmd)
-        # os.system(cmd)
+        os.system(cmd)
         
         self.move_pin_files(mzml_dir=mzml_dir)
 
