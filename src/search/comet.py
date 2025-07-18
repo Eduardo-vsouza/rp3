@@ -35,6 +35,7 @@ class Comet(BaseSearch):
         """
         # params = self.__define_comet_params()
         db = self.select_database(decoy=True)
+        self.index_database(db=db)
         print(f"--Running Comet on {self.args.mzml} with database {db}")
         self.shower_comets(db=db, mzml_dir=self.args.mzml, pattern=self.args.fileFormat)
         self.move_pin_files(outdir='standard')
