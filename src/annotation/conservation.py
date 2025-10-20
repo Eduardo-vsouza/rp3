@@ -92,8 +92,20 @@ class Conservation(PipelineStructure):
         if sp in df_boolean.columns:
             df_boolean.drop(columns=[sp], inplace=True)
         df_boolean.to_csv(f'{self.phyloDir}/smorfs_entries_per_species_boolean.csv', sep='\t')
-
-
+        
+        # --- NEW: Second dataframe with smorf → comma-separated species ---
+        # Group by smorf and aggregate species into a comma-separated list
+        df_summary = (
+            df.groupby('smorf')['species']
+              .apply(lambda x: ', '.join(sorted(set(x))))
+              .reset_index()
+        )
+        df_summary.columns = ['smorf', 'species_list']
+        df_summary.to_csv(
+            f'{self.phyloDir}/smorfs_species_summary.csv',
+            sep='\t',
+            index=False
+        )
 
     def classify_conservation_by_mapping_groups(self):
         groups_df = pd.read_csv(f'{self.microproteinMappingGroupsForPlotsUnion}', sep='\t')
