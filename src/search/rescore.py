@@ -48,7 +48,10 @@ class PeptideReScoring(PipelineStructure):
             outfile.writelines(fasta)
 
         decoy = Decoy(db=f'{self.rescoreDatabaseDir}/rescore_target_database.fasta')
-        decoy.reverse_sequences()
+        if self.args.decoyMethod == 'shuffle':
+            decoy.shuffle_sequences()
+        else:
+            decoy.reverse_sequences()
         decoy.add_contaminants()
         decoy.to_fasta(output=f'{self.rescoreDatabase}')
 

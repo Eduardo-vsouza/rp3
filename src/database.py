@@ -54,8 +54,14 @@ class Database(PipelineStructure):
             self.print_state(message='Cascade mode detected. Generating decoy sequences for the reference proteome.',
                              level=1, color='yellow')
             decoy = Decoy(db=self.refProteome)
-            decoy.reverse_sequences().to_fasta(output=f'{self.refProteomeWithDecoy}',
-                                                pattern='rev', merge=True)
+            if self.args.decoyMethod == 'reverse':
+                decoy.reverse_sequences().to_fasta(output=f'{self.refProteomeWithDecoy}',
+                                                   pattern='rev', merge=True)
+            elif self.args.decoyMethod == 'shuffle':
+                decoy.shuffle_sequences().to_fasta(output=f'{self.refProteomeWithDecoy}',
+                                                   pattern='rev', merge=True)
+            # decoy.reverse_sequences().to_fasta(output=f'{self.refProteomeWithDecoy}',
+            #                                     pattern='rev', merge=True)
             self.print_state(message=f"Reference proteome decoy sequences saved to {self.refProteomeWithDecoy} for using in Cascade mode",
                              color='green', level=2)
 
@@ -157,8 +163,12 @@ class Database(PipelineStructure):
                 continue
             decoy = Decoy(db=f'{self.databaseDir}/{target}')
             # if self.args.cat:
-            decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_target_decoy_"),
-                                                pattern='rev', merge=True)
+            if self.args.decoyMethod == 'reverse':
+                decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_target_decoy_"),
+                                                    pattern='rev', merge=True)
+            elif self.args.decoyMethod == 'shuffle':
+                decoy.shuffle_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_target_decoy_"),
+                                                    pattern='rev', merge=True)
             # decoy.add_contaminants()
             # else:
             #     decoy.reverse_sequences().to_fasta(output=f'{self.databaseDir}/{target}'.replace("_target_", "_decoy_"),

@@ -35,6 +35,22 @@ class Decoy(object):
             # reversed += cterminus
             self.reversed.append(reversed)
         return self
+    
+    def shuffle_sequences(self):
+        import random
+        for seq in self.seqs:
+            seq_str = str(seq)
+            if len(seq_str) <= 1:
+                self.reversed.append(seq_str)
+                continue
+
+            first_aa = seq_str[0]
+            rest = list(seq_str[1:])
+            random.shuffle(rest)
+            shuffled = first_aa + ''.join(rest)
+            self.reversed.append(shuffled)
+
+        return self
 
     def add_contaminants(self):
         seqs = []

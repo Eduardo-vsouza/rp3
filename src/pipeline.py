@@ -236,8 +236,10 @@ class Pipeline:
             # conserv.generate_non_redundant_fasta()
             # conserv.blast_microproteins()
             # conserv.parse_blast_results()
-            # conserv.create_evolview_input()
             conserv.generate_data_frame()
+
+            conserv.create_evolview_input()
+            
             # conserv.classify_conservation_by_mapping_groups()
         if self.args.uniprotTable:
             from .annotation import UniprotAnnotation

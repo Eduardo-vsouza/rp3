@@ -12,6 +12,7 @@ class BlastParser:
 
         self.conservation = {}
         self.paralogs = {}
+        self.totalHits = {}
 
     def __add_paralog(self, query, hit, hsp):
         name = f'{hit}:{hsp.sbjct_start}-{hsp.sbjct_end}'
@@ -31,7 +32,7 @@ class BlastParser:
         df.to_csv(outfile, sep='\t', index=False)
 
 
-    def parse(self, evalue=0.001, score=50, pc_id=100, qcov=100, conservation=False, smorfs=None, paralogs=False, format='blastp'):
+    def parse(self, evalue=0.001, score=50, pc_id=100, qcov=100, conservation=False, smorfs=None, paralogs=False, return_id=False, format='blastp'):
         if smorfs is not None:
             entries = self.__filter_smorfs(fasta=smorfs)
         for record in NCBIXML.parse(open(self.xml)):
@@ -68,7 +69,7 @@ class BlastParser:
                                         else:
                                             add = False
                                     if add:
-                                        if format == 'diamond':
+                                        if format == 'diamond' and not return_id:
                                             # print(align.hit_id)
                                             species = ' '.join(align.hit_id.split("_")[2: 6]).replace("PREDICTED:", "")
                                             if 'Bos' in species:
@@ -99,6 +100,14 @@ class BlastParser:
                                                 species = 'Rattus norvegicus'
                                             elif 'Sus' in species:
                                                 species = 'Sus scrofa'
+                                        elif format == 'diamond' and return_id:
+                                            # print(align.hit_id)
+                                            species = align.hit_id
+                                            print("🎯 Blast hit!", species)
+                                            if record.query not in self.totalHits:
+                                                self.totalHits[record.query] = []
+                                            self.totalHits[record.query].append(species)
+
                                             
                                         else:
                                             species = ' '.join(align.hit_def.split(" ")[:2])    
@@ -153,6 +162,30 @@ class BlastParser:
             data['Homologs'].append(len(self.conservation[sp]))
         df = pd.DataFrame(data=data)
         df.to_csv(output, sep='\t', index=False)
+
+    def add_sequences_from_db(self, diamonblastdb_fasta, outdir):
+        # print(f"total hits")
+        # print(self.totalHits)
+        records = SeqIO.parse(diamonblastdb_fasta, 'fasta')
+        db_seqs = {}
+        data = {'smorf': [], 'hit_id': [], 'sequence': []}
+
+        for record in records:
+            seq = str(record.seq)
+            entry = str(record.description)
+            db_seqs[entry]= seq
+        for smorf in self.totalHits:
+            for hit in self.totalHits[smorf]:
+                if hit in db_seqs:
+                    data['hit_id'].append(hit)
+                    data['smorf'].append(smorf)
+                    data['sequence'].append(db_seqs[hit])
+                    print("added to df", hit, smorf, db_seqs[hit])
+        df = pd.DataFrame(data=data)
+        df.to_csv(f'{outdir}/smorfs_conserved_sequences_from_db.tsv', sep='\t', index=False)
+
+
+            
 
     def create_spreadsheet(self, output):
         data = {'species': [], 'smorf': []}
