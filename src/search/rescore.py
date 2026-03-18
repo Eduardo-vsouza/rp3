@@ -71,7 +71,7 @@ class PeptideReScoring(PipelineStructure):
 
             else:
                 single_group = False
-                files = os.listdir(f'{self.args.mzML}/{group}')
+                files = os.listdir(f'{self.args.mzml}/{group}')
                 group_dir = f'{self.args.mzml}/{group}'
 
             for file in files:
@@ -114,7 +114,7 @@ class PeptideReScoring(PipelineStructure):
                 if not self.args.quantifyOnly:
                     cmd = f'java -Xmx{self.args.memory}g -jar {self.MSFraggerPath} --output_format pin ' \
                           f'--database_name {self.rescoreDatabase} --decoy_prefix rev ' \
-                          f'--num_threads {self.args.threads}{phospho}{mod}{amida} --digest_min_length {min_pep_len} ' \
+                          f'--num_threads {self.args.threads}{phospho}{mod}{amida}{pyroglu} --digest_min_length {min_pep_len} ' \
                           f'--use_all_mods_in_first_search 1 --digest_max_length {max_pep_len}{group_files}'
                     os.system(cmd)
 

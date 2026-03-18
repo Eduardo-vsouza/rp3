@@ -60,15 +60,15 @@ class MicroproteinCombiner(PipelineStructure):
     def __add_riboseq_coverage(self):
         self.show_progress(step=4)
 
-        if not self.args.noRibocov:
-            if os.path.exists(self.mappingGroups):
-                df = pd.read_csv(self.microproteinMappingGroupsForPlotsUnion, sep='\t')
-                smorfs, groups = df["smorf"].tolist(), df["group"].tolist()
-                for smorf, group in zip(smorfs, groups):
-                    self.microproteins[smorf]['Ribo-seq mapping group'] = group
-            for smorf in self.microproteins:
-                if 'Ribo-seq mapping group' not in self.microproteins[smorf]:
-                    self.microproteins[smorf]['Ribo-seq mapping group'] = 'No coverage'
+        # if not self.args.noRibocov:
+        if os.path.exists(self.mappingGroups):
+            df = pd.read_csv(self.microproteinMappingGroupsForPlotsUnion, sep='\t')
+            smorfs, groups = df["smorf"].tolist(), df["group"].tolist()
+            for smorf, group in zip(smorfs, groups):
+                self.microproteins[smorf]['Ribo-seq mapping group'] = group
+        for smorf in self.microproteins:
+            if 'Ribo-seq mapping group' not in self.microproteins[smorf]:
+                self.microproteins[smorf]['Ribo-seq mapping group'] = 'No coverage'
 
             # rpkms = pd.read_csv(self.mappingGroupsRPKMs, sep='\t')
             # print(self.microproteins)

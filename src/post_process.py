@@ -270,26 +270,54 @@ class PercolatorPostProcessing(PipelineStructure):
 
         group_outdir = f'{self.postProcessDir}/group/db'
         self.check_dirs([f'{self.postProcessDir}/group', group_outdir])
-        dbs = os.listdir(f'{self.searchDir}/group')
-        for db in dbs:
-            if db.endswith("target_decoy_database.fasta"):
-                pins = os.listdir(f'{self.searchDir}/group/{db}')
-                for pin in pins:
-                    run = False
-                    if self.args.msBooster:
-                        if '_edited' in pin:
-                            run = True
-                    else:
-                        if pin.endswith(".pin"):
-                            run = True
-                    if run:
-                        cmd = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
+        if self.args.cascade:
+            # group_outdir = 
+            # print("blibllo")
+            search_dir = f'{self.cascadeSecondPassDir}'
+            pins = os.listdir(f'{search_dir}')
+            for pin in pins:
+                if pin.endswith(".pin"):
+                    # print("blei")
+                    cmd = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
                                f'--post-processing-tdc --results-psms {group_outdir}/{pin}_psm.txt --results-peptides '
                                f'{group_outdir}/{pin}_peptides.txt --no-terminate --num-threads {self.args.threads} '
-                               f'-X {group_outdir}/{pin}_pout.xml --picked-protein {self.databaseDir}/{dbss} '
+                            #    f'-X {group_outdir}/{pin}_pout.xml --picked-protein {self.select_database(decoy=True, proteome=False)} '
                                f'--results-proteins {group_outdir}/{pin}_proteins.txt '
-                               f'{self.searchDir}/group/{db}/{pin}')
-                        os.system(cmd)
+                               f'{search_dir}/{pin}')
+                    os.system(cmd)
+            search_dir = f'{self.cascadeFirstPassDir}'
+            pins = os.listdir(f'{search_dir}')
+            for pin in pins:
+                if pin.endswith(".pin"):
+                    # print("blei")
+                    cmd = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
+                               f'--post-processing-tdc --results-psms {group_outdir}/{pin}_psm.txt --results-peptides '
+                               f'{group_outdir}/{pin}_peptides.txt --no-terminate --num-threads {self.args.threads} '
+                            #    f'-X {group_outdir}/{pin}_pout.xml --picked-protein {self.select_database(decoy=True, proteome=True)} '
+                               f'--results-proteins {group_outdir}/{pin}_proteins.txt '
+                               f'{search_dir}/{pin}')
+                    os.system(cmd)
+        else:
+            dbs = os.listdir(f'{self.searchDir}/group')
+            for db in dbs:
+                if db.endswith("target_decoy_database.fasta"):
+                    pins = os.listdir(f'{self.searchDir}/group/{db}')
+                    for pin in pins:
+                        run = False
+                        if self.args.msBooster:
+                            if '_edited' in pin:
+                                run = True
+                        else:
+                            if pin.endswith(".pin"):
+                                run = True
+                        if run:
+                            cmd = (f'{self.toolPaths["percolator"]} --protein-report-duplicates --protein-decoy-pattern rev_ '
+                                f'--post-processing-tdc --results-psms {group_outdir}/{pin}_psm.txt --results-peptides '
+                                f'{group_outdir}/{pin}_peptides.txt --no-terminate --num-threads {self.args.threads} '
+                                f'-X {group_outdir}/{pin}_pout.xml --picked-protein {self.databaseDir}/{dbss} '
+                                f'--results-proteins {group_outdir}/{pin}_proteins.txt '
+                                f'{self.searchDir}/group/{db}/{pin}')
+                            os.system(cmd)
         cmd = f'cat {group_outdir}/*_peptides.txt > {group_outdir}/peptides.txt'
         os.system(cmd)
         cmd = f'cat {group_outdir}/*_psm.txt > {group_outdir}/psm.txt'

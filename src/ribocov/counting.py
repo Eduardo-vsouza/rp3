@@ -25,11 +25,11 @@ class FeatureCounts(PipelineStructure):
                 if os.path.exists(self.rescoredMicroproteinsFasta):
                     cmd = f'cat {self.rescoredMicroproteinsGTF} {self.args.gtf} > {self.referencePlusRescoredGTF}'
                 else:
-                    if os.path.exists(self.microproteinsBlast):
-                        cmd = f'cat {self.microproteinsBlast} {self.args.gtf} > {self.referencePlusRescoredGTF}'
+                    if os.path.exists(self.uniqueMicroproteinsGTF):
+                        cmd = f'cat {self.uniqueMicroproteinsGTF} {self.args.gtf} > {self.referencePlusRescoredGTF}'
                     else:
                         # cmd = f'cat {self.args.gtf} {self.mergedResults}/merged_predicted_microproteins.gtf > {self.referencePlusRescoredGTF}'
-                        cmd = f'cp {self.uniqueMicroproteinsGTF} {self.referencePlusRescoredGTF}'
+                        cmd = f'cp {self.args.gtf} {self.referencePlusRescoredGTF}'
 
             os.system(cmd)
 

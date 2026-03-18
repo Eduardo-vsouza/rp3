@@ -62,7 +62,7 @@ class Conservation(PipelineStructure):
         blast = BlastParser(xml=self.blastedMicroproteins)
         if self.args.diamondBlastDBFasta:
             blast.parse(evalue=0.001, score=50, pc_id=0, qcov=0, format='diamond', return_id=True, conservation=True)
-            blast.add_sequences_from_db(diamonblastdb_fasta=self.args.diamondBlastDBFasta, outdir=self.phyloDir)
+            blast.add_sequences_from_db(diamondblastdb_fasta=self.args.diamondBlastDBFasta, outdir=self.phyloDir)
         else:
             blast.parse(evalue=0.001, score=50, pc_id=0, qcov=0, conservation=True, format=self.args.blastType)
 
@@ -70,10 +70,8 @@ class Conservation(PipelineStructure):
 
         blast.save_conserved(output=self.homologsPerSpecies)
         blast.create_spreadsheet(output=f'{self.phyloDir}/smorfs_entries_per_species.xls')
-        # blast.add_sequences_from_db(output=f'{self.phyloDir}/smorfs_entries_per_species_with_seqs.xls')
+        blast.add_sequences_from_db(diamondblastdb_fasta=self.args.diamondBlastDBFasta,outdir=f'{self.phyloDir}')
         print("Finished parsing\n")
-
-
 
     def create_evolview_input(self):
         print(f"--Creating evolview input\n")

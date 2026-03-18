@@ -49,6 +49,7 @@ class MS2Summ(PipelineStructure):
 
         peptides_df = peptides_df[~peptides_df["proteinIds"].str.contains("rev_")]
         peptides_df = peptides_df[~peptides_df["proteinIds"].str.contains("contaminant")]
+        peptides_df = peptides_df.drop_duplicates(subset="PSMId")
         psm_dict = peptides_df.set_index("PSMId").to_dict(orient="index")
         for psm in tqdm(psm_dict):
             prot_list = psm_dict[psm]["proteinIds"]
@@ -94,9 +95,12 @@ class MS2Summ(PipelineStructure):
         # print(self.masterDict)
 
     def gather_spectral_counts(self):
+        from ..post_process import PercolatorPostProcessing
+        PercolatorPostProcessing.fix(file=f'{self.rescorePostProcessDir}/group/psm.txt', output=self.select_psm_df())
         print(f"--Gathering spectral counts...")
         filepath = self.select_psm_df()
         psm_df = pd.read_csv(filepath, sep='\t')
+        psm_df = psm_df.drop_duplicates(subset="PSMId")
         peptides_df = psm_df[psm_df["q-value"] != 'q-value']
         peptides_df["q-value"] = peptides_df["q-value"].astype(float)
         peptides_df = peptides_df[peptides_df["q-value"] <= 0.01]

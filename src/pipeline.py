@@ -110,6 +110,7 @@ class Pipeline:
                     postms.percolate_cascade()
                 else:
                     if self.postMSMode == 'sep':
+                        # print("blab")
                         postms.percolate_single()
                     else:
                         postms.merge_all_pins()
@@ -233,9 +234,9 @@ class Pipeline:
         if self.args.conservation:
             from .annotation import Conservation
             conserv = Conservation(args=self.args)
-            # conserv.generate_non_redundant_fasta()
-            # conserv.blast_microproteins()
-            # conserv.parse_blast_results()
+            conserv.generate_non_redundant_fasta()
+            conserv.blast_microproteins()
+            conserv.parse_blast_results()
             conserv.generate_data_frame()
 
             conserv.create_evolview_input()

@@ -177,6 +177,7 @@ class PeptideSearch(PipelineStructure):
                             # os.system(cmd_mv_search)
 
     def __check_ptms(self):
+        i = 3
         if self.args.amidation:
             amida = f' --variable_mod_0{i} -0.9840_c*_1'
             i += 1

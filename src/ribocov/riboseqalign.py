@@ -43,7 +43,7 @@ class RiboSeqAlign(PipelineStructure):
                         if threads > 8:
                             threads = 8
                         cmd = (f'{self.toolPaths["cutadapt"]} -a {self.adapterSequence} -o {self.riboSeqTrimmedDir}/trimmed_{file} {full} '
-                               f'-j {threads}')
+                               f'-j {threads} --minimum-length 15')
                         os.system(cmd)
                     print(f"Finished trimming {file}.")
 
@@ -181,40 +181,12 @@ class RiboSeqAlign(PipelineStructure):
             files = os.listdir(self.args.fastq)
             self.riboSeqTrimmedDir = self.args.fastq
         for file in files:
-            if file.endswith(".fastq") or file.endswith("fastq.gz") or self.args.skip_trimming:
+            if file.endswith(".fastq") or file.endswith("fastq.gz"):
                 out = f'{self.riboSeqContaminantAlnDir}/no_contaminant_{file}Unmapped.out.mate1'
                 run = self.verify_checkpoint(outfile=out, step=f"removal of contaminants for {file}.")
 
-                # meninos_problema = {
-                # "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
-                # "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
-                # "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
-                # "SRR15906473": "no_contaminant_polyAtrimmed_trimmed_SRR15906473.fastqUnmapped.out.mate1",
-                # "SRR15906432": "no_contaminant_polyAtrimmed_trimmed_SRR15906432.fastqUnmapped.out.mate1",
-                # "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
-                # "SRR15906472": "no_contaminant_polyAtrimmed_trimmed_SRR15906472.fastqUnmapped.out.mate1",
-                # "SRR15906489": "no_contaminant_polyAtrimmed_trimmed_SRR15906489.fastqUnmapped.out.mate1",
-                # "SRR15906436": "no_contaminant_polyAtrimmed_trimmed_SRR15906436.fastqUnmapped.out.mate1",
-                # "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
-                # "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
-                # "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1"}
-                #
-                # meninos_problema = {
-                #     "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
-                #     "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
-                #     "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
-                #     "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
-                #     "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1",
-                #     "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
-                #     "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
-                #     "SRR15906436": "no_contaminant_polyAtrimmed_trimmed_SRR15906436.fastqUnmapped.out.mate1"
-                # }
-                # meninos_problema = ["SRR15906430", "SRR15906433", "SRR15906487", "SRR15906479"]
-                meninos_problema = ["SRR15906479"]
 
 
-                if any(problem in file for problem in meninos_problema):
-                    run = True
 
                 if run:
                     print(f"Removing contaminants from {file}")
@@ -289,46 +261,7 @@ class RiboSeqAlign(PipelineStructure):
             if 'Unmapped.out.mate1' in file or file.endswith(".fastq"):
                 out = f'{self.riboSeqAlnDir}/aligned_to_genome_{file}Aligned.out.sam'
                 run = self.verify_checkpoint(outfile=out, step=f"alignment of clean Ribo-Seq reads to the genome")
-                # meninos_problema = {
-                # "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
-                # "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
-                # "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
-                # "SRR15906473": "no_contaminant_polyAtrimmed_trimmed_SRR15906473.fastqUnmapped.out.mate1",
-                # "SRR15906432": "no_contaminant_polyAtrimmed_trimmed_SRR15906432.fastqUnmapped.out.mate1",
-                # "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
-                # "SRR15906472": "no_contaminant_polyAtrimmed_trimmed_SRR15906472.fastqUnmapped.out.mate1",
-                # "SRR15906489": "no_contaminant_polyAtrimmed_trimmed_SRR15906489.fastqUnmapped.out.mate1",
-                # "SRR15906436": "no_contaminant_polyAtrimmed_trimmed_SRR15906436.fastqUnmapped.out.mate1",
-                # "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
-                # "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
-                # "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1"}
-                # meninos_problema = {
-                # "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
-                # "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
-                # "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
-                # "SRR15906432": "no_contaminant_polyAtrimmed_trimmed_SRR15906432.fastqUnmapped.out.mate1",
-                # "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
-                # "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1",
-                # "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
-                # "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
-                # # "SRR15906472": "no_contaminant_polyAtrimmed_trimmed_SRR15906472.fastqUnmapped.out.mate1"}
-                # meninos_problema = {
-                #     "SRR15906430": "no_contaminant_polyAtrimmed_trimmed_SRR15906430.fastqUnmapped.out.mate1",
-                #     "SRR15906481": "no_contaminant_polyAtrimmed_trimmed_SRR15906481.fastqUnmapped.out.mate1",
-                #     "SRR15906433": "no_contaminant_polyAtrimmed_trimmed_SRR15906433.fastqUnmapped.out.mate1",
-                #     "SRR15906487": "no_contaminant_polyAtrimmed_trimmed_SRR15906487.fastqUnmapped.out.mate1",
-                #     "SRR15906479": "no_contaminant_polyAtrimmed_trimmed_SRR15906479.fastqUnmapped.out.mate1",
-                #     "SRR15906448": "no_contaminant_polyAtrimmed_trimmed_SRR15906448.fastqUnmapped.out.mate1",
-                #     "SRR15906425": "no_contaminant_polyAtrimmed_trimmed_SRR15906425.fastqUnmapped.out.mate1",
-                #     "SRR15906436": "no_contaminant_polyAtrimmed_trimmed_SRR15906436.fastqUnmapped.out.mate1"
-                # }
 
-                # meninos_problema = ["SRR15906430", "SRR15906433", "SRR15906487", "SRR15906479"]
-                # meninos_problema = ["SRR15906487", "SRR15906479"]
-                meninos_problema = ["SRR15906479"]
-
-                if any(problem in file for problem in meninos_problema):
-                    run = True
                 if run:
                     gz = ' --readFilesCommand zcat' if file.endswith(".gz") else ''
                     filepath = f'{self.riboSeqContaminantAlnDir}/{file}'
@@ -381,12 +314,12 @@ class RiboSeqAlign(PipelineStructure):
                 #         gz = ''
                 #     filepath = f'{self.riboSeqContaminantAlnDir}/{file}'
                 #     # filepath = f'{self.riboSeqTrimmedDir}/{file}'
-                #     print(f"Aligning RPF reads from {file} to {self.index}")
-                #     # cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --genomeDir {self.index} --runThreadN '
-                #     #        f'{self.args.threads} --readFilesIn {filepath} --outFileNamePrefix '
-                #     #        f'{self.riboSeqAlnDir}/aligned_to_genome_{file} --outFilterMismatchNmax 2 '
-                #     #        f'--outFilterMultimapNmax {self.args.multimappings} --chimScoreSeparation 10 --chimScoreMin '
-                #     #        f'20 --chimSegmentMin 15 --outSAMattributes All{gz}')
+                    print(f"Aligning RPF reads from {file} to {self.index}")
+                    cmd = (f'{self.toolPaths["STAR"]} --outSAMstrandField intronMotif --genomeDir {self.index} --runThreadN '
+                           f'{self.args.threads} --readFilesIn {filepath} --outFileNamePrefix '
+                           f'{self.riboSeqAlnDir}/aligned_to_genome_{file} --outFilterMismatchNmax 2 '
+                           f'--outFilterMultimapNmax {self.args.multimappings} --chimScoreSeparation 10 --chimScoreMin '
+                           f'20 --chimSegmentMin 15 --outSAMattributes All{gz}')
                 #     clipbases = ''
                 #     if self.args.clip5pNbases is not None:
                 #         clipbases = f' {self.args.clip5pNbases}'

@@ -69,19 +69,7 @@ class ORFCounter(PipelineStructure):
         smorfs = self.groups["smorf"].tolist()
         groups = self.groups["group"].tolist()
         for smorf, group in zip(smorfs, groups):
-            # # print(smorf)
-            # # if group not in self.ids:
-            # #     self.ids[group] = []
-            # add = False
-            # if filter_smorfs is not None:
-            #     if smorf in entries:
-            #         add = True
-            #     else:
-            #         add = False
-            # else:
-            #     add = True
-            # if add:
-                self.ids[smorf] = group
+            self.ids[smorf] = group
             # if smorf not in self.ids[group]:
             #     self.ids[group].append(smorf)
         # print(self.ids)

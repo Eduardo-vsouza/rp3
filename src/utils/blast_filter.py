@@ -1,4 +1,5 @@
 import sys
+import re
 
 import pandas as pd
 from Bio.Blast import NCBIXML
@@ -103,7 +104,7 @@ class BlastParser:
                                         elif format == 'diamond' and return_id:
                                             # print(align.hit_id)
                                             species = align.hit_id
-                                            print("🎯 Blast hit!", species)
+                                            # print("🎯 Blast hit!", species)
                                             if record.query not in self.totalHits:
                                                 self.totalHits[record.query] = []
                                             self.totalHits[record.query].append(species)
@@ -163,29 +164,88 @@ class BlastParser:
         df = pd.DataFrame(data=data)
         df.to_csv(output, sep='\t', index=False)
 
-    def add_sequences_from_db(self, diamonblastdb_fasta, outdir):
-        # print(f"total hits")
-        # print(self.totalHits)
-        records = SeqIO.parse(diamonblastdb_fasta, 'fasta')
+    @staticmethod
+    def _extract_species_from_db_entry(entry: str) -> str | None:
+        """
+        Pull a 'Genus species' name from the diamond DB FASTA description string.
+
+        Examples:
+          'NM_000014.4_3_Homo_sapiens_alpha-2-macroglobulin_'
+            -> 'Homo sapiens'
+          'XM_006245138.4_3_PREDICTED:_Rattus_norvegicus_phospholipase_C,_delta_4_(Plcd4),_transcript_variant_X5,_mRNA'
+            -> 'Rattus norvegicus'
+        """
+        if not entry:
+            return None
+
+        # Remove leading 'PREDICTED:' token (it may be followed by underscore due to formatting)
+        s = entry.replace("PREDICTED:_", "").replace("PREDICTED:", "")
+        # FASTA headers are underscore-separated in your DB
+        tokens = [t for t in s.split("_") if t]
+
+        # Find first "Genus_species" pair in tokens
+        for i in range(len(tokens) - 1):
+            genus = tokens[i]
+            species = tokens[i + 1]
+            if genus and species and genus[0].isupper() and genus.isalpha() and species.isalpha() and species.islower():
+                return f"{genus} {species}"
+
+        return None
+
+    @staticmethod
+    def _canonical_species(species: str) -> str:
+        """
+        Apply your historical normalizations.
+        """
+        if not species:
+            return species
+        mapping = {
+            "Bos taurus": "Bos taurus",
+            "Canis lupus": "Canis lupus",
+            "Equus caballus": "Equus caballus",
+            "Homo sapiens": "Homo sapiens",
+            "Pan troglodytes": "Pan troglodytes",
+            "Danio rerio": "Danio rerio",
+            "Ovis aries": "Ovis aries",
+            "Balaenoptera musculus": "Balaenoptera musculus",
+            "Mus musculus": "Mus musculus",
+            "Loxodonta africana": "Loxodonta africana",
+            "Macaca mulatta": "Macaca mulatta",
+            "Drosophila melanogaster": "Drosophila melanogaster",
+            "Rattus norvegicus": "Rattus norvegicus",
+            "Sus scrofa": "Sus scrofa",
+        }
+        return mapping.get(species, species)
+
+    def add_sequences_from_db(self, diamondblastdb_fasta, outdir):
+        records = SeqIO.parse(diamondblastdb_fasta, 'fasta')
         db_seqs = {}
+        db_species = {}
         data = {'smorf': [], 'hit_id': [], 'sequence': []}
 
         for record in records:
             seq = str(record.seq)
-            entry = str(record.description)
-            db_seqs[entry]= seq
+            entry = str(record.description)  # your BLAST hit IDs match this string
+            db_seqs[entry] = seq
+
+            sp = self._extract_species_from_db_entry(entry)
+            if sp:
+                db_species[entry] = self._canonical_species(sp)
+
         for smorf in self.totalHits:
             for hit in self.totalHits[smorf]:
                 if hit in db_seqs:
-                    data['hit_id'].append(hit)
+                    sp = db_species.get(hit)
+                    # Prefix hit_id with species so downstream can parse it deterministically
+                    # e.g. "Rattus norvegicus|XM_..._PREDICTED:_Rattus_norvegicus_..."
+                    hit_with_species = f"{sp}|{hit}" if sp else hit
+
+                    data['hit_id'].append(hit_with_species)
                     data['smorf'].append(smorf)
                     data['sequence'].append(db_seqs[hit])
-                    print("added to df", hit, smorf, db_seqs[hit])
+
         df = pd.DataFrame(data=data)
         df.to_csv(f'{outdir}/smorfs_conserved_sequences_from_db.tsv', sep='\t', index=False)
-
-
-            
 
     def create_spreadsheet(self, output):
         data = {'species': [], 'smorf': []}

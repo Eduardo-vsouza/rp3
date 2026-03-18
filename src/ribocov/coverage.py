@@ -417,14 +417,16 @@ class CoverageClassification(PipelineStructure):
         """
         method: union or separated
         """
-        genes = self.df["Gene"].tolist()
-        # print("total", len(genes))
-        genes = self.flatten_smorfs(genes=genes)
+        all_genes = self.df["Gene"].tolist()
+        gene_to_idx = {gene: idx for idx, gene in enumerate(all_genes)}
+        # print("total", len(all_genes))
+        genes = self.flatten_smorfs(genes=all_genes)
         # print("flattened", len(genes))
         cols = self.df.columns[1:]
-        for i, gene in enumerate(genes):
+        for gene in genes:
+            idx = gene_to_idx[gene]
             if method == 'union':
-                self.__union_grouping(i, gene, cols)
+                self.__union_grouping(idx, gene, cols)
             if method == 'separated':
                 higher = self.args.rpkm
                 classification = "No coverage"
@@ -432,7 +434,7 @@ class CoverageClassification(PipelineStructure):
                     rpkms = self.df[col].tolist()
                     # if gene not in self.classification:
                     #     self.classification[gene] = {}
-                    rpkm = float(rpkms[i])
+                    rpkm = float(rpkms[idx])
                     if gene not in self.classification:
                         self.classification[gene] = {}
                     self.classification[gene][col] = rpkm
@@ -470,11 +472,13 @@ class CoverageClassification(PipelineStructure):
             if file.endswith("counts.txt"):
                 group = self.__check_counts_file_group(file)
                 df = pd.read_csv(f'{self.rawCountsDir}/{file}', sep='\t', header=1)
-                genes = df["Geneid"].tolist()
-                genes = self.flatten_smorfs(genes)
+                all_genes = df["Geneid"].tolist()
+                gene_to_idx = {gene: idx for idx, gene in enumerate(all_genes)}
+                genes = self.flatten_smorfs(all_genes)
                 for col in df.columns[6:]:
                     counts = df[col].tolist()
-                    for gene, count in zip(genes, counts):
+                    for gene in genes:
+                        count = counts[gene_to_idx[gene]]
                         if gene not in self.classificationRawCounts:
                             self.classificationRawCounts[gene] = {}
                         if group not in self.classificationRawCounts[gene]:
@@ -525,7 +529,6 @@ class CoverageClassification(PipelineStructure):
         df = pd.DataFrame(data=data)
         # if self.args.grouping_method == 'union':
         df.to_csv(self.mappingGroupsUnion, sep='\t', index=False)
-        df.to_csv()
         # else:
         gdf = pd.DataFrame(data=microprotein_groups)
         gdf.to_csv(self.microproteinMappingGroups, sep='\t', index=False)
@@ -608,15 +611,14 @@ class CoverageClassification(PipelineStructure):
                 orf_class = 'No coverage'
             elif 'Default' in grouplist:
                 orf_class = 'Default'
+            elif 'Amb' in grouplist:
+                orf_class = 'Amb'
+            elif 'MM' in grouplist:
+                orf_class = 'MM'
+            elif 'MM_Amb' in grouplist:
+                orf_class = 'MM_Amb'
             else:
-                if 'Amb' in grouplist:
-                    orf_class = 'Amb'
-                else:
-                    if 'MM' in grouplist:
-                        orf_class = 'MM'
-                    else:
-                        if 'MM_Amb' in grouplist:
-                            orf_class = 'MM_Amb'
+                orf_class = 'No coverage'
             classes['smorf'].append(smorf)
             classes['group'].append(orf_class)
         edf = pd.DataFrame(data=classes)
